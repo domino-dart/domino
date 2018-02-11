@@ -59,3 +59,5 @@ Element button({
     _elem('button', attrs, styles, classes, children, text, events, key,
         afterInsert, afterUpdate, afterRemove)
       ..onClick(onClick);
+
+Element br() => new Element('br');
