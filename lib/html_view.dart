@@ -6,9 +6,10 @@ import 'package:async_tracker/async_tracker.dart';
 import 'domino.dart';
 import 'src/build_context.dart';
 
-/// Register [component] to the [container] Element and start a [View].
-View registerHtmlView(html.Element container, Component component) {
-  return new _View(container, component);
+/// Register [children] (e.g. single [Component] or list of [Component] and
+/// [Node]s) to the [container] Element and start a [View].
+View registerHtmlView(html.Element container, dynamic children) {
+  return new _View(container, children);
 }
 
 class _View implements View {
@@ -17,14 +18,14 @@ class _View implements View {
   final Expando<List<AfterCallback>> _onRemoveExpando = new Expando();
 
   final html.Element _container;
-  final Component _component;
+  final _children;
 
   AsyncTracker _tracker;
 
   Future _invalidate;
   bool _isDisposed = false;
 
-  _View(this._container, this._component) {
+  _View(this._container, this._children) {
     _tracker = new AsyncTracker()..addListener(invalidate);
     invalidate();
   }
@@ -37,7 +38,7 @@ class _View implements View {
     _invalidate = new Future.microtask(() {
       try {
         final context = new _BuildContext();
-        _update(context, _container, _isDisposed ? const [] : _component);
+        _update(context, _container, _isDisposed ? const [] : _children);
         context._runCallbacks();
       } finally {
         _invalidate = null;
