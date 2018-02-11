@@ -6,6 +6,8 @@ import 'package:async_tracker/async_tracker.dart';
 import 'domino.dart';
 import 'src/build_context.dart';
 
+export 'domino.dart';
+
 /// Register [children] (e.g. single [Component] or list of [Component] and
 /// [Node]s) to the [container] Element and start a [View].
 View registerHtmlView(html.Element container, dynamic children) {
