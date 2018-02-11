@@ -37,8 +37,7 @@ class _View implements View {
     _invalidate = new Future.microtask(() {
       try {
         final context = new _BuildContext();
-        _update(context, _container,
-            _isDisposed ? const [] : _component.build(context));
+        _update(context, _container, _isDisposed ? const [] : _component);
         context._runCallbacks();
       } finally {
         _invalidate = null;
