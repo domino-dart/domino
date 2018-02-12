@@ -36,9 +36,7 @@ class HtmlMarkupBuilder {
         _writeAttributes(context._sink, node.attrs, node.classes, node.styles);
         if (node.hasChildren) {
           context._sink.write('>');
-          context.pushAncestor(node);
           _writeTo(context, node.children, level: level + 1);
-          context.popAncestor();
           if (_hasIndent) {
             context._sink.writeln();
             _writeIndent(context._sink, level);

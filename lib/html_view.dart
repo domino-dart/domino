@@ -40,7 +40,8 @@ class _View implements View {
     _invalidate = new Future.microtask(() {
       try {
         final context = new _BuildContext();
-        _update(context, _container, _isDisposed ? const [] : _children);
+        final nodes = flattenWithContext(context, _children) ?? const <Node>[];
+        _update(context, _container, _isDisposed ? const [] : nodes);
         context._runCallbacks();
       } finally {
         _invalidate = null;
@@ -55,8 +56,8 @@ class _View implements View {
     return invalidate();
   }
 
-  void _update(_BuildContext context, html.Element container, dynamic built) {
-    final nodes = flattenWithContext(context, built) ?? const <Node>[];
+  void _update(
+      _BuildContext context, html.Element container, List<Node> nodes) {
     for (int i = 0; i < nodes.length; i++) {
       final vnode = nodes[i];
       html.Node domNode;
@@ -234,9 +235,7 @@ class _View implements View {
       _eventsExpando[dn] = newEvents;
     }
 
-    context._ancestors.add(vnode);
     _update(context, dn, vnode.children);
-    context._ancestors.removeLast();
   }
 
   void _removeAll(_BuildContext context, html.Node node) {
@@ -272,7 +271,6 @@ class _EventSubscription {
 typedef void _ContextCallbackFn();
 
 class _BuildContext extends AncestorBuildContext {
-  final List _ancestors = [];
   final List<_ContextCallbackFn> _onInsertQueue = [];
   final List<_ContextCallbackFn> _onUpdateQueue = [];
   final List<_ContextCallbackFn> _onRemoveQueue = [];
@@ -282,9 +280,6 @@ class _BuildContext extends AncestorBuildContext {
     _onUpdateQueue.forEach((fn) => fn());
     _onRemoveQueue.forEach((fn) => fn());
   }
-
-  @override
-  Iterable get ancestors => _ancestors.reversed;
 }
 
 class _DomEvent implements Event {
