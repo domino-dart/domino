@@ -20,9 +20,9 @@ void main() {
 
     test('Hierarchy', () {
       expect(
-          builder.convert(new Element('div', children: [
+          builder.convert(new Element('div', content: [
             'a',
-            new Element('span', text: 'in-span'),
+            new Element('span', content: 'in-span'),
             'b',
           ])),
           '<div>\n'

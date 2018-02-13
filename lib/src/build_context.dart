@@ -28,7 +28,7 @@ List<Node> flattenWithContext(AncestorBuildContext context, dynamic item,
   } else if (item is Element) {
     context._pushAncestor(item);
     nodes.add(
-        new _ElementProxy(item, flattenWithContext(context, item.children)));
+        new _ElementProxy(item, flattenWithContext(context, item.content)));
     context._popAncestor();
   } else if (item is Node) {
     nodes.add(item);
@@ -43,16 +43,16 @@ List<Node> flattenWithContext(AncestorBuildContext context, dynamic item,
     flattenWithContext(context, item.build(context), nodes: nodes);
     context._popAncestor();
   } else {
-    throw new Exception('Unknown child: $item');
+    nodes.add(new Text(item.toString()));
   }
   return nodes;
 }
 
 class _ElementProxy implements Element {
   final Element _delegate;
-  final List<Node> _children;
+  final List<Node> _nodes;
 
-  _ElementProxy(this._delegate, this._children);
+  _ElementProxy(this._delegate, this._nodes);
 
   @override
   String get tag => _delegate.tag;
@@ -61,7 +61,7 @@ class _ElementProxy implements Element {
   Map<String, String> get attrs => _delegate.attrs;
 
   @override
-  Iterable get children => _children;
+  Iterable get content => _nodes;
 
   @override
   Iterable<String> get classes => _delegate.classes;
@@ -91,10 +91,10 @@ class _ElementProxy implements Element {
   bool get hasAfterRemoves => _delegate.hasAfterRemoves;
 
   @override
-  bool get hasChildren => _children != null;
+  bool get hasClasses => _delegate.hasClasses;
 
   @override
-  bool get hasClasses => _delegate.hasClasses;
+  bool get hasContent => _delegate.hasContent;
 
   @override
   bool get hasEventHandlers => _delegate.hasEventHandlers;
@@ -134,12 +134,12 @@ class _ElementProxy implements Element {
   }
 
   @override
-  void set children(List value) {
+  void set classes(List<String> values) {
     _notSupported();
   }
 
   @override
-  void set classes(List<String> values) {
+  set content(_content) {
     _notSupported();
   }
 

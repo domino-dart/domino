@@ -5,24 +5,22 @@ Element div({
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
-  List children,
-  String text,
+  /* List, Component, Node, BuildFn, ... */ dynamic content,
   Map<String, EventHandler> events,
   dynamic key,
   AfterCallback afterInsert,
   AfterCallback afterUpdate,
   AfterCallback afterRemove,
 }) =>
-    _elem('div', attrs, styles, classes, children, text, events, key,
-        afterInsert, afterUpdate, afterRemove);
+    _elem('div', attrs, styles, classes, content, events, key, afterInsert,
+        afterUpdate, afterRemove);
 
 Element _elem(
   String tag,
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
-  List children,
-  String text,
+  dynamic content,
   Map<String, EventHandler> events,
   dynamic key,
   AfterCallback afterInsert,
@@ -34,8 +32,7 @@ Element _elem(
       attrs: attrs,
       styles: styles,
       classes: classes,
-      children: children,
-      text: text,
+      content: content,
       events: events,
       key: key,
       afterInsert: afterInsert,
@@ -47,8 +44,7 @@ Element button({
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
-  List children,
-  String text,
+  /* List, Component, Node, BuildFn, ... */ dynamic content,
   Map<String, EventHandler> events,
   dynamic key,
   AfterCallback afterInsert,
@@ -56,8 +52,8 @@ Element button({
   AfterCallback afterRemove,
   EventHandler onClick,
 }) =>
-    _elem('button', attrs, styles, classes, children, text, events, key,
-        afterInsert, afterUpdate, afterRemove)
+    _elem('button', attrs, styles, classes, content, events, key, afterInsert,
+        afterUpdate, afterRemove)
       ..onClick(onClick);
 
 Element br() => new Element('br');

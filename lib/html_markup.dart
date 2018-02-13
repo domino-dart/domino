@@ -34,9 +34,9 @@ class HtmlMarkupBuilder {
       } else if (node is Element) {
         context._sink.write('<${node.tag}');
         _writeAttributes(context._sink, node.attrs, node.classes, node.styles);
-        if (node.hasChildren) {
+        if (node.hasContent) {
           context._sink.write('>');
-          _writeTo(context, node.children, level: level + 1);
+          _writeTo(context, node.content, level: level + 1);
           if (_hasIndent) {
             context._sink.writeln();
             _writeIndent(context._sink, level);

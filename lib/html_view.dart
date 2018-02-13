@@ -8,10 +8,10 @@ import 'src/build_context.dart';
 
 export 'domino.dart';
 
-/// Register [children] (e.g. single [Component] or list of [Component] and
+/// Register [content] (e.g. single [Component] or list of [Component] and
 /// [Node]s) to the [container] Element and start a [View].
-View registerHtmlView(html.Element container, dynamic children) {
-  return new _View(container, children);
+View registerHtmlView(html.Element container, dynamic content) {
+  return new _View(container, content);
 }
 
 class _View implements View {
@@ -20,14 +20,14 @@ class _View implements View {
   final Expando<List<AfterCallback>> _onRemoveExpando = new Expando();
 
   final html.Element _container;
-  final _children;
+  final _content;
 
   AsyncTracker _tracker;
 
   Future _invalidate;
   bool _isDisposed = false;
 
-  _View(this._container, this._children) {
+  _View(this._container, this._content) {
     _tracker = new AsyncTracker()..addListener(invalidate);
     invalidate();
   }
@@ -40,7 +40,7 @@ class _View implements View {
     _invalidate = new Future.microtask(() {
       try {
         final context = new _BuildContext();
-        final nodes = flattenWithContext(context, _children) ?? const <Node>[];
+        final nodes = flattenWithContext(context, _content) ?? const <Node>[];
         _update(context, _container, _isDisposed ? const [] : nodes);
         context._runCallbacks();
       } finally {
@@ -256,7 +256,7 @@ class _View implements View {
       _eventsExpando[dn] = newEvents;
     }
 
-    _update(context, dn, vnode.children);
+    _update(context, dn, vnode.content);
   }
 
   void _removeAll(_BuildContext context, html.Node node) {

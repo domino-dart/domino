@@ -47,7 +47,7 @@ abstract class Node extends Object with _AfterCallbacks, _OnEvents {
 
 /// Element in the DOM.
 class Element extends Node
-    with _ElementChildren, _ElementClasses, _ElementStyles, _ElementAttributes {
+    with _ElementContent, _ElementClasses, _ElementStyles, _ElementAttributes {
   final String tag;
 
   Element(
@@ -55,8 +55,7 @@ class Element extends Node
     List<String> classes,
     Map<String, String> styles,
     Map<String, String> attrs,
-    String text,
-    List children,
+    /* List, Component, Node, BuildFn */ dynamic content,
     Map<String, EventHandler> events,
     dynamic key,
     AfterCallback afterInsert,
@@ -68,7 +67,7 @@ class Element extends Node
     this.afterUpdate(afterUpdate);
     this.afterRemove(afterRemove);
     this.onEvents(events);
-    this.children = children ?? (text == null ? null : [text]);
+    this.content = content;
     this.classes = classes;
     this.styles = styles;
     this.attrs = attrs;
@@ -157,12 +156,10 @@ class _TypeAndHandler {
   _TypeAndHandler(this.type, this.handler);
 }
 
-class _ElementChildren {
-  List _children;
+class _ElementContent {
+  /* List, Component, Node, BuildFn, ... */ dynamic content;
 
-  bool get hasChildren => _children != null;
-  Iterable get children => _children;
-  void set children(List value) => _children = value;
+  bool get hasContent => content != null;
 }
 
 class _ElementClasses {
