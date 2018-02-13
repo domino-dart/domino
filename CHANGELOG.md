@@ -3,6 +3,7 @@
 ## 0.1.2-dev
 
 - Fix: `BuildContext.ancestors` did not include `Component`s.
+- Fix: classes were not updated when the new Element had no class.
 
 ## 0.1.1
 

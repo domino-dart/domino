@@ -167,30 +167,28 @@ class _View implements View {
       }
     }
 
-    if (vnode.hasClasses) {
-      List<String> addList, removeList;
-      List<String> classes = vnode.classes.toList();
-      for (String s in classes) {
-        if (!dn.classes.contains(s)) {
-          addList ??= [];
-          addList.add(s);
+    List<String> addList, removeList;
+    List<String> classes = vnode.classes?.toList() ?? const <String>[];
+    for (String s in classes) {
+      if (!dn.classes.contains(s)) {
+        addList ??= [];
+        addList.add(s);
+      }
+    }
+    if (addList != null || classes.length != dn.classes.length) {
+      for (String s in dn.classes) {
+        if (!classes.contains(s)) {
+          removeList ??= [];
+          removeList.add(s);
         }
       }
-      if (addList != null || classes.length != dn.classes.length) {
-        for (String s in dn.classes) {
-          if (!classes.contains(s)) {
-            removeList ??= [];
-            removeList.add(s);
-          }
-        }
-      }
+    }
 
-      if (addList != null) {
-        dn.classes.addAll(addList);
-      }
-      if (removeList != null) {
-        removeList.forEach(dn.classes.remove);
-      }
+    if (addList != null) {
+      dn.classes.addAll(addList);
+    }
+    if (removeList != null) {
+      removeList.forEach(dn.classes.remove);
     }
 
     if (vnode.styles != null) {
