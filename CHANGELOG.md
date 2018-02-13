@@ -5,6 +5,7 @@
 - Fix: `BuildContext.ancestors` did not include `Component`s.
 - Fix: classes were not updated when the new Element had no class.
 - Fix: attributes were not updated when the new Element had no attributes.
+- Fix: reduce the non-keyed reuse of DOM Elements that have non-matching style properties. (using `key` reuses them)
 
 ## 0.1.1
 

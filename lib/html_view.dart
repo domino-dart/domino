@@ -114,6 +114,17 @@ class _View implements View {
     if (vnode is Element &&
         dn is html.Element &&
         vnode.tag.toLowerCase() == dn.tagName.toLowerCase()) {
+      // We are not able to iterate the style keys to remove them properly.
+      if (dn.style.length > 0 && vnode.styles != null) {
+        if (vnode.styles.length != dn.style.length) {
+          return false;
+        }
+        for (String key in vnode.styles.keys) {
+          if (dn.style.getPropertyValue(key) == null) {
+            return false;
+          }
+        }
+      }
       return _hasNoEvents();
     } else if (vnode is Text && dn is html.Text) {
       return _hasNoEvents();
