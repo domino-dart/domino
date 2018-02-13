@@ -154,8 +154,17 @@ class _View implements View {
   }
 
   void _updateElement(_BuildContext context, html.Element dn, Element vnode) {
+    final Set<String> attrsToRemove = dn.attributes.keys.toSet();
+    if (vnode.hasClasses) {
+      attrsToRemove.remove('class');
+    }
+    if (vnode.styles != null) {
+      attrsToRemove.remove('style');
+    }
+
     if (vnode.attrs != null) {
       for (String key in vnode.attrs.keys) {
+        attrsToRemove.remove(key);
         final String value = vnode.attrs[key];
         if (dn.getAttribute(key) != value) {
           if (value == null) {
@@ -165,6 +174,9 @@ class _View implements View {
           }
         }
       }
+    }
+    for (String attr in attrsToRemove) {
+      dn.attributes.remove(attr);
     }
 
     List<String> addList, removeList;
