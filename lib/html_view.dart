@@ -58,6 +58,7 @@ class _View implements View {
 
   void _update(
       _BuildContext context, html.Element container, List<Node> nodes) {
+    nodes ??= const <Node>[];
     for (int i = 0; i < nodes.length; i++) {
       final vnode = nodes[i];
       html.Node domNode;

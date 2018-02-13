@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.0+1
+
+- Fix NPE.
+
 ## 0.2.0
 
 **Breaking changes**:
