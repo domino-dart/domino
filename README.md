@@ -40,3 +40,12 @@ class SimpleComponent extends Component {
   }
 }
 ````
+
+## Links
+
+- [source code][source]
+- contributors:
+    - [István Soós][isoos]
+
+[source]: https://github.com/isoos/domino
+[isoos]: https://github.com/isoos
