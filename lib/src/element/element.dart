@@ -11,18 +11,18 @@ class Element extends Node
   final String tag;
 
   Element(
-      this.tag, {
-        List<Setter> set: const <Setter>[],
-        List<String> classes,
-        Map<String, String> styles,
-        Map<String, String> attrs,
-        /* List, Component, Node, BuildFn */ dynamic content,
-        Map<String, EventHandler> events,
-        dynamic key,
-        AfterCallback afterInsert,
-        AfterCallback afterUpdate,
-        AfterCallback afterRemove,
-      }) {
+    this.tag, {
+    /* List<Setter> | Setter */ set,
+    List<String> classes,
+    Map<String, String> styles,
+    Map<String, String> attrs,
+    /* List, Component, Node, BuildFn */ dynamic content,
+    Map<String, EventHandler> events,
+    dynamic key,
+    AfterCallback afterInsert,
+    AfterCallback afterUpdate,
+    AfterCallback afterRemove,
+  }) {
     this.key = key;
     this.afterInsert(afterInsert);
     this.afterUpdate(afterUpdate);
@@ -33,17 +33,9 @@ class Element extends Node
     this.styles = styles;
     this.attrs = attrs;
 
-    for (Setter setter in set) {
-      if (setter is StyleSetter) {
-        styles[setter.name] = setter.value;
-      } else if (setter is AttrSetter) {
-        attrs[setter.name] = setter.value;
-      } else if (setter is ClassAdder) {
-        setter.clazzes.forEach(addClass);
-      } else if (setter is EventSetter) {
-        on(setter.event, setter.handler);
-      }
-    }
+    if (set is Setter)
+      set.apply(this);
+    else if (set is List<Setter>) for (Setter s in set) s?.apply(this);
   }
 }
 
@@ -71,12 +63,12 @@ class Text extends Node {
   String text;
 
   Text(
-      this.text, {
-        dynamic key,
-        AfterCallback afterInsert,
-        AfterCallback afterUpdate,
-        AfterCallback afterRemove,
-      }) {
+    this.text, {
+    dynamic key,
+    AfterCallback afterInsert,
+    AfterCallback afterUpdate,
+    AfterCallback afterRemove,
+  }) {
     this.key = key;
     this.afterInsert(afterInsert);
     this.afterUpdate(afterUpdate);

@@ -1,29 +1,37 @@
 part of domino.element;
 
-abstract class Setter {}
-
+/// Adds a style to an [Element] with [name] and [value]
+///
+/// Example:
+///     div(set: style('color', 'blue'))
 class StyleSetter implements Setter {
   final String name;
 
   final String value;
 
   const StyleSetter(this.name, this.value);
+
+  void apply(Element e) => e.style(name, value);
 }
 
-StyleSetter style(String name, String value) => new StyleSetter(name, value);
-
+/// Adds a attribute to an [Element] with [name] and [value]
+///
+/// Example:
+///     div(set: attr('id', 'main'))
 class AttrSetter implements Setter {
   final String name;
 
   final String value;
 
   const AttrSetter(this.name, this.value);
+
+  void apply(Element e) => e.attr(name, value);
 }
 
-AttrSetter attr(String name, String value) => new AttrSetter(name, value);
-
-AttrSetter id(String id) => new AttrSetter('id', id);
-
+/// Adds classes to an [Element]
+///
+/// Example:
+///     div(set: classes('main'))
 class ClassAdder implements Setter {
   final List<String> clazzes;
 
@@ -40,8 +48,48 @@ class ClassAdder implements Setter {
     if (class4 != null) clazzes.add(class4);
     if (class5 != null) clazzes.add(class5);
   }
+
+  void apply(Element e) => clazzes.forEach(e.addClass);
 }
 
+/// Adds an [handler] to an [Element] for event [event]
+///
+/// Example:
+///     div(set: on('click', () => print('Clicked!')))
+class EventSetter implements Setter {
+  final String event;
+
+  final EventHandler handler;
+
+  const EventSetter(this.event, this.handler);
+
+  void apply(Element e) => e.on(event, handler);
+}
+
+/// Sets properties of an element
+abstract class Setter {
+  /// Sets the properties of element
+  void apply(Element element);
+}
+
+/// Adds a style to an [Element] with [name] and [value]
+///
+/// Example:
+///     div(set: style('color', 'blue'))
+StyleSetter style(String name, String value) => new StyleSetter(name, value);
+
+/// Adds a attribute to an [Element] with [name] and [value]
+///
+/// Example:
+///     div(set: attr('id', 'main'))
+AttrSetter attr(String name, String value) => new AttrSetter(name, value);
+
+AttrSetter id(String id) => new AttrSetter('id', id);
+
+/// Adds classes to an [Element]
+///
+/// Example:
+///     div(set: classes('main'))
 ClassAdder clazz(class1,
         [String class2, String class3, String class4, String class5]) =>
     new ClassAdder(class1, class2, class3, class4, class5);
@@ -65,13 +113,9 @@ ClassAdder clazzIf(condition, classTrue, [classFalse]) {
   return new ClassAdder(classFalse);
 }
 
-class EventSetter implements Setter {
-  final String event;
-
-  final EventHandler handler;
-
-  const EventSetter(this.event, this.handler);
-}
-
+/// Adds an [handler] to an [Element] for event [event]
+///
+/// Example:
+///     div(set: on('click', () => print('Clicked!')))
 EventSetter on(String event, EventHandler handler) =>
     new EventSetter(event, handler);
