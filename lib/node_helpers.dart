@@ -2,6 +2,7 @@ import 'domino.dart';
 
 /// Creates a <div> Element.
 Element div({
+  List<Setter> set: const <Setter>[],
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
@@ -12,11 +13,12 @@ Element div({
   AfterCallback afterUpdate,
   AfterCallback afterRemove,
 }) =>
-    _elem('div', attrs, styles, classes, content, events, key, afterInsert,
+    _elem('div', set, attrs, styles, classes, content, events, key, afterInsert,
         afterUpdate, afterRemove);
 
 Element _elem(
   String tag,
+  List<Setter> set,
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
@@ -41,6 +43,7 @@ Element _elem(
     );
 
 Element button({
+  List<Setter> set: const <Setter>[],
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
@@ -52,8 +55,8 @@ Element button({
   AfterCallback afterRemove,
   EventHandler onClick,
 }) =>
-    _elem('button', attrs, styles, classes, content, events, key, afterInsert,
-        afterUpdate, afterRemove)
+    _elem('button', set, attrs, styles, classes, content, events, key,
+        afterInsert, afterUpdate, afterRemove)
       ..onClick(onClick);
 
 Element br() => new Element('br');
