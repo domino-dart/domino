@@ -31,7 +31,7 @@ class AttrSetter implements Setter {
 /// Adds classes to an [Element]
 ///
 /// Example:
-///     div(set: classes('main'))
+///     div(set: clazz('main'))
 class ClassAdder implements Setter {
   final List<String> clazzes;
 
@@ -89,7 +89,7 @@ AttrSetter id(String id) => new AttrSetter('id', id);
 /// Adds classes to an [Element]
 ///
 /// Example:
-///     div(set: classes('main'))
+///     div(set: clazz('main'))
 ClassAdder clazz(class1,
         [String class2, String class3, String class4, String class5]) =>
     new ClassAdder(class1, class2, class3, class4, class5);
