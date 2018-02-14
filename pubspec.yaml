@@ -2,7 +2,9 @@ name: domino
 description: An experimental virtual dom library, which allows mixing DOM elements with components.
 version: 0.2.0+1
 homepage: https://github.com/isoos/domino
-author: Istvan Soos <istvan.soos@gmail.com>
+authors:
+  - Istvan Soos <istvan.soos@gmail.com>
+  - Ravi Teja Gudapati <tejainece@gmail.com>
 
 environment:
   sdk: '>=1.20.1 <2.0.0'
