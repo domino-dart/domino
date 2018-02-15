@@ -37,7 +37,7 @@ Element br() => new Element('br');
 
 Element _elem(
   String tag,
-  List<Setter> set,
+  /* List<Setter> | Setter */ set,
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
