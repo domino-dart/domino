@@ -1,4 +1,6 @@
-part of domino.element;
+library domino.element.setter;
+
+import 'package:domino/domino.dart';
 
 /// Adds a style to an [Element] with [name] and [value]
 ///
