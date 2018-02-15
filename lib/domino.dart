@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'src/element/setter.dart';
-
 export 'src/element/setter.dart';
 
 /// The context of the current build.
