@@ -98,7 +98,7 @@ ClassAdder clazzWhen(condition,
     condition = condition();
   }
   if (condition) return new ClassAdder(class1, class2, class3, class4, class5);
-  return new ClassAdder(null);
+  return null;
 }
 
 ClassAdder clazzIf(condition, classTrue, [classFalse]) {
@@ -106,7 +106,8 @@ ClassAdder clazzIf(condition, classTrue, [classFalse]) {
     condition = condition();
   }
   if (condition) return new ClassAdder(classTrue);
-  return new ClassAdder(classFalse);
+  if (classFalse != null) return new ClassAdder(classFalse);
+  return null;
 }
 
 /// Adds an [handler] to an [Element] for event [event]
