@@ -58,18 +58,18 @@ class Element extends Node
   final String tag;
 
   Element(
-      this.tag, {
-        /* List<Setter> | Setter */ set,
-        List<String> classes,
-        Map<String, String> styles,
-        Map<String, String> attrs,
-        /* List, Component, Node, BuildFn */ dynamic content,
-        Map<String, EventHandler> events,
-        dynamic key,
-        AfterCallback afterInsert,
-        AfterCallback afterUpdate,
-        AfterCallback afterRemove,
-      }) {
+    this.tag, {
+    /* List<Setter> | Setter */ set,
+    List<String> classes,
+    Map<String, String> styles,
+    Map<String, String> attrs,
+    /* List, Component, Node, BuildFn */ dynamic content,
+    Map<String, EventHandler> events,
+    dynamic key,
+    AfterCallback afterInsert,
+    AfterCallback afterUpdate,
+    AfterCallback afterRemove,
+  }) {
     this.key = key;
     this.afterInsert(afterInsert);
     this.afterUpdate(afterUpdate);
@@ -91,12 +91,12 @@ class Text extends Node {
   String text;
 
   Text(
-      this.text, {
-        dynamic key,
-        AfterCallback afterInsert,
-        AfterCallback afterUpdate,
-        AfterCallback afterRemove,
-      }) {
+    this.text, {
+    dynamic key,
+    AfterCallback afterInsert,
+    AfterCallback afterUpdate,
+    AfterCallback afterRemove,
+  }) {
     this.key = key;
     this.afterInsert(afterInsert);
     this.afterUpdate(afterUpdate);
