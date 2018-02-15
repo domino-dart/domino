@@ -92,15 +92,6 @@ ClassAdder clazz(class1,
 
 typedef bool BoolFunction();
 
-ClassAdder clazzWhen(condition,
-    [class1, String class2, String class3, String class4, String class5]) {
-  if (condition is BoolFunction) {
-    condition = condition();
-  }
-  if (condition) return new ClassAdder(class1, class2, class3, class4, class5);
-  return null;
-}
-
 ClassAdder clazzIf(condition, classTrue, [classFalse]) {
   if (condition is BoolFunction) {
     condition = condition();
