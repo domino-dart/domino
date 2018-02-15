@@ -2,32 +2,32 @@ library domino.element.setter;
 
 import 'package:domino/domino.dart';
 
-/// Adds a style to an [Element] with [name] and [value]
+/// Adds a style to an [Element] with [_name] and [_value]
 ///
 /// Example:
 ///     div(set: style('color', 'blue'))
 class StyleSetter implements Setter {
-  final String name;
+  final String _name;
 
-  final String value;
+  final String _value;
 
-  const StyleSetter(this.name, this.value);
+  const StyleSetter(this._name, this._value);
 
-  void apply(Element e) => e.style(name, value);
+  void apply(Element e) => e.style(_name, _value);
 }
 
-/// Adds a attribute to an [Element] with [name] and [value]
+/// Adds a attribute to an [Element] with [_name] and [_value]
 ///
 /// Example:
 ///     div(set: attr('id', 'main'))
 class AttrSetter implements Setter {
-  final String name;
+  final String _name;
 
-  final String value;
+  final String _value;
 
-  const AttrSetter(this.name, this.value);
+  const AttrSetter(this._name, this._value);
 
-  void apply(Element e) => e.attr(name, value);
+  void apply(Element e) => e.attr(_name, _value);
 }
 
 /// Adds classes to an [Element]
@@ -35,23 +35,23 @@ class AttrSetter implements Setter {
 /// Example:
 ///     div(set: clazz('main'))
 class ClassAdder implements Setter {
-  final List<String> clazzes;
+  final List<String> _clazzes;
 
   ClassAdder(class1,
       [String class2, String class3, String class4, String class5])
-      : clazzes = <String>[] {
+      : _clazzes = <String>[] {
     if (class1 != null) {
       if (class1 is String)
-        clazzes.add(class1);
-      else if (class1 is List<String>) clazzes.addAll(class1);
+        _clazzes.add(class1);
+      else if (class1 is List<String>) _clazzes.addAll(class1);
     }
-    if (class2 != null) clazzes.add(class2);
-    if (class3 != null) clazzes.add(class3);
-    if (class4 != null) clazzes.add(class4);
-    if (class5 != null) clazzes.add(class5);
+    if (class2 != null) _clazzes.add(class2);
+    if (class3 != null) _clazzes.add(class3);
+    if (class4 != null) _clazzes.add(class4);
+    if (class5 != null) _clazzes.add(class5);
   }
 
-  void apply(Element e) => clazzes.forEach(e.addClass);
+  void apply(Element e) => _clazzes.forEach(e.addClass);
 }
 
 /// Adds an [handler] to an [Element] for event [event]

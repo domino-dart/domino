@@ -1,6 +1,6 @@
 import 'dart:html' as html;
 
-import 'package:domino/domino.dart';
+import 'package:domino/setters.dart';
 import 'package:domino/html_view.dart';
 import 'package:domino/node_helpers.dart';
 

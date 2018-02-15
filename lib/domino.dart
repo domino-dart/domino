@@ -1,7 +1,5 @@
 import 'dart:async';
 
-export 'src/element/setter.dart';
-
 /// The context of the current build.
 abstract class BuildContext {
   /// List of ancestor [Element]s or [Component]s. Ordered from the bottom
