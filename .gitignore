@@ -10,3 +10,4 @@ doc/api/
 
 # IntelliJ
 *.iml
+.idea

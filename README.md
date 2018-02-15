@@ -46,6 +46,8 @@ class SimpleComponent extends Component {
 - [source code][source]
 - contributors:
     - [István Soós][isoos]
+    - [Teja][tejainece]
 
 [source]: https://github.com/isoos/domino
 [isoos]: https://github.com/isoos
+[tejainece]: https://github.com/tejainece

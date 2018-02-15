@@ -2,6 +2,7 @@ import 'domino.dart';
 
 /// Creates a <div> Element.
 Element div({
+  /* List<Setter> | Setter */ set,
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
@@ -12,11 +13,31 @@ Element div({
   AfterCallback afterUpdate,
   AfterCallback afterRemove,
 }) =>
-    _elem('div', attrs, styles, classes, content, events, key, afterInsert,
+    _elem('div', set, attrs, styles, classes, content, events, key, afterInsert,
         afterUpdate, afterRemove);
+
+Element button({
+  /* List<Setter> | Setter */ set,
+  Map<String, String> attrs,
+  Map<String, String> styles,
+  List<String> classes,
+  /* List, Component, Node, BuildFn, ... */ dynamic content,
+  Map<String, EventHandler> events,
+  dynamic key,
+  AfterCallback afterInsert,
+  AfterCallback afterUpdate,
+  AfterCallback afterRemove,
+  EventHandler onClick,
+}) =>
+    _elem('button', set, attrs, styles, classes, content, events, key,
+        afterInsert, afterUpdate, afterRemove)
+      ..onClick(onClick);
+
+Element br() => new Element('br');
 
 Element _elem(
   String tag,
+  /* List<Setter> | Setter */ set,
   Map<String, String> attrs,
   Map<String, String> styles,
   List<String> classes,
@@ -39,21 +60,3 @@ Element _elem(
       afterUpdate: afterUpdate,
       afterRemove: afterRemove,
     );
-
-Element button({
-  Map<String, String> attrs,
-  Map<String, String> styles,
-  List<String> classes,
-  /* List, Component, Node, BuildFn, ... */ dynamic content,
-  Map<String, EventHandler> events,
-  dynamic key,
-  AfterCallback afterInsert,
-  AfterCallback afterUpdate,
-  AfterCallback afterRemove,
-  EventHandler onClick,
-}) =>
-    _elem('button', attrs, styles, classes, content, events, key, afterInsert,
-        afterUpdate, afterRemove)
-      ..onClick(onClick);
-
-Element br() => new Element('br');

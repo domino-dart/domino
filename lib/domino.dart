@@ -45,13 +45,23 @@ abstract class Node extends Object with _AfterCallbacks, _OnEvents {
   dynamic key;
 }
 
+/// Sets properties of an element
+abstract class Setter {
+  /// Sets the properties of element
+  void apply(Element element);
+}
+
 /// Element in the DOM.
+///
+/// Example:
+///     new Element('div', classes: ['items']);
 class Element extends Node
     with _ElementContent, _ElementClasses, _ElementStyles, _ElementAttributes {
   final String tag;
 
   Element(
     this.tag, {
+    /* List<Setter> | Setter */ set,
     List<String> classes,
     Map<String, String> styles,
     Map<String, String> attrs,
@@ -71,6 +81,14 @@ class Element extends Node
     this.classes = classes;
     this.styles = styles;
     this.attrs = attrs;
+
+    if (set is Setter) {
+      set.apply(this);
+    } else if (set is List<Setter>) {
+      for (Setter s in set) {
+        s?.apply(this);
+      }
+    }
   }
 }
 
