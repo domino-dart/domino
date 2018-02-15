@@ -87,7 +87,9 @@ class Element extends Node
     if (set is Setter) {
       set.apply(this);
     } else if (set is List<Setter>) {
-      for (Setter s in set) s?.apply(this);
+      for (Setter s in set) {
+        s?.apply(this);
+      }
     }
   }
 }
