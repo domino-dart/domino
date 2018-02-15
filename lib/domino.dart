@@ -49,6 +49,12 @@ abstract class Node extends Object with _AfterCallbacks, _OnEvents {
   dynamic key;
 }
 
+/// Sets properties of an element
+abstract class Setter {
+  /// Sets the properties of element
+  void apply(Element element);
+}
+
 /// Element in the DOM.
 ///
 /// Example:
@@ -80,9 +86,11 @@ class Element extends Node
     this.styles = styles;
     this.attrs = attrs;
 
-    if (set is Setter)
+    if (set is Setter) {
       set.apply(this);
-    else if (set is List<Setter>) for (Setter s in set) s?.apply(this);
+    } else if (set is List<Setter>) {
+      for (Setter s in set) s?.apply(this);
+    }
   }
 }
 

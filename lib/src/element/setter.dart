@@ -68,12 +68,6 @@ class EventSetter implements Setter {
   void apply(Element e) => e.on(event, handler);
 }
 
-/// Sets properties of an element
-abstract class Setter {
-  /// Sets the properties of element
-  void apply(Element element);
-}
-
 /// Adds a style to an [Element] with [name] and [value]
 ///
 /// Example:
