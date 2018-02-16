@@ -50,6 +50,7 @@ Element _elem(
 ) =>
     new Element(
       tag,
+      set: set,
       attrs: attrs,
       styles: styles,
       classes: classes,
