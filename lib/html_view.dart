@@ -33,6 +33,12 @@ class _View implements View {
   }
 
   @override
+  R track<R>(R action()) => _tracker.run(action);
+
+  @override
+  R escape<R>(R action()) => _tracker.parentZone.run(action);
+
+  @override
   Future invalidate() {
     if (_invalidate != null) {
       return _invalidate;

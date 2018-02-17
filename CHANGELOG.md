@@ -4,6 +4,8 @@
 
 - Element `Setter` for shortcut certain build patterns.
 - Enable `String` and embedded `List`s to set for `Element.classes` and `clazz` setters.
+- `View.track` to execute (async) actions that will trigger the invalidation of the `View`.
+- `View.escape` to escape the tracker zone for `EventHandler`s that are registered inside the `View`.
 
 ## 0.2.0+1
 

@@ -20,9 +20,25 @@ abstract class Component {
 }
 
 /// Provides lifecycle handling for a hierarchy of components.
+///
+/// A [View] re-builds the UI after `invalidate()` is called (or automatically
+/// when [EventHandler]s are registered).
 abstract class View {
   /// Schedule an update of the [View].
   Future invalidate();
+
+  /// Runs [action] in the [View]'s tracker zone.
+  ///
+  /// This zone tracks the execution of [action] and its async callbacks,
+  /// triggering the invalidation and (re-)building of the [View] after each run.
+  ///
+  /// [EventHandler]s registered in the [View] during the build phase will be
+  /// using this automatically.
+  R track<R>(R action());
+
+  /// Escapes the [View]'s tracker zone (e.g. from inside an [EventHandler]),
+  /// no longer triggering the invalidation of the [View] after its run finishes.
+  R escape<R>(R action());
 
   /// Dispose the [View] and free resources.
   Future dispose();
