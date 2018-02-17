@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1-dev
+
+- Element `Setter` for shortcut certain build patterns.
+
 ## 0.2.0+1
 
 - Fix NPE.
