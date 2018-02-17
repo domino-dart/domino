@@ -3,6 +3,7 @@
 ## 0.2.1-dev
 
 - Element `Setter` for shortcut certain build patterns.
+- Enable `String` and embedded `List`s to set for `Element.classes` and `clazz` setters.
 
 ## 0.2.0+1
 

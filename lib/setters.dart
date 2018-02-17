@@ -1,5 +1,7 @@
 import 'domino.dart';
 
+import 'src/flat_classes.dart';
+
 /// Adds a style to an [Element] with [name] and [value]
 ///
 /// Example:
@@ -72,21 +74,12 @@ class AttrSetter implements Setter {
 /// Example:
 ///     div(set: clazz('main'))
 class ClassAdder implements Setter {
-  final List<String> _clazzes;
+  final List<String> _classes;
 
-  ClassAdder(class1, [class2, class3, class4, class5]) : _clazzes = <String>[] {
-    final temp = [class1, class2, class3, class4, class5];
+  ClassAdder(class1, [class2, class3, class4, class5])
+      : _classes = flatClasses([class1, class2, class3, class4, class5]);
 
-    for (dynamic c in temp) {
-      if (c is String) {
-        _clazzes.add(c);
-      } else if (c is List<String>) {
-        _clazzes.addAll(c);
-      }
-    }
-  }
-
-  void apply(Element e) => _clazzes.forEach(e.addClass);
+  void apply(Element e) => _classes.forEach(e.addClass);
 }
 
 /// Adds an [handler] to an [Element] for event [event]

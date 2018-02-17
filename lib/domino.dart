@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'src/flat_classes.dart';
+
 /// The context of the current build.
 abstract class BuildContext {
   /// List of ancestor [Element]s or [Component]s. Ordered from the bottom
@@ -62,7 +64,7 @@ class Element extends Node
   Element(
     this.tag, {
     /* List<Setter> | Setter */ set,
-    List<String> classes,
+    /* List | String */ classes,
     Map<String, String> styles,
     Map<String, String> attrs,
     /* List, Component, Node, BuildFn */ dynamic content,
@@ -185,8 +187,8 @@ class _ElementClasses {
 
   bool get hasClasses => _classes != null;
   Iterable<String> get classes => _classes;
-  void set classes(List<String> values) {
-    _classes = values?.where((s) => s != null)?.toList();
+  void set classes(/* List | String */ value) {
+    _classes = flatClasses(value);
   }
 
   void addClass(String value) {

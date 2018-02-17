@@ -134,7 +134,7 @@ class _ElementProxy implements Element {
   }
 
   @override
-  void set classes(List<String> values) {
+  void set classes(value) {
     _notSupported();
   }
 
