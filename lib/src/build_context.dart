@@ -3,7 +3,13 @@ import 'package:domino/domino.dart';
 import '../domino.dart';
 
 class AncestorBuildContext implements BuildContext {
+  final View _view;
   final List _ancestors = [];
+
+  AncestorBuildContext(this._view);
+
+  @override
+  View get view => _view;
 
   @override
   Iterable get ancestors => _ancestors.reversed.skip(1);

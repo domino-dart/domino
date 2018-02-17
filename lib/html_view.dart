@@ -45,7 +45,7 @@ class _View implements View {
     }
     _invalidate = new Future.microtask(() {
       try {
-        final context = new _BuildContext();
+        final context = new _BuildContext(this);
         final nodes = flattenWithContext(context, _content) ?? const <Node>[];
         _update(context, _container, _isDisposed ? const [] : nodes);
         context._runCallbacks();
@@ -302,6 +302,8 @@ class _BuildContext extends AncestorBuildContext {
   final List<_ContextCallbackFn> _onInsertQueue = [];
   final List<_ContextCallbackFn> _onUpdateQueue = [];
   final List<_ContextCallbackFn> _onRemoveQueue = [];
+
+  _BuildContext(View view) : super(view);
 
   void _runCallbacks() {
     _onInsertQueue.forEach((fn) => fn());

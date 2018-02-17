@@ -1,4 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
+
+import 'package:domino/domino.dart';
 
 import 'domino.dart';
 import 'src/build_context.dart';
@@ -16,7 +19,7 @@ class HtmlMarkupBuilder {
 
   String convert(dynamic item) {
     final buffer = new StringBuffer();
-    final context = new _BuildContext(buffer);
+    final context = new _BuildContext(new _HtmlMarkupView(), buffer);
     _writeTo(context, item);
     return buffer.toString().trim();
   }
@@ -106,5 +109,23 @@ class HtmlMarkupBuilder {
 
 class _BuildContext extends AncestorBuildContext {
   final StringSink _sink;
-  _BuildContext(this._sink);
+  _BuildContext(View view, this._sink) : super(view);
+}
+
+class _HtmlMarkupView implements View {
+  @override
+  Future invalidate() async {
+    // no-op
+  }
+
+  @override
+  R track<R>(R Function() action) => action();
+
+  @override
+  R escape<R>(R Function() action) => action();
+
+  @override
+  Future dispose() async {
+    // no-op
+  }
 }

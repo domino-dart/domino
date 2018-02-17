@@ -4,6 +4,9 @@ import 'src/flat_classes.dart';
 
 /// The context of the current build.
 abstract class BuildContext {
+  /// The current [View] which triggered the build.
+  View get view;
+
   /// List of ancestor [Element]s or [Component]s. Ordered from the bottom
   /// (direct parent) to the top (root [Component] or [Element]).
   Iterable get ancestors;
