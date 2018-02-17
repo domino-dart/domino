@@ -335,3 +335,62 @@ class _DomEvent implements Event {
   @override
   void stopPropagation() => _event.stopPropagation();
 }
+
+/// Creates a detachable sub-[View].
+class SubView implements Component {
+  final String _tag;
+  final _content;
+  final Invalidation _invalidation;
+
+  html.Element _container;
+  View _view;
+
+  SubView({
+    String tag,
+    content,
+    Invalidation invalidation,
+  })
+      : _tag = tag ?? 'div',
+        _content = content,
+        _invalidation = invalidation;
+
+  @override
+  build(BuildContext context) {
+    return new Element(
+      _tag,
+      afterInsert: _afterInsert,
+      afterUpdate: _afterUpdate,
+      afterRemove: _afterRemove,
+    );
+  }
+
+  void _afterInsert(node) {
+    _container = node;
+    _view = registerHtmlView(_container, _content);
+  }
+
+  void _afterUpdate(node) {
+    if (_invalidation == Invalidation.down) {
+      _view.invalidate();
+    }
+  }
+
+  void _afterRemove(node) {
+    _view.dispose();
+  }
+}
+
+/// The direction of the invalidation in the context of a parent and child [View].
+enum Invalidation {
+  /// The parent and the child live separate lifecycles, invalidation in one
+  /// doesn't affect the other.
+  none,
+
+  /// Invalidation in the parent triggers invalidation in teh child, but not the
+  /// other way around
+  down,
+
+  // TODO: add up,
+
+  // TODO: add both,
+}
