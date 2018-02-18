@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.2.1-dev
+## 0.2.1
 
 - Element `Setter` for shortcut certain build patterns.
 - Enable `String` and embedded `List`s to set for `Element.classes` and `clazz` setters.
