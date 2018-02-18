@@ -20,12 +20,11 @@ class HtmlMarkupBuilder {
   String convert(dynamic item) {
     final buffer = new StringBuffer();
     final context = new _BuildContext(new _HtmlMarkupView(), buffer);
-    _writeTo(context, item);
+    _writeTo(context, context.buildNodes(item));
     return buffer.toString().trim();
   }
 
-  void _writeTo(_BuildContext context, item, {int level: 0}) {
-    final nodes = flattenWithContext(context, item);
+  void _writeTo(_BuildContext context, List<Node> nodes, {int level: 0}) {
     if (nodes == null) return;
     for (Node node in nodes) {
       if (_hasIndent) {

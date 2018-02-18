@@ -21,37 +21,37 @@ class AncestorBuildContext implements BuildContext {
   _popAncestor() {
     _ancestors.removeLast();
   }
-}
 
-List<Node> flattenWithContext(AncestorBuildContext context, dynamic item,
-    {List<Node> nodes}) {
-  if (item == null) {
+  List<Node> buildNodes(dynamic content) => _flattenWithContext(content);
+
+  List<Node> _flattenWithContext(dynamic item, {List<Node> nodes}) {
+    if (item == null) {
+      return nodes;
+    }
+    nodes ??= [];
+    if (item is String) {
+      nodes.add(new Text(item));
+    } else if (item is Element) {
+      _pushAncestor(item);
+      nodes.add(new _ElementProxy(item, _flattenWithContext(item.content)));
+      _popAncestor();
+    } else if (item is Node) {
+      nodes.add(item);
+    } else if (item is Iterable) {
+      for (var child in item) {
+        _flattenWithContext(child, nodes: nodes);
+      }
+    } else if (item is BuildFn) {
+      _flattenWithContext(item(this), nodes: nodes);
+    } else if (item is Component) {
+      _pushAncestor(item);
+      _flattenWithContext(item.build(this), nodes: nodes);
+      _popAncestor();
+    } else {
+      nodes.add(new Text(item.toString()));
+    }
     return nodes;
   }
-  nodes ??= [];
-  if (item is String) {
-    nodes.add(new Text(item));
-  } else if (item is Element) {
-    context._pushAncestor(item);
-    nodes.add(
-        new _ElementProxy(item, flattenWithContext(context, item.content)));
-    context._popAncestor();
-  } else if (item is Node) {
-    nodes.add(item);
-  } else if (item is Iterable) {
-    for (var child in item) {
-      flattenWithContext(context, child, nodes: nodes);
-    }
-  } else if (item is BuildFn) {
-    flattenWithContext(context, item(context), nodes: nodes);
-  } else if (item is Component) {
-    context._pushAncestor(item);
-    flattenWithContext(context, item.build(context), nodes: nodes);
-    context._popAncestor();
-  } else {
-    nodes.add(new Text(item.toString()));
-  }
-  return nodes;
 }
 
 class _ElementProxy implements Element {

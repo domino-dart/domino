@@ -46,7 +46,7 @@ class _View implements View {
     _invalidate = new Future.microtask(() {
       try {
         final context = new _BuildContext(this);
-        final nodes = flattenWithContext(context, _content) ?? const <Node>[];
+        final nodes = context.buildNodes(_content) ?? const <Node>[];
         _update(context, _container, _isDisposed ? const [] : nodes);
         context._runCallbacks();
       } finally {
