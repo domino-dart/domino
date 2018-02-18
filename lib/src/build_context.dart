@@ -5,8 +5,11 @@ import '../domino.dart';
 class AncestorBuildContext implements BuildContext {
   final View _view;
   final List _ancestors = [];
+  final List _path = [];
+  final Map<String, StatefulComponent> _oldStates;
+  final Map<String, StatefulComponent> _newStates = {};
 
-  AncestorBuildContext(this._view);
+  AncestorBuildContext(this._view, this._oldStates);
 
   @override
   View get view => _view;
@@ -15,6 +18,8 @@ class AncestorBuildContext implements BuildContext {
   Iterable get ancestors => _ancestors.reversed.skip(1);
 
   List<Node> buildNodes(dynamic content) => _buildNodes(content);
+
+  Map<String, StatefulComponent> getStates() => _newStates;
 
   List<Node> _buildNodes(dynamic item, {List<Node> nodes}) {
     if (item == null) {
@@ -25,19 +30,39 @@ class AncestorBuildContext implements BuildContext {
       nodes.add(new Text(item));
     } else if (item is Element) {
       _ancestors.add(item);
+      if (item.key != null) {
+        _path.add('@key:${item.key}');
+      } else {
+        _path.add(item.tag);
+      }
       nodes.add(new _ElementProxy(item, _buildNodes(item.content)));
+      _path.removeLast();
       _ancestors.removeLast();
     } else if (item is Node) {
       nodes.add(item);
     } else if (item is Iterable) {
+      int index = 0;
       for (var child in item) {
+        _path.add(index);
         _buildNodes(child, nodes: nodes);
+        _path.removeLast();
+        index++;
       }
     } else if (item is BuildFn) {
+      _path.add('@fn');
       _buildNodes(item(this), nodes: nodes);
+      _path.removeLast();
     } else if (item is Component) {
       _ancestors.add(item);
+      _path.add(item.runtimeType);
+      if (item is StatefulComponent) {
+        final path = _path.join('/');
+        final oldState = _oldStates[path];
+        item.setState(oldState?.getState());
+        _newStates[path] = item;
+      }
       _buildNodes(item.build(this), nodes: nodes);
+      _path.removeLast();
       _ancestors.removeLast();
     } else {
       nodes.add(new Text(item.toString()));

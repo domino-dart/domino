@@ -8,6 +8,7 @@
 - `View.escape` to escape the tracker zone for `EventHandler`s that are registered inside the `View`.
 - Expose `View` in `BuildContext`.
 - Experimental `SubView`.
+- Experimental `StatefulComponent`.
 
 ## 0.2.0+1
 

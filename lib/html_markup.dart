@@ -108,7 +108,7 @@ class HtmlMarkupBuilder {
 
 class _BuildContext extends AncestorBuildContext {
   final StringSink _sink;
-  _BuildContext(View view, this._sink) : super(view);
+  _BuildContext(View view, this._sink) : super(view, {});
 }
 
 class _HtmlMarkupView implements View {

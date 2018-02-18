@@ -24,6 +24,7 @@ class _View implements View {
 
   AsyncTracker _tracker;
 
+  Map _states = {};
   Future _invalidate;
   bool _isDisposed = false;
 
@@ -45,8 +46,9 @@ class _View implements View {
     }
     _invalidate = new Future.microtask(() {
       try {
-        final context = new _BuildContext(this);
+        final context = new _BuildContext(this, _states);
         final nodes = context.buildNodes(_content) ?? const <Node>[];
+        _states = context.getStates();
         _update(context, _container, _isDisposed ? const [] : nodes);
         context._runCallbacks();
       } finally {
@@ -303,7 +305,7 @@ class _BuildContext extends AncestorBuildContext {
   final List<_ContextCallbackFn> _onUpdateQueue = [];
   final List<_ContextCallbackFn> _onRemoveQueue = [];
 
-  _BuildContext(View view) : super(view);
+  _BuildContext(View view, Map states) : super(view, states);
 
   void _runCallbacks() {
     _onInsertQueue.forEach((fn) => fn());
