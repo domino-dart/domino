@@ -14,9 +14,9 @@ class SimpleComponent extends Component {
   @override
   build(BuildContext context) {
     return [
-      div(content: [
-        div(content: 'Counter: $counter'),
-        button(content: 'Increment', onClick: _onClick),
+      div([
+        div('Counter: $counter'),
+        button('Increment', onClick: _onClick),
       ]),
     ];
   }

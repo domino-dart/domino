@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:domino/domino.dart';
-
 import 'domino.dart';
 import 'src/build_context.dart';
+import 'src/vdom.dart';
 
 HtmlEscape _attrEscaper = new HtmlEscape(HtmlEscapeMode.attribute);
 HtmlEscape _textEscaper = new HtmlEscape(HtmlEscapeMode.element);
@@ -24,21 +23,21 @@ class HtmlMarkupBuilder {
     return buffer.toString().trim();
   }
 
-  void _writeTo(_BuildContext context, List<Node> nodes, {int level: 0}) {
+  void _writeTo(_BuildContext context, List<VdomNode> nodes, {int level: 0}) {
     if (nodes == null) return;
-    for (Node node in nodes) {
+    for (VdomNode node in nodes) {
       if (_hasIndent) {
         context._sink.writeln();
         _writeIndent(context._sink, level);
       }
-      if (node is Text) {
-        context._sink.write(_textEscaper.convert(node.text ?? ''));
-      } else if (node is Element) {
+      if (node is VdomText) {
+        context._sink.write(_textEscaper.convert(node.value ?? ''));
+      } else if (node is VdomElement) {
         context._sink.write('<${node.tag}');
-        _writeAttributes(context._sink, node.attrs, node.classes, node.styles);
-        if (node.hasContent) {
+        _writeAttributes(context._sink, node.attributes, node.classes, node.styles);
+        if (node.children != null && node.children.isNotEmpty) {
           context._sink.write('>');
-          _writeTo(context, node.content, level: level + 1);
+          _writeTo(context, node.children, level: level + 1);
           if (_hasIndent) {
             context._sink.writeln();
             _writeIndent(context._sink, level);
@@ -106,9 +105,9 @@ class HtmlMarkupBuilder {
   }
 }
 
-class _BuildContext extends AncestorBuildContext {
+class _BuildContext extends BuildContextImpl {
   final StringSink _sink;
-  _BuildContext(View view, this._sink) : super(view, {});
+  _BuildContext(View view, this._sink) : super.initView(view);
 }
 
 class _HtmlMarkupView implements View {
