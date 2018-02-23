@@ -16,10 +16,6 @@ View registerHtmlView(html.Element container, dynamic content) {
 }
 
 class _View implements View {
-  final Expando<List<_EventSubscription>> _eventsExpando = new Expando();
-  final Expando<dynamic> _keyExpando = new Expando();
-  final Expando<List<_ContextCallbackFn>> _onRemoveExpando = new Expando();
-
   final html.Element _container;
   final _content;
 
@@ -94,13 +90,17 @@ class _ViewUpdater {
     for (int i = 0; i < nodes.length; i++) {
       final vnode = nodes[i];
       html.Node domNode;
+      _VdomSource source;
       for (int j = i; j < container.nodes.length; j++) {
         final dn = container.nodes[j];
-        final dkey = _view._keyExpando[dn];
+        final dnsrc = _getSource(dn);
+        final dkey = dnsrc.key;
         if (vnode.key != null && vnode.key == dkey) {
           domNode = dn;
-        } else if (dkey == null && _mayUpdate(dn, vnode)) {
+          source = dnsrc;
+        } else if (dkey == null && _mayUpdate(dn, dnsrc, vnode)) {
           domNode = dn;
+          source = dnsrc;
         }
         if (domNode != null) {
           if (j != i) {
@@ -111,7 +111,7 @@ class _ViewUpdater {
         }
       }
       if (domNode != null) {
-        _updateNode(domNode, vnode);
+        _updateNode(domNode, source, vnode);
         if (vnode.hasAfterUpdates) {
           final c = new _Change(ChangePhase.update, domNode);
           final list =
@@ -120,6 +120,8 @@ class _ViewUpdater {
         }
       } else {
         final dn = _createDom(vnode);
+        final dnsrc = _getSource(dn);
+        _updateNode(dn, dnsrc, vnode);
         if (i < container.nodes.length) {
           container.nodes.insert(i, dn);
         } else {
@@ -133,7 +135,7 @@ class _ViewUpdater {
         }
         if (vnode.hasAfterRemoves) {
           final p = new _Change(ChangePhase.insert, dn);
-          _view._onRemoveExpando[dn] = vnode.changes[ChangePhase.remove]
+          dnsrc.onRemove = vnode.changes[ChangePhase.remove]
               .map((fn) => () => fn(p))
               .toList();
         }
@@ -146,12 +148,7 @@ class _ViewUpdater {
     }
   }
 
-  bool _mayUpdate(html.Node dn, VdomNode vnode) {
-    bool _hasNoEvents() {
-      return _view._eventsExpando[dn] == null &&
-          _view._onRemoveExpando[dn] == null;
-    }
-
+  bool _mayUpdate(html.Node dn, _VdomSource source, VdomNode vnode) {
     if (vnode is VdomElement &&
         dn is html.Element &&
         vnode.tag.toLowerCase() == dn.tagName.toLowerCase()) {
@@ -166,9 +163,9 @@ class _ViewUpdater {
           }
         }
       }
-      return _hasNoEvents();
+      return source.hasNoCallbacks;
     } else if (vnode is VdomText && dn is html.Text) {
-      return _hasNoEvents();
+      return source.hasNoCallbacks;
     } else {
       return false;
     }
@@ -176,26 +173,22 @@ class _ViewUpdater {
 
   html.Node _createDom(VdomNode vnode) {
     if (vnode is VdomText) {
-      final dn = new html.Text(vnode.value);
-      _updateNode(dn, vnode);
-      return dn;
+      return new html.Text(vnode.value);
     } else if (vnode is VdomElement) {
-      final dn = new html.Element.tag(vnode.tag);
-      _updateElement(dn, vnode);
-      return dn;
+      return new html.Element.tag(vnode.tag);
     } else {
       throw new Exception('Unknown vnode: $vnode');
     }
   }
 
-  void _updateNode(html.Node dn, VdomNode vnode) {
+  void _updateNode(html.Node dn, _VdomSource source, VdomNode vnode) {
     if (dn is html.Text && vnode is VdomText) {
       _updateText(dn, vnode);
     } else if (dn is html.Element && vnode is Element) {
-      _updateElement(dn, vnode);
+      _updateElement(dn, source, vnode);
     }
     if (vnode.key != null) {
-      _view._keyExpando[dn] = vnode.key;
+      source.key = vnode.key;
     }
   }
 
@@ -205,7 +198,7 @@ class _ViewUpdater {
     }
   }
 
-  void _updateElement(html.Element dn, VdomElement vnode) {
+  void _updateElement(html.Element dn, _VdomSource source, VdomElement vnode) {
     final boundKeyedRefs = vnode.keyedRefs?.bind(vnode.key, dn);
 
     final Set<String> attrsToRemove = dn.attributes.keys.toSet();
@@ -266,7 +259,7 @@ class _ViewUpdater {
       }
     }
 
-    final List<_EventSubscription> oldEvents = _view._eventsExpando[dn];
+    final List<_EventSubscription> oldEvents = source.events;
     List<_EventSubscription> newEvents;
     if (vnode.hasEventHandlers) {
       newEvents = vnode.mapEventHandlers((type, handler) {
@@ -294,22 +287,22 @@ class _ViewUpdater {
         ?.forEach((es) => dn.addEventListener(es.type, es.listener));
 
     if (newEvents != null || oldEvents != null) {
-      _view._eventsExpando[dn] = newEvents;
+      source.events = newEvents;
     }
 
     _update(dn, vnode.children);
   }
 
   void _removeAll(html.Node node) {
-    final List<_EventSubscription> oldEvents = _view._eventsExpando[node];
+    final source = _getSource(node);
+    final List<_EventSubscription> oldEvents = source.events;
     if (oldEvents != null) {
       for (var es in oldEvents) {
         node.removeEventListener(es.type, es.listener);
       }
     }
 
-    final List<_ContextCallbackFn> onRemoveCallbacks =
-        _view._onRemoveExpando[node];
+    final List<_ContextCallbackFn> onRemoveCallbacks = source.onRemove;
     if (onRemoveCallbacks != null) {
       _onRemoveQueue.addAll(onRemoveCallbacks);
     }
@@ -422,4 +415,25 @@ class _Change extends Change {
   final node;
 
   _Change(this.phase, this.node);
+}
+
+class _VdomSource {
+  dynamic key;
+  List<_EventSubscription> events;
+  List<_ContextCallbackFn> onRemove;
+
+  bool get hasNoCallbacks =>
+      (events == null || events.isEmpty) &&
+      (onRemove == null || onRemove.isEmpty);
+}
+
+final Expando<_VdomSource> _vdomSourceExpando = new Expando();
+
+_VdomSource _getSource(html.Node node) {
+  var src = _vdomSourceExpando[node];
+  if (src == null) {
+    src = new _VdomSource();
+    _vdomSourceExpando[node] = src;
+  }
+  return src;
 }
