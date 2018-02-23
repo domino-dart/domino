@@ -18,33 +18,34 @@ class HtmlMarkupBuilder {
 
   String convert(dynamic item) {
     final buffer = new StringBuffer();
-    final context = new _BuildContext(new _HtmlMarkupView(), buffer);
-    _writeTo(context, context.buildNodes(item));
+    final nodes = new BuildContextImpl(new _HtmlMarkupView()).buildNodes(item);
+    _writeTo(buffer, nodes);
     return buffer.toString().trim();
   }
 
-  void _writeTo(_BuildContext context, List<VdomNode> nodes, {int level: 0}) {
+  void _writeTo(StringSink sink, List<VdomNode> nodes, {int level: 0}) {
     if (nodes == null) return;
     for (VdomNode node in nodes) {
       if (_hasIndent) {
-        context._sink.writeln();
-        _writeIndent(context._sink, level);
+        sink.writeln();
+        _writeIndent(sink, level);
       }
       if (node is VdomText) {
-        context._sink.write(_textEscaper.convert(node.value ?? ''));
+        sink.write(_textEscaper.convert(node.value ?? ''));
       } else if (node is VdomElement) {
-        context._sink.write('<${node.tag}');
-        _writeAttributes(context._sink, node.attributes, node.classes, node.styles);
+        sink.write('<${node.tag}');
+        _writeAttributes(
+            sink, node.attributes, node.classes, node.styles);
         if (node.children != null && node.children.isNotEmpty) {
-          context._sink.write('>');
-          _writeTo(context, node.children, level: level + 1);
+          sink.write('>');
+          _writeTo(sink, node.children, level: level + 1);
           if (_hasIndent) {
-            context._sink.writeln();
-            _writeIndent(context._sink, level);
+            sink.writeln();
+            _writeIndent(sink, level);
           }
-          context._sink.write('</${node.tag}>');
+          sink.write('</${node.tag}>');
         } else {
-          context._sink.write(' />');
+          sink.write(' />');
         }
       }
     }
@@ -103,11 +104,6 @@ class HtmlMarkupBuilder {
       }
     }
   }
-}
-
-class _BuildContext extends BuildContextImpl {
-  final StringSink _sink;
-  _BuildContext(View view, this._sink) : super.initView(view);
 }
 
 class _HtmlMarkupView implements View {

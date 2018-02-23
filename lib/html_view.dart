@@ -46,10 +46,11 @@ class _View implements View {
     }
     _invalidate = new Future.microtask(() {
       try {
-        final context = new _BuildContext(this);
-        final nodes = context.buildNodes(_content) ?? const <VdomNode>[];
-        _update(context, _container, _isDisposed ? const [] : nodes);
-        context._runCallbacks();
+        final nodes = new BuildContextImpl(this).buildNodes(_content) ??
+            const <VdomNode>[];
+        final updater = new _ViewUpdater(this);
+        updater._update(_container, _isDisposed ? const [] : nodes);
+        updater._runCallbacks();
       } finally {
         _invalidate = null;
       }
@@ -62,16 +63,40 @@ class _View implements View {
     _isDisposed = true;
     return invalidate();
   }
+}
 
-  void _update(
-      BuildContextImpl context, html.Element container, List<VdomNode> nodes) {
+class _EventSubscription {
+  final String type;
+  final Function listener;
+  final EventHandler handler;
+
+  _EventSubscription(this.type, this.listener, this.handler);
+}
+
+typedef void _ContextCallbackFn();
+
+class _ViewUpdater {
+  final _View _view;
+  final List<_ContextCallbackFn> _onInsertQueue = [];
+  final List<_ContextCallbackFn> _onUpdateQueue = [];
+  final List<_ContextCallbackFn> _onRemoveQueue = [];
+
+  _ViewUpdater(this._view);
+
+  void _runCallbacks() {
+    _onInsertQueue.forEach((fn) => fn());
+    _onUpdateQueue.forEach((fn) => fn());
+    _onRemoveQueue.forEach((fn) => fn());
+  }
+
+  void _update(html.Element container, List<VdomNode> nodes) {
     nodes ??= const <VdomNode>[];
     for (int i = 0; i < nodes.length; i++) {
       final vnode = nodes[i];
       html.Node domNode;
       for (int j = i; j < container.nodes.length; j++) {
         final dn = container.nodes[j];
-        final dkey = _keyExpando[dn];
+        final dkey = _view._keyExpando[dn];
         if (vnode.key != null && vnode.key == dkey) {
           domNode = dn;
         } else if (dkey == null && _mayUpdate(dn, vnode)) {
@@ -86,15 +111,15 @@ class _View implements View {
         }
       }
       if (domNode != null) {
-        _updateNode(context, domNode, vnode);
+        _updateNode(domNode, vnode);
         if (vnode.hasAfterUpdates) {
           final c = new _Change(ChangePhase.update, domNode);
           final list =
               vnode.changes[ChangePhase.update].map((fn) => () => fn(c));
-          (context.root as _BuildContext)._onUpdateQueue.addAll(list);
+          _onUpdateQueue.addAll(list);
         }
       } else {
-        final dn = _createDom(context, vnode);
+        final dn = _createDom(vnode);
         if (i < container.nodes.length) {
           container.nodes.insert(i, dn);
         } else {
@@ -104,11 +129,11 @@ class _View implements View {
           final c = new _Change(ChangePhase.insert, dn);
           final list =
               vnode.changes[ChangePhase.insert].map((fn) => () => fn(c));
-          (context.root as _BuildContext)._onInsertQueue.addAll(list);
+          _onInsertQueue.addAll(list);
         }
         if (vnode.hasAfterRemoves) {
           final p = new _Change(ChangePhase.insert, dn);
-          _onRemoveExpando[dn] = vnode.changes[ChangePhase.remove]
+          _view._onRemoveExpando[dn] = vnode.changes[ChangePhase.remove]
               .map((fn) => () => fn(p))
               .toList();
         }
@@ -117,13 +142,14 @@ class _View implements View {
 
     // delete extra DOM nodes
     while (nodes.length < container.nodes.length) {
-      _removeAll(context, container.nodes.removeLast());
+      _removeAll(container.nodes.removeLast());
     }
   }
 
   bool _mayUpdate(html.Node dn, VdomNode vnode) {
     bool _hasNoEvents() {
-      return _eventsExpando[dn] == null && _onRemoveExpando[dn] == null;
+      return _view._eventsExpando[dn] == null &&
+          _view._onRemoveExpando[dn] == null;
     }
 
     if (vnode is VdomElement &&
@@ -148,28 +174,28 @@ class _View implements View {
     }
   }
 
-  html.Node _createDom(BuildContextImpl context, VdomNode vnode) {
+  html.Node _createDom(VdomNode vnode) {
     if (vnode is VdomText) {
       final dn = new html.Text(vnode.value);
-      _updateNode(context, dn, vnode);
+      _updateNode(dn, vnode);
       return dn;
     } else if (vnode is VdomElement) {
       final dn = new html.Element.tag(vnode.tag);
-      _updateElement(context, dn, vnode);
+      _updateElement(dn, vnode);
       return dn;
     } else {
       throw new Exception('Unknown vnode: $vnode');
     }
   }
 
-  void _updateNode(BuildContextImpl context, html.Node dn, VdomNode vnode) {
+  void _updateNode(html.Node dn, VdomNode vnode) {
     if (dn is html.Text && vnode is VdomText) {
       _updateText(dn, vnode);
     } else if (dn is html.Element && vnode is Element) {
-      _updateElement(context, dn, vnode);
+      _updateElement(dn, vnode);
     }
     if (vnode.key != null) {
-      _keyExpando[dn] = vnode.key;
+      _view._keyExpando[dn] = vnode.key;
     }
   }
 
@@ -179,8 +205,7 @@ class _View implements View {
     }
   }
 
-  void _updateElement(
-      BuildContextImpl context, html.Element dn, VdomElement vnode) {
+  void _updateElement(html.Element dn, VdomElement vnode) {
     final boundKeyedRefs = vnode.keyedRefs?.bind(vnode.key, dn);
 
     final Set<String> attrsToRemove = dn.attributes.keys.toSet();
@@ -241,7 +266,7 @@ class _View implements View {
       }
     }
 
-    final List<_EventSubscription> oldEvents = _eventsExpando[dn];
+    final List<_EventSubscription> oldEvents = _view._eventsExpando[dn];
     List<_EventSubscription> newEvents;
     if (vnode.hasEventHandlers) {
       newEvents = vnode.mapEventHandlers((type, handler) {
@@ -255,7 +280,7 @@ class _View implements View {
           }
         }
         final listener = (e) {
-          return _tracker
+          return _view._tracker
               .run(() => handler(new _DomEvent(type, dn, e, boundKeyedRefs)));
         };
         return new _EventSubscription(type, listener, handler);
@@ -269,54 +294,31 @@ class _View implements View {
         ?.forEach((es) => dn.addEventListener(es.type, es.listener));
 
     if (newEvents != null || oldEvents != null) {
-      _eventsExpando[dn] = newEvents;
+      _view._eventsExpando[dn] = newEvents;
     }
 
-    _update(context, dn, vnode.children);
+    _update(dn, vnode.children);
   }
 
-  void _removeAll(BuildContextImpl context, html.Node node) {
-    final List<_EventSubscription> oldEvents = _eventsExpando[node];
+  void _removeAll(html.Node node) {
+    final List<_EventSubscription> oldEvents = _view._eventsExpando[node];
     if (oldEvents != null) {
       for (var es in oldEvents) {
         node.removeEventListener(es.type, es.listener);
       }
     }
 
-    final List<_ContextCallbackFn> onRemoveCallbacks = _onRemoveExpando[node];
+    final List<_ContextCallbackFn> onRemoveCallbacks =
+        _view._onRemoveExpando[node];
     if (onRemoveCallbacks != null) {
-      (context.root as _BuildContext)._onRemoveQueue.addAll(onRemoveCallbacks);
+      _onRemoveQueue.addAll(onRemoveCallbacks);
     }
 
     if (node.hasChildNodes()) {
       for (var child in node.nodes) {
-        _removeAll(context, child);
+        _removeAll(child);
       }
     }
-  }
-}
-
-class _EventSubscription {
-  final String type;
-  final Function listener;
-  final EventHandler handler;
-
-  _EventSubscription(this.type, this.listener, this.handler);
-}
-
-typedef void _ContextCallbackFn();
-
-class _BuildContext extends BuildContextImpl {
-  final List<_ContextCallbackFn> _onInsertQueue = [];
-  final List<_ContextCallbackFn> _onUpdateQueue = [];
-  final List<_ContextCallbackFn> _onRemoveQueue = [];
-
-  _BuildContext(View view) : super.initView(view);
-
-  void _runCallbacks() {
-    _onInsertQueue.forEach((fn) => fn());
-    _onUpdateQueue.forEach((fn) => fn());
-    _onRemoveQueue.forEach((fn) => fn());
   }
 }
 

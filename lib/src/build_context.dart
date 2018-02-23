@@ -12,14 +12,12 @@ class BuildContextImpl implements BuildContext {
   KeyedRefs _keyedRefs;
 
   BuildContextImpl._(this.view, this._parent, this._component);
-  BuildContextImpl.initView(this.view)
+  BuildContextImpl(this.view)
       : _parent = null,
         _component = null;
 
-  BuildContextImpl fork({Component component}) =>
+  BuildContextImpl _fork(Component component) =>
       new BuildContextImpl._(view, this, component);
-
-  BuildContextImpl get root => _parent == null ? this : _parent.root;
 
   @override
   Component get component => _component;
@@ -56,7 +54,7 @@ class BuildContextImpl implements BuildContext {
         }
         velem.keyedRefs = _keyedRefs;
       } else if (item is Component) {
-        final forked = fork(component: item);
+        final forked = _fork(item);
         forked._buildNodes(item.build(forked), nodes: nodes);
       } else if (item is BuildFn) {
         _buildNodes(item(this), nodes: nodes);
