@@ -199,7 +199,7 @@ class _ViewUpdater {
   }
 
   void _updateElement(html.Element dn, _VdomSource source, VdomElement vnode) {
-    final boundKeyedRefs = vnode.keyedRefs?.bind(vnode.key, dn);
+    final boundKeyedRefs = vnode.nodeRefs?.bind(vnode.key, dn);
 
     final Set<String> attrsToRemove = dn.attributes.keys.toSet();
     if (vnode.hasClasses) {

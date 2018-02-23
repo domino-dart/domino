@@ -9,7 +9,6 @@ class BuildContextImpl implements BuildContext {
 
   final BuildContextImpl _parent;
   final Component _component;
-  KeyedRefs _keyedRefs;
 
   BuildContextImpl._(this.view, this._parent, this._component);
   BuildContextImpl(this.view)
@@ -33,9 +32,9 @@ class BuildContextImpl implements BuildContext {
     }
   }
 
-  List<VdomNode> buildNodes(content) => _buildNodes(content);
+  List<VdomNode> buildNodes(content) => _buildNodes(new NodeRefs(), content);
 
-  List<VdomNode> _buildNodes(dynamic content,
+  List<VdomNode> _buildNodes(NodeRefs nodeRefs, dynamic content,
       {List<VdomNode> nodes, ElementProxy proxy}) {
     if (content == null) {
       return nodes;
@@ -47,17 +46,16 @@ class BuildContextImpl implements BuildContext {
       } else if (item is Element) {
         final velem = new VdomElement()..tag = item.tag;
         nodes.add(velem);
-        velem.children = _buildNodes(item.content, proxy: velem);
+        velem.children = _buildNodes(nodeRefs, item.content, proxy: velem);
         if (velem.key != null || velem.events != null) {
-          _keyedRefs ??= new KeyedRefs();
-          _keyedRefs.add(velem);
+          nodeRefs.add(velem);
         }
-        velem.keyedRefs = _keyedRefs;
+        velem.nodeRefs = nodeRefs;
       } else if (item is Component) {
         final forked = _fork(item);
-        forked._buildNodes(item.build(forked), nodes: nodes);
+        forked._buildNodes(new NodeRefs(), item.build(forked), nodes: nodes);
       } else if (item is BuildFn) {
-        _buildNodes(item(this), nodes: nodes);
+        _buildNodes(nodeRefs, item(this), nodes: nodes);
       } else if (item is Setter) {
         if (proxy != null) {
           item.apply(proxy);

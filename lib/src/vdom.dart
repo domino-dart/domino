@@ -6,7 +6,7 @@ enum VdomNodeType { element, text }
 abstract class VdomNode {
   VdomNodeType get type;
   dynamic get key;
-  KeyedRefs keyedRefs;
+  NodeRefs nodeRefs;
 
   Map<ChangePhase, List<ChangeHandler>> changes;
 
@@ -111,7 +111,7 @@ class VdomText extends VdomNode {
   get key => null;
 }
 
-class KeyedRefs {
+class NodeRefs {
   final List<VdomNode> _nodes = [];
   final Map _map = {};
 
