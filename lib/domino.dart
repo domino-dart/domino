@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'src/setters.dart';
+import 'src/_setters.dart';
 
 /// The context of the current build.
 abstract class BuildContext {
@@ -59,7 +59,7 @@ abstract class Event {
   get event;
 
   /// Returns a DOM Element identified with a Symbol.
-  getBySymbol(Symbol symbol);
+  getNodeBySymbol(Symbol symbol);
 
   bool get defaultPrevented;
   void preventDefault();
@@ -76,6 +76,9 @@ class Element {
   final content;
 
   Element(this.tag, [this.content]);
+
+  /// Creates a new instance with [items] appended as content.
+  Element append(items) => new Element(tag, [content, items]);
 }
 
 /// Enables collecting of virtual dom properties that will be applied on real DOM.
@@ -110,36 +113,27 @@ typedef void ChangeHandler(Change lifecycle);
 /// Adds a style to an [Element] with [name] and [value]
 ///
 /// Example:
-///     div(set: style('color', 'blue'))
+///     div(style('color', 'blue'))
 Setter style(String name, String value) => new StyleSetter(name, value);
 
-/// Adds a attribute to an [Element] with [name] and [value]
+/// Adds an attribute to an [Element] with [name] and [value]
 ///
 /// Example:
-///     div(set: attr('id', 'main'))
+///     div(attr('id', 'main'))
 Setter attr(String name, String value) => new AttrSetter(name, value);
 
-Setter id(String id) => new AttrSetter('id', id);
+/// Adds an `id` attribute to an [Element] with [id] as value.
+///
+/// Example:
+///     div(id('main'))
+Setter id(String id) => attr('id', id);
 
 /// Adds classes to an [Element]
 ///
 /// Example:
-///     div(set: clazz('main'))
+///     div(clazz('main'))
 Setter clazz(class1, [class2, class3, class4, class5]) =>
     new ClassAdder(class1, class2, class3, class4, class5);
-
-typedef bool BoolFunction();
-
-Setter clazzIf(condition, classTrue, [classFalse]) {
-  if (condition is BoolFunction) {
-    condition = condition();
-  }
-  if (condition == true) {
-    return new ClassAdder(classTrue);
-  }
-  if (classFalse != null) return new ClassAdder(classFalse);
-  return null;
-}
 
 /// Adds an [handler] to an [Element] for event [event]
 ///

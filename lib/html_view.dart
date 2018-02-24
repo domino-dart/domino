@@ -4,8 +4,8 @@ import 'dart:html' as html;
 import 'package:async_tracker/async_tracker.dart';
 
 import 'domino.dart';
-import 'src/build_context.dart';
-import 'src/vdom.dart';
+import 'src/_build_context.dart';
+import 'src/_vdom.dart';
 
 export 'domino.dart';
 
@@ -328,7 +328,7 @@ class _DomEvent implements Event {
   @override
   dynamic get event => _event;
 
-  html.Node getBySymbol(Symbol symbol) {
+  html.Node getNodeBySymbol(Symbol symbol) {
     if (_nodesBySymbol == null) return null;
     return _nodesBySymbol[symbol];
   }

@@ -1,10 +1,7 @@
 import 'dart:html' as html;
 
-import 'package:domino/src/setters.dart';
 import 'package:domino/html_view.dart';
-import 'package:domino/node_helpers.dart';
-
-StyleSetter background(String value) => new StyleSetter('background', value);
+import 'package:domino/helpers.dart';
 
 main() {
   registerHtmlView(html.querySelector('#main'),

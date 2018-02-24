@@ -1,6 +1,6 @@
 import '../domino.dart';
 
-import 'unfold.dart';
+import '_unfold.dart';
 
 /// Adds a style to an [Element] with [_name] and [_value]
 ///

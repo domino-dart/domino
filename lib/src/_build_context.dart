@@ -1,7 +1,7 @@
 import '../domino.dart';
 
-import 'unfold.dart';
-import 'vdom.dart';
+import '_unfold.dart';
+import '_vdom.dart';
 
 class BuildContextImpl implements BuildContext {
   @override
