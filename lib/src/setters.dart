@@ -70,13 +70,3 @@ class LifecycleSetter implements Setter {
     proxy.addChangeHandler(_phase, _handler);
   }
 }
-
-class KeySetter implements Setter {
-  final _key;
-  const KeySetter(key) : _key = key;
-
-  @override
-  void apply(ElementProxy proxy) {
-    proxy.setKey(_key);
-  }
-}

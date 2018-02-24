@@ -17,7 +17,13 @@ void main() {
     });
 
     test('List of lists', () {
-      expect(unfold(['a', ['b', null, 'c'], 'd']), ['a', 'b', 'c', 'd']);
+      expect(
+          unfold([
+            'a',
+            ['b', null, 'c'],
+            'd'
+          ]),
+          ['a', 'b', 'c', 'd']);
     });
   });
 }

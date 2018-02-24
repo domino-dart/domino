@@ -34,8 +34,7 @@ class HtmlMarkupBuilder {
         sink.write(_textEscaper.convert(node.value ?? ''));
       } else if (node is VdomElement) {
         sink.write('<${node.tag}');
-        _writeAttributes(
-            sink, node.attributes, node.classes, node.styles);
+        _writeAttributes(sink, node.attributes, node.classes, node.styles);
         if (node.children != null && node.children.isNotEmpty) {
           sink.write('>');
           _writeTo(sink, node.children, level: level + 1);

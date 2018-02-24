@@ -5,7 +5,7 @@ enum VdomNodeType { element, text }
 /// Node in the vDOM.
 abstract class VdomNode {
   VdomNodeType get type;
-  dynamic get key;
+  Symbol get symbol;
   NodeRefs nodeRefs;
 
   Map<ChangePhase, List<ChangeHandler>> changes;
@@ -25,7 +25,7 @@ class VdomElement extends VdomNode implements ElementProxy {
   dynamic tag;
 
   @override
-  dynamic key;
+  Symbol symbol;
 
   List<String> classes;
   Map<String, String> attributes;
@@ -38,8 +38,8 @@ class VdomElement extends VdomNode implements ElementProxy {
   bool get hasEventHandlers => events != null && events.isNotEmpty;
 
   @override
-  void setKey(dynamic key) {
-    this.key = key;
+  void setSymbol(Symbol symbol) {
+    this.symbol = symbol;
   }
 
   @override
@@ -108,7 +108,7 @@ class VdomText extends VdomNode {
   VdomText(this.value);
 
   @override
-  get key => null;
+  Symbol get symbol => null;
 }
 
 class NodeRefs {

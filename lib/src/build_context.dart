@@ -47,7 +47,7 @@ class BuildContextImpl implements BuildContext {
         final velem = new VdomElement()..tag = item.tag;
         nodes.add(velem);
         velem.children = _buildNodes(nodeRefs, item.content, proxy: velem);
-        if (velem.key != null || velem.events != null) {
+        if (velem.symbol != null || velem.events != null) {
           nodeRefs.add(velem);
         }
         velem.nodeRefs = nodeRefs;
@@ -66,6 +66,8 @@ class BuildContextImpl implements BuildContext {
             proxy.setAttribute(key, item[key]);
           }
         }
+      } else if (item is Symbol) {
+        proxy?.setSymbol(item);
       } else {
         nodes.add(new VdomText(item.toString()));
       }

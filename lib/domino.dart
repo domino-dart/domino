@@ -58,8 +58,8 @@ abstract class Event {
   /// The native event.
   get event;
 
-  /// Returns a keyed DOM Element.
-  getByKey(key);
+  /// Returns a DOM Element identified with a Symbol.
+  getBySymbol(Symbol symbol);
 
   bool get defaultPrevented;
   void preventDefault();
@@ -80,7 +80,7 @@ class Element {
 
 /// Enables collecting of virtual dom properties that will be applied on real DOM.
 abstract class ElementProxy {
-  void setKey(key);
+  void setSymbol(Symbol symbol);
   void addClass(String className);
   void setAttribute(String name, String value);
   void setStyle(String name, String value);
@@ -106,8 +106,6 @@ abstract class Change {
 }
 
 typedef void ChangeHandler(Change lifecycle);
-
-Setter key(String key) => new KeySetter(key);
 
 /// Adds a style to an [Element] with [name] and [value]
 ///
@@ -136,7 +134,9 @@ Setter clazzIf(condition, classTrue, [classFalse]) {
   if (condition is BoolFunction) {
     condition = condition();
   }
-  if (condition == true) {return new ClassAdder(classTrue);}
+  if (condition == true) {
+    return new ClassAdder(classTrue);
+  }
   if (classFalse != null) return new ClassAdder(classFalse);
   return null;
 }

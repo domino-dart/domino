@@ -94,11 +94,11 @@ class _ViewUpdater {
       for (int j = i; j < container.nodes.length; j++) {
         final dn = container.nodes[j];
         final dnsrc = _getSource(dn);
-        final dkey = dnsrc.key;
-        if (vnode.key != null && vnode.key == dkey) {
+        final dnSymbol = dnsrc.symbol;
+        if (vnode.symbol != null && vnode.symbol == dnSymbol) {
           domNode = dn;
           source = dnsrc;
-        } else if (dkey == null && _mayUpdate(dn, dnsrc, vnode)) {
+        } else if (dnSymbol == null && _mayUpdate(dn, dnsrc, vnode)) {
           domNode = dn;
           source = dnsrc;
         }
@@ -187,7 +187,7 @@ class _ViewUpdater {
     } else if (dn is html.Element && vnode is VdomElement) {
       _updateElement(dn, source, vnode);
     }
-    source.key = vnode.key;
+    source.symbol = vnode.symbol;
   }
 
   void _updateText(html.Text dn, VdomText vnode) {
@@ -197,7 +197,7 @@ class _ViewUpdater {
   }
 
   void _updateElement(html.Element dn, _VdomSource source, VdomElement vnode) {
-    final boundKeyedRefs = vnode.nodeRefs?.bind(vnode.key, dn);
+    final boundKeyedRefs = vnode.nodeRefs?.bind(vnode.symbol, dn);
 
     final Set<String> attrsToRemove = source.attributes?.keys?.toSet();
     if (vnode.hasClasses) {
@@ -316,8 +316,8 @@ class _DomEvent implements Event {
   final String _type;
   final html.Element _element;
   final html.Event _event;
-  final Map _keyedNodes;
-  _DomEvent(this._type, this._element, this._event, this._keyedNodes);
+  final Map<Symbol, html.Node> _nodesBySymbol;
+  _DomEvent(this._type, this._element, this._event, this._nodesBySymbol);
 
   @override
   String get type => _type;
@@ -328,9 +328,9 @@ class _DomEvent implements Event {
   @override
   dynamic get event => _event;
 
-  html.Node getByKey(key) {
-    if (_keyedNodes == null) return null;
-    return _keyedNodes[key];
+  html.Node getBySymbol(Symbol symbol) {
+    if (_nodesBySymbol == null) return null;
+    return _nodesBySymbol[symbol];
   }
 
   @override
@@ -415,7 +415,7 @@ class _Change extends Change {
 }
 
 class _VdomSource {
-  dynamic key;
+  Symbol symbol;
   Map<String, String> attributes;
   List<String> classes;
   Map<String, String> styles;
