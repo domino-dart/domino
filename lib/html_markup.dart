@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:domino/domino.dart';
-
 import 'domino.dart';
-import 'src/build_context.dart';
+import 'src/_build_context.dart';
+import 'src/_vdom.dart';
 
 HtmlEscape _attrEscaper = new HtmlEscape(HtmlEscapeMode.attribute);
 HtmlEscape _textEscaper = new HtmlEscape(HtmlEscapeMode.element);
@@ -19,33 +18,33 @@ class HtmlMarkupBuilder {
 
   String convert(dynamic item) {
     final buffer = new StringBuffer();
-    final context = new _BuildContext(new _HtmlMarkupView(), buffer);
-    _writeTo(context, context.buildNodes(item));
+    final nodes = new BuildContextImpl(new _HtmlMarkupView()).buildNodes(item);
+    _writeTo(buffer, nodes);
     return buffer.toString().trim();
   }
 
-  void _writeTo(_BuildContext context, List<Node> nodes, {int level: 0}) {
+  void _writeTo(StringSink sink, List<VdomNode> nodes, {int level: 0}) {
     if (nodes == null) return;
-    for (Node node in nodes) {
+    for (VdomNode node in nodes) {
       if (_hasIndent) {
-        context._sink.writeln();
-        _writeIndent(context._sink, level);
+        sink.writeln();
+        _writeIndent(sink, level);
       }
-      if (node is Text) {
-        context._sink.write(_textEscaper.convert(node.text ?? ''));
-      } else if (node is Element) {
-        context._sink.write('<${node.tag}');
-        _writeAttributes(context._sink, node.attrs, node.classes, node.styles);
-        if (node.hasContent) {
-          context._sink.write('>');
-          _writeTo(context, node.content, level: level + 1);
+      if (node is VdomText) {
+        sink.write(_textEscaper.convert(node.value ?? ''));
+      } else if (node is VdomElement) {
+        sink.write('<${node.tag}');
+        _writeAttributes(sink, node.attributes, node.classes, node.styles);
+        if (node.children != null && node.children.isNotEmpty) {
+          sink.write('>');
+          _writeTo(sink, node.children, level: level + 1);
           if (_hasIndent) {
-            context._sink.writeln();
-            _writeIndent(context._sink, level);
+            sink.writeln();
+            _writeIndent(sink, level);
           }
-          context._sink.write('</${node.tag}>');
+          sink.write('</${node.tag}>');
         } else {
-          context._sink.write(' />');
+          sink.write(' />');
         }
       }
     }
@@ -104,11 +103,6 @@ class HtmlMarkupBuilder {
       }
     }
   }
-}
-
-class _BuildContext extends AncestorBuildContext {
-  final StringSink _sink;
-  _BuildContext(View view, this._sink) : super(view, {});
 }
 
 class _HtmlMarkupView implements View {

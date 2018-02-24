@@ -1,28 +1,29 @@
 import 'dart:async';
 
-import 'src/flat_classes.dart';
+import 'src/_setters.dart';
 
 /// The context of the current build.
 abstract class BuildContext {
   /// The current [View] which triggered the build.
   View get view;
 
-  /// List of ancestor [Element]s or [Component]s. Ordered from the bottom
-  /// (direct parent) to the top (root [Component] or [Element]).
-  Iterable get ancestors;
+  /// The currently active component.
+  Component get component;
+
+  /// List of [Component]s, ordered from the currently active to the top-level ones.
+  Iterable<Component> get components;
 }
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
-typedef dynamic BuildFn(BuildContext context);
+typedef BuildFn(BuildContext context);
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
 abstract class Component {
   /// Builds a single or List-embedded structure of Nodes and/or Components.
-  dynamic build(BuildContext context);
+  build(BuildContext context);
 }
 
 /// Provides lifecycle handling for a hierarchy of components.
-///
 /// A [View] re-builds the UI after `invalidate()` is called (or automatically
 /// when [EventHandler]s are registered).
 abstract class View {
@@ -48,8 +49,17 @@ abstract class View {
 
 /// DOM Event wrapper.
 abstract class Event {
-  dynamic get domElement;
-  dynamic get domEvent;
+  /// The event type (e.g. 'click').
+  String get type;
+
+  /// The DOM Element where the event handler was registered.
+  get element;
+
+  /// The native event.
+  get event;
+
+  /// Returns a DOM Element identified with a Symbol.
+  getNodeBySymbol(Symbol symbol);
 
   bool get defaultPrevented;
   void preventDefault();
@@ -60,176 +70,89 @@ abstract class Event {
 /// Handles events.
 typedef void EventHandler(Event event);
 
-/// Node in the DOM.
-abstract class Node extends Object with _AfterCallbacks, _OnEvents {
-  dynamic key;
+/// A virtual dom element that has a 1:1 mapping to an element in the real DOM.
+class Element {
+  final String tag;
+  final content;
+
+  Element(this.tag, [this.content]);
+
+  /// Creates a new instance with [items] appended as content.
+  Element append(items) => new Element(tag, [content, items]);
 }
 
-/// Sets properties of an element
+/// Enables collecting of virtual dom properties that will be applied on real DOM.
+abstract class ElementProxy {
+  void setSymbol(Symbol symbol);
+  void addClass(String className);
+  void setAttribute(String name, String value);
+  void setStyle(String name, String value);
+  void addEventHandler(String type, EventHandler handler);
+  void addChangeHandler(ChangePhase phase, ChangeHandler handler);
+}
+
+/// Sets properties of a DOM Element.
 abstract class Setter {
-  /// Sets the properties of element
-  void apply(Element element);
+  /// Sets the properties of a DOM element.
+  void apply(ElementProxy proxy);
 }
 
-/// Element in the DOM.
+enum ChangePhase { insert, update, remove }
+
+abstract class Change {
+  ChangePhase get phase;
+  get node;
+
+  bool get isInsert => phase == ChangePhase.insert;
+  bool get isUpdate => phase == ChangePhase.update;
+  bool get isRemove => phase == ChangePhase.remove;
+}
+
+typedef void ChangeHandler(Change lifecycle);
+
+/// Adds a style to an [Element] with [name] and [value]
 ///
 /// Example:
-///     new Element('div', classes: ['items']);
-class Element extends Node
-    with _ElementContent, _ElementClasses, _ElementStyles, _ElementAttributes {
-  final String tag;
+///     div(style('color', 'blue'))
+Setter style(String name, String value) => new StyleSetter(name, value);
 
-  Element(
-    this.tag, {
-    /* List<Setter> | Setter */ set,
-    /* List | String */ classes,
-    Map<String, String> styles,
-    Map<String, String> attrs,
-    /* List, Component, Node, BuildFn */ dynamic content,
-    Map<String, EventHandler> events,
-    dynamic key,
-    AfterCallback afterInsert,
-    AfterCallback afterUpdate,
-    AfterCallback afterRemove,
-  }) {
-    this.key = key;
-    this.afterInsert(afterInsert);
-    this.afterUpdate(afterUpdate);
-    this.afterRemove(afterRemove);
-    this.onEvents(events);
-    this.content = content;
-    this.classes = classes;
-    this.styles = styles;
-    this.attrs = attrs;
+/// Adds an attribute to an [Element] with [name] and [value]
+///
+/// Example:
+///     div(attr('id', 'main'))
+Setter attr(String name, String value) => new AttrSetter(name, value);
 
-    if (set is Setter) {
-      set.apply(this);
-    } else if (set is List<Setter>) {
-      for (Setter s in set) {
-        s?.apply(this);
-      }
-    }
-  }
+/// Adds an `id` attribute to an [Element] with [id] as value.
+///
+/// Example:
+///     div(id('main'))
+Setter id(String id) => attr('id', id);
+
+/// Adds classes to an [Element]
+///
+/// Example:
+///     div(clazz('main'))
+Setter clazz(class1, [class2, class3, class4, class5]) =>
+    new ClassAdder(class1, class2, class3, class4, class5);
+
+/// Adds an [handler] to an [Element] for event [event]
+///
+/// Example:
+///     div(set: on('click', () => print('Clicked!')))
+Setter on(String event, EventHandler handler) =>
+    new EventSetter(event, handler);
+
+Setter afterInsert(ChangeHandler handler) {
+  if (handler == null) return null;
+  return new LifecycleSetter(ChangePhase.insert, handler);
 }
 
-/// Text node in the DOM.
-class Text extends Node {
-  String text;
-
-  Text(
-    this.text, {
-    dynamic key,
-    AfterCallback afterInsert,
-    AfterCallback afterUpdate,
-    AfterCallback afterRemove,
-  }) {
-    this.key = key;
-    this.afterInsert(afterInsert);
-    this.afterUpdate(afterUpdate);
-    this.afterRemove(afterRemove);
-  }
+Setter afterUpdate(ChangeHandler handler) {
+  if (handler == null) return null;
+  return new LifecycleSetter(ChangePhase.update, handler);
 }
 
-/// Handles DOM callbacks after changes were applied.
-typedef void AfterCallback(node);
-
-abstract class _AfterCallbacks {
-  List<AfterCallback> _afterInserts;
-  List<AfterCallback> _afterUpdates;
-  List<AfterCallback> _afterRemoves;
-
-  bool get hasAfterInserts => _afterInserts != null;
-  bool get hasAfterUpdates => _afterUpdates != null;
-  bool get hasAfterRemoves => _afterRemoves != null;
-
-  Iterable<AfterCallback> get afterInserts => _afterInserts;
-  Iterable<AfterCallback> get afterUpdates => _afterUpdates;
-  Iterable<AfterCallback> get afterRemoves => _afterRemoves;
-
-  void afterInsert(AfterCallback callback) {
-    if (callback == null) return;
-    _afterInserts ??= [];
-    _afterInserts.add(callback);
-  }
-
-  void afterUpdate(AfterCallback callback) {
-    if (callback == null) return;
-    _afterUpdates ??= [];
-    _afterUpdates.add(callback);
-  }
-
-  void afterRemove(AfterCallback callback) {
-    if (callback == null) return;
-    _afterRemoves ??= [];
-    _afterRemoves.add(callback);
-  }
-}
-
-abstract class _OnEvents {
-  List<_TypeAndHandler> _events;
-
-  bool get hasEventHandlers => _events != null;
-
-  void on(String type, EventHandler handler) {
-    if (type == null) return;
-    _events ??= [];
-    _events.add(new _TypeAndHandler(type, handler));
-  }
-
-  void onClick(EventHandler handler) => on('click', handler);
-
-  void onEvents(Map<String, EventHandler> events) {
-    if (events == null) return;
-    events.forEach(on);
-  }
-
-  Iterable<R> mapEventHandlers<R>(R fn(String type, EventHandler handler)) {
-    return _events.map((e) => fn(e.type, e.handler));
-  }
-}
-
-class _TypeAndHandler {
-  final String type;
-  final EventHandler handler;
-  _TypeAndHandler(this.type, this.handler);
-}
-
-class _ElementContent {
-  /* List, Component, Node, BuildFn, ... */ dynamic content;
-
-  bool get hasContent => content != null;
-}
-
-class _ElementClasses {
-  List<String> _classes;
-
-  bool get hasClasses => _classes != null;
-  Iterable<String> get classes => _classes;
-  void set classes(/* List | String */ value) {
-    _classes = flatClasses(value);
-  }
-
-  void addClass(String value) {
-    if (value == null) return;
-    _classes ??= [];
-    _classes.add(value);
-  }
-}
-
-class _ElementStyles {
-  Map<String, String> styles;
-
-  void style(String name, String value) {
-    styles ??= {};
-    styles[name] = value;
-  }
-}
-
-class _ElementAttributes {
-  Map<String, String> attrs;
-
-  void attr(String name, String value) {
-    attrs ??= {};
-    attrs[name] = value;
-  }
+Setter afterRemove(ChangeHandler handler) {
+  if (handler == null) return null;
+  return new LifecycleSetter(ChangePhase.remove, handler);
 }

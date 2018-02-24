@@ -11,18 +11,16 @@ void main() {
       expect(
           builder.convert(new Element(
             'div',
-            attrs: {'attr': 'value'},
-            classes: ['c1', 'c2'],
-            styles: {'width': '100%'},
+            [attr('attr', 'value'), clazz('c1', 'c2'), style('width', '100%')],
           )),
           '<div class="c1 c2" style="width: 100%" attr="value" />');
     });
 
     test('Hierarchy', () {
       expect(
-          builder.convert(new Element('div', content: [
+          builder.convert(new Element('div', [
             'a',
-            new Element('span', content: 'in-span'),
+            new Element('span', 'in-span'),
             'b',
           ])),
           '<div>\n'

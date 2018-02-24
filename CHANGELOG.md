@@ -1,6 +1,17 @@
 # Changelog
 
-## 0.2.2-dev
+## 0.3.0
+
+**Breaking changes**: full API rewrite:
+- Building `Element`s become simpler.
+- `Setter` become first-class build pattern.
+- `#symbols` become first-class patterns (replace previous `key`). `Event.getNodeBySymbol` may
+  access referenced `Element`s within the scope of the current `Component`.
+- Removed `StatefulComponent` (still working on a better state handling).
+- Misc API simplification (e.g. `Event.domElement` => `Event.element`).
+
+Updates:
+- Fixed attribute update issues.
 
 ## 0.2.1
 
