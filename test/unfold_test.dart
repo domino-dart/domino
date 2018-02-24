@@ -5,7 +5,7 @@ import 'package:domino/src/unfold.dart';
 void main() {
   group('flat classes fn', () {
     test('null', () {
-      expect(unfold(null), isNull);
+      expect(unfold(null), isEmpty);
     });
 
     test('string', () {

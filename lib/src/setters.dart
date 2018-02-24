@@ -38,29 +38,30 @@ class ClassAdder implements Setter {
   final List<String> _classes;
 
   ClassAdder(class1, [class2, class3, class4, class5])
-      : _classes = unfold([class1, class2, class3, class4, class5]);
+      : _classes = unfold([class1, class2, class3, class4, class5]).toList();
 
   void apply(ElementProxy e) => _classes.forEach(e.addClass);
 }
 
-/// Adds an [handler] to an [Element] for event [event]
+/// Adds an [handler] to an [Element] for event [type]
 ///
 /// Example:
 ///     div(set: on('click', () => print('Clicked!')))
 class EventSetter implements Setter {
-  final String event;
+  final String _type;
+  final EventHandler _handler;
 
-  final EventHandler handler;
+  const EventSetter(String type, EventHandler handler)
+      : _type = type,
+        _handler = handler;
 
-  const EventSetter(this.event, this.handler);
-
-  void apply(ElementProxy e) => e.addEventHandler(event, handler);
+  void apply(ElementProxy e) => e.addEventHandler(_type, _handler);
 }
 
 class LifecycleSetter implements Setter {
   final ChangePhase _phase;
   final ChangeHandler _handler;
-  LifecycleSetter(ChangePhase phase, ChangeHandler handler)
+  const LifecycleSetter(ChangePhase phase, ChangeHandler handler)
       : _phase = phase,
         _handler = handler;
 
@@ -71,11 +72,11 @@ class LifecycleSetter implements Setter {
 }
 
 class KeySetter implements Setter {
-  final key;
-  KeySetter(this.key);
+  final _key;
+  const KeySetter(key) : _key = key;
 
   @override
   void apply(ElementProxy proxy) {
-    proxy.setKey(key);
+    proxy.setKey(_key);
   }
 }

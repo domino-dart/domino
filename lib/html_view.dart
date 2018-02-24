@@ -184,12 +184,10 @@ class _ViewUpdater {
   void _updateNode(html.Node dn, _VdomSource source, VdomNode vnode) {
     if (dn is html.Text && vnode is VdomText) {
       _updateText(dn, vnode);
-    } else if (dn is html.Element && vnode is Element) {
+    } else if (dn is html.Element && vnode is VdomElement) {
       _updateElement(dn, source, vnode);
     }
-    if (vnode.key != null) {
-      source.key = vnode.key;
-    }
+    source.key = vnode.key;
   }
 
   void _updateText(html.Text dn, VdomText vnode) {
@@ -201,17 +199,17 @@ class _ViewUpdater {
   void _updateElement(html.Element dn, _VdomSource source, VdomElement vnode) {
     final boundKeyedRefs = vnode.nodeRefs?.bind(vnode.key, dn);
 
-    final Set<String> attrsToRemove = dn.attributes.keys.toSet();
+    final Set<String> attrsToRemove = source.attributes?.keys?.toSet();
     if (vnode.hasClasses) {
-      attrsToRemove.remove('class');
+      attrsToRemove?.remove('class');
     }
     if (vnode.styles != null) {
-      attrsToRemove.remove('style');
+      attrsToRemove?.remove('style');
     }
 
     if (vnode.attributes != null) {
       for (String key in vnode.attributes.keys) {
-        attrsToRemove.remove(key);
+        attrsToRemove?.remove(key);
         final String value = vnode.attributes[key];
         if (dn.getAttribute(key) != value) {
           if (value == null) {
@@ -222,34 +220,32 @@ class _ViewUpdater {
         }
       }
     }
-    for (String attr in attrsToRemove) {
-      dn.attributes.remove(attr);
-    }
+    attrsToRemove?.forEach(dn.attributes.remove);
+    source.attributes = vnode.attributes;
 
-    List<String> addList, removeList;
-    List<String> classes = vnode.classes?.toList() ?? const <String>[];
-    for (String s in classes) {
-      if (!dn.classes.contains(s)) {
-        addList ??= [];
-        addList.add(s);
-      }
-    }
-    if (addList != null || classes.length != dn.classes.length) {
-      for (String s in dn.classes) {
-        if (!classes.contains(s)) {
-          removeList ??= [];
-          removeList.add(s);
+    if (source.classes != null) {
+      for (String s in source.classes) {
+        if (vnode.classes == null || !vnode.classes.contains(s)) {
+          dn.classes.remove(s);
         }
       }
     }
-
-    if (addList != null) {
-      dn.classes.addAll(addList);
+    if (vnode.classes != null) {
+      for (String s in vnode.classes) {
+        if (source.classes == null || !source.classes.contains(s)) {
+          dn.classes.add(s);
+        }
+      }
     }
-    if (removeList != null) {
-      removeList.forEach(dn.classes.remove);
-    }
+    source.classes = vnode.classes;
 
+    if (source.styles != null) {
+      for (String key in source.styles.keys) {
+        if (vnode.styles == null || !vnode.styles.containsKey(key)) {
+          dn.style.removeProperty(key);
+        }
+      }
+    }
     if (vnode.styles != null) {
       for (String key in vnode.styles.keys) {
         final String value = vnode.styles[key];
@@ -258,6 +254,7 @@ class _ViewUpdater {
         }
       }
     }
+    source.styles = vnode.styles;
 
     final List<_EventSubscription> oldEvents = source.events;
     List<_EventSubscription> newEvents;
@@ -419,6 +416,10 @@ class _Change extends Change {
 
 class _VdomSource {
   dynamic key;
+  Map<String, String> attributes;
+  List<String> classes;
+  Map<String, String> styles;
+
   List<_EventSubscription> events;
   List<_ContextCallbackFn> onRemove;
 

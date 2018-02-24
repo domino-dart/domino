@@ -39,7 +39,7 @@ class VdomElement extends VdomNode implements ElementProxy {
 
   @override
   void setKey(dynamic key) {
-    key = key;
+    this.key = key;
   }
 
   @override

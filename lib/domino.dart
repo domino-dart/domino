@@ -136,7 +136,7 @@ Setter clazzIf(condition, classTrue, [classFalse]) {
   if (condition is BoolFunction) {
     condition = condition();
   }
-  if (condition) return new ClassAdder(classTrue);
+  if (condition == true) {return new ClassAdder(classTrue);}
   if (classFalse != null) return new ClassAdder(classFalse);
   return null;
 }
