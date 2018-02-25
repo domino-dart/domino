@@ -4,6 +4,8 @@
 
 - Fix readme's example.
 - New implementation for `StatefulComponent`.
+- Conditional content structure with `addIf`.
+- **Breaking change**: matching `clazzIf` with `addIf` signature.
 
 ## 0.3.0
 

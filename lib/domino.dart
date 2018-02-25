@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'src/_unfold.dart' show Conditional;
 import 'src/_setters.dart';
 
 /// The context of the current build.
@@ -166,3 +167,11 @@ Setter afterRemove(ChangeHandler handler) {
   if (handler == null) return null;
   return new LifecycleSetter(ChangePhase.remove, handler);
 }
+
+/// Conditional structure in the content.
+addIf(
+  /* bool fn() | bool */ condition,
+  /* content or Function */ then, {
+  /* content or Function */ orElse,
+}) =>
+    new Conditional(condition, then, orElse);

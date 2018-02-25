@@ -25,5 +25,13 @@ void main() {
           ]),
           ['a', 'b', 'c', 'd']);
     });
+
+    test('Conditional', () {
+      expect(
+          unfold([
+            new Conditional(() => true, () => ['a'], ['b'])
+          ]),
+          ['a']);
+    });
   });
 }

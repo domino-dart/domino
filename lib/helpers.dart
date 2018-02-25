@@ -7,15 +7,13 @@ Element button(content, {EventHandler onClick}) =>
 
 Setter background(String value) => style('background', value);
 
-typedef bool BoolFunction();
-
-Setter clazzIf(condition, classTrue, [classFalse]) {
-  if (condition is BoolFunction) {
-    condition = condition();
-  }
-  if (condition == true) {
-    return clazz(classTrue);
-  }
-  if (classFalse != null) return clazz(classFalse);
-  return null;
-}
+clazzIf(
+  /* bool fn() | bool */ condition,
+  /* String | List<String> */ then, {
+  /* String | List<String> */ orElse,
+}) =>
+    addIf(
+      condition,
+      () => clazz(then),
+      orElse: () => clazz(orElse),
+    );

@@ -7,11 +7,46 @@ Iterable<R> unfold<R>(content) sync* {
       if (child == null) continue;
       if (child is Iterable) {
         yield* unfold(child);
-        continue;
+      } else if (child is Conditional) {
+        yield* child.unfoldConditional();
+      } else {
+        yield child;
       }
-      yield child;
     }
+    return;
+  } else if (content is Conditional) {
+    yield* content.unfoldConditional();
     return;
   }
   yield content;
+}
+
+typedef bool BoolFn();
+
+class Conditional {
+  final _cond;
+  final _then;
+  final _orElse;
+
+  Conditional(this._cond, this._then, this._orElse);
+
+  Iterable<R> unfoldConditional<R>() sync* {
+    final evaluated = evaluate();
+    var items = evaluated ? _then : _orElse;
+    if (items is Function) {
+      items = items();
+    }
+    yield* unfold(items);
+  }
+
+  bool evaluate() {
+    if (_cond == null) return false;
+    if (_cond is bool) return _cond;
+    if (_cond is Function) {
+      final v = _cond();
+      if (v is bool) return v;
+      return false;
+    }
+    return false;
+  }
 }
