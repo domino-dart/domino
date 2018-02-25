@@ -23,6 +23,16 @@ abstract class Component {
   build(BuildContext context);
 }
 
+/// A component that can restore its state from a previous build.
+abstract class StatefulComponent implements Component {
+  /// Restores the state from [previous] component, and returns the instance
+  /// that will be used for the build.
+  ///
+  /// It is legit to return the previous instance, doing a quick state hand-off.
+  /// (And it is the default for components extending this class.)
+  Component restoreState(Component previous) => previous ?? this;
+}
+
 /// Provides lifecycle handling for a hierarchy of components.
 /// A [View] re-builds the UI after `invalidate()` is called (or automatically
 /// when [EventHandler]s are registered).

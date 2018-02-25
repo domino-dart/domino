@@ -20,6 +20,7 @@ class _View implements View {
   final _content;
 
   AsyncTracker _tracker;
+  PathState _pathState = new PathState();
 
   Future _invalidate;
   bool _isDisposed = false;
@@ -42,7 +43,9 @@ class _View implements View {
     }
     _invalidate = new Future.microtask(() {
       try {
-        final nodes = new BuildContextImpl(this).buildNodes(_content) ??
+        _pathState = _pathState.fork();
+        final nodes = new BuildContextImpl(this)
+                .buildNodes(_content, pathState: _pathState) ??
             const <VdomNode>[];
         final updater = new _ViewUpdater(this);
         updater._update(_container, _isDisposed ? const [] : nodes);

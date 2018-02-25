@@ -3,6 +3,7 @@
 ## 0.3.1-dev
 
 - Fix readme's example.
+- New implementation for `StatefulComponent`.
 
 ## 0.3.0
 
