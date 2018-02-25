@@ -16,7 +16,7 @@ import 'dart:html' as html;
 
 import 'package:domino/domino.dart';
 import 'package:domino/html_view.dart';
-import 'package:domino/node_helpers.dart';
+import 'package:domino/helpers.dart';
 
 main() {
   registerHtmlView(html.querySelector('#main'), new SimpleComponent());
@@ -28,9 +28,9 @@ class SimpleComponent extends Component {
   @override
   build(BuildContext context) {
     return [
-      div(content: [
-        div(content: 'Counter: $counter'),
-        button(content: 'Increment', onClick: _onClick),
+      div([
+        div('Counter: $counter'),
+        button([#btn, 'Increment'], onClick: _onClick),
       ]),
     ];
   }

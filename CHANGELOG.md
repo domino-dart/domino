@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1-dev
+
+- Fix readme's example.
+
 ## 0.3.0
 
 **Breaking changes**: full API rewrite:
