@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.1-dev
+## 0.3.1
 
 - Fix readme's example.
 - New implementation for `StatefulComponent`.
