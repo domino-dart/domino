@@ -38,10 +38,7 @@ class _View implements View {
 
   @override
   Future invalidate() {
-    if (_invalidate != null) {
-      return _invalidate;
-    }
-    _invalidate = new Future.microtask(() {
+    _invalidate ??= new Future.delayed(Duration.ZERO, () {
       try {
         _pathState = _pathState.fork();
         final nodes = new BuildContextImpl(this)

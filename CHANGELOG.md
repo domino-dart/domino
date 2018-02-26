@@ -4,6 +4,7 @@
 
 - Fix `StatefulComponent` path handling bug.
 - Fix strong-mode cast issue.
+- Switching to Timer-based view invalidation, because event bubbling would be triggered on a wrong state.
 
 ## 0.3.1
 
