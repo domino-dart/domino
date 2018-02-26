@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.2-dev
+
+- Fix `StatefulComponent` path handling bug.
+
 ## 0.3.1
 
 - Fix readme's example.
