@@ -331,7 +331,7 @@ class _DomEvent implements Event {
   @override
   dynamic get event => _event;
 
-  html.Node getNodeBySymbol(Symbol symbol) {
+  N getNodeBySymbol<N>(Symbol symbol) {
     if (_nodesBySymbol == null) return null;
     return _nodesBySymbol[symbol];
   }

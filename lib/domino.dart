@@ -70,7 +70,7 @@ abstract class Event {
   get event;
 
   /// Returns a DOM Element identified with a Symbol.
-  getNodeBySymbol(Symbol symbol);
+  N getNodeBySymbol<N>(Symbol symbol);
 
   bool get defaultPrevented;
   void preventDefault();
