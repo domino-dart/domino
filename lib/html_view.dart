@@ -319,7 +319,7 @@ class _DomEvent implements Event {
   final String _type;
   final html.Element _element;
   final html.Event _event;
-  final Map<Symbol, html.Node> _nodesBySymbol;
+  final Map _nodesBySymbol;
   _DomEvent(this._type, this._element, this._event, this._nodesBySymbol);
 
   @override
@@ -362,8 +362,7 @@ class SubView implements Component {
     String tag,
     content,
     Invalidation invalidation,
-  })
-      : _tag = tag ?? 'div',
+  })  : _tag = tag ?? 'div',
         _content = content,
         _invalidation = invalidation;
 

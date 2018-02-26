@@ -3,6 +3,7 @@
 ## 0.3.2-dev
 
 - Fix `StatefulComponent` path handling bug.
+- Fix strong-mode cast issue.
 
 ## 0.3.1
 
