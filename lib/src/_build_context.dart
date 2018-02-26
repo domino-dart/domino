@@ -62,7 +62,7 @@ class BuildContextImpl implements BuildContext {
         final newPath = path.append(nodes.length, item.runtimeType);
         var component = item;
         if (item is StatefulComponent) {
-          final stored = pathState.get(path);
+          final stored = pathState.get(newPath);
           component = item.restoreState(stored) ?? item;
         }
         final forked = _fork(component);
@@ -70,7 +70,7 @@ class BuildContextImpl implements BuildContext {
             pathState, newPath, new NodeRefs(), component.build(forked),
             nodes: nodes);
         if (component is StatefulComponent) {
-          pathState.add(path, component);
+          pathState.add(newPath, component);
         }
       } else if (item is BuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(this), nodes: nodes);
