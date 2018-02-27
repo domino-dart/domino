@@ -38,7 +38,8 @@ class ClassAdder implements Setter {
   final List<String> _classes;
 
   ClassAdder(class1, [class2, class3, class4, class5])
-      : _classes = unfold([class1, class2, class3, class4, class5]).toList();
+      : _classes =
+            unfold<String>([class1, class2, class3, class4, class5]).toList();
 
   void apply(ElementProxy e) => _classes.forEach(e.addClass);
 }
