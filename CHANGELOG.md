@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.3-dev
+## 0.3.2+1
 
 - Fix strong-mode cast issue with `unfold` in `ClassAdder`.
 
