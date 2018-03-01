@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.3-dev
+## 0.3.3
 
 - Do not override attributes and styles when the value matches the previous one (and the DOM may be different).
 - Relax DOM reuse restrictions on style properties.
