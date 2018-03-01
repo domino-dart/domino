@@ -6,6 +6,7 @@
 - Relax DOM reuse restrictions on style properties.
 - Relax DOM reuse restrictions on event listeners.
 - Ability to use non-tracked event handlers (`on('click', fn, tracked: false)`).
+- Access current `View` with `Event.view`.
 
 ## 0.3.2+1
 

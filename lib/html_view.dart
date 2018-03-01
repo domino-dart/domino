@@ -271,8 +271,8 @@ class _ViewUpdater {
           }
         }
         final listener = (e) {
-          final body =
-              () => reg.handler(new _DomEvent(type, dn, e, boundKeyedRefs));
+          final body = () =>
+              reg.handler(new _DomEvent(_view, type, dn, e, boundKeyedRefs));
           if (reg.tracked) {
             return _view.track(body);
           } else {
@@ -319,11 +319,16 @@ class _ViewUpdater {
 }
 
 class _DomEvent implements Event {
+  final View _view;
   final String _type;
   final html.Element _element;
   final html.Event _event;
   final Map _nodesBySymbol;
-  _DomEvent(this._type, this._element, this._event, this._nodesBySymbol);
+  _DomEvent(
+      this._view, this._type, this._element, this._event, this._nodesBySymbol);
+
+  @override
+  View get view => _view;
 
   @override
   String get type => _type;

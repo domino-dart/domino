@@ -60,6 +60,9 @@ abstract class View {
 
 /// DOM Event wrapper.
 abstract class Event {
+  /// The current [View] which triggered the event.
+  View get view;
+
   /// The event type (e.g. 'click').
   String get type;
 
