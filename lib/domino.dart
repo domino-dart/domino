@@ -154,7 +154,7 @@ Setter clazz(class1, [class2, class3, class4, class5]) =>
 ///
 /// Example:
 ///     div(on('click', () => print('Clicked!')))
-Setter on(String event, EventHandler handler, {bool tracked: true}) =>
+Setter on(String event, EventHandler handler, {bool tracked}) =>
     new EventSetter(event, handler, tracked: tracked);
 
 Setter afterInsert(ChangeHandler handler) {

@@ -53,7 +53,7 @@ class EventSetter implements Setter {
   final EventHandler _handler;
   final bool _tracked;
 
-  const EventSetter(String type, EventHandler handler, {bool tracked: true})
+  const EventSetter(String type, EventHandler handler, {bool tracked})
       : _type = type,
         _handler = handler,
         _tracked = tracked ?? true;
