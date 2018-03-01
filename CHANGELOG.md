@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.3-dev
+
+- Do not override attributes and styles when the value matches the previous one (and the DOM may be different).
+
 ## 0.3.2+1
 
 - Fix strong-mode cast issue with `unfold` in `ClassAdder`.

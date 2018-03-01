@@ -211,6 +211,10 @@ class _ViewUpdater {
       for (String key in vnode.attributes.keys) {
         attrsToRemove?.remove(key);
         final String value = vnode.attributes[key];
+        // Do not override DOM when the value matches the previous one.
+        if (source.attributes != null && value == source.attributes[key]) {
+          continue;
+        }
         if (dn.getAttribute(key) != value) {
           if (value == null) {
             dn.attributes.remove(key);
@@ -249,6 +253,10 @@ class _ViewUpdater {
     if (vnode.styles != null) {
       for (String key in vnode.styles.keys) {
         final String value = vnode.styles[key];
+        // Do not override DOM when the value matches the previous one.
+        if (source.styles != null && value == source.styles[key]) {
+          continue;
+        }
         if (dn.style.getPropertyValue(key) != value) {
           dn.style.setProperty(key, value);
         }
