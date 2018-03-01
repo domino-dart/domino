@@ -152,9 +152,9 @@ class _ViewUpdater {
     if (vnode is VdomElement &&
         dn is html.Element &&
         vnode.tag.toLowerCase() == dn.tagName.toLowerCase()) {
-      return source.hasNoCallbacks;
+      return source.hasNoRemove;
     } else if (vnode is VdomText && dn is html.Text) {
-      return source.hasNoCallbacks;
+      return source.hasNoRemove;
     } else {
       return false;
     }
@@ -419,9 +419,7 @@ class _VdomSource {
   List<_EventSubscription> events;
   List<_ContextCallbackFn> onRemove;
 
-  bool get hasNoCallbacks =>
-      (events == null || events.isEmpty) &&
-      (onRemove == null || onRemove.isEmpty);
+  bool get hasNoRemove => (onRemove == null || onRemove.isEmpty);
 }
 
 final Expando<_VdomSource> _vdomSourceExpando = new Expando();
