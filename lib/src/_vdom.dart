@@ -1,5 +1,12 @@
 import '../domino.dart';
 
+class EventHandlerReg {
+  final EventHandler handler;
+  final bool tracked;
+
+  EventHandlerReg(this.handler, this.tracked);
+}
+
 enum VdomNodeType { element, text }
 
 /// Node in the vDOM.
@@ -30,7 +37,7 @@ class VdomElement extends VdomNode implements ElementProxy {
   List<String> classes;
   Map<String, String> attributes;
   Map<String, String> styles;
-  Map<String, List<EventHandler>> events;
+  Map<String, List<EventHandlerReg>> events;
 
   List<VdomNode> children;
 
@@ -52,13 +59,15 @@ class VdomElement extends VdomNode implements ElementProxy {
   }
 
   @override
-  void addEventHandler(String type, EventHandler handler) {
+  void addEventHandler(String type, EventHandler handler, bool tracked) {
     if (handler == null) return;
     events ??= {};
     final list = events.putIfAbsent(type, () => []);
-    if (!list.contains(handler)) {
-      list.add(handler);
-    }
+    final alreadyAdded = list
+        .where((reg) => reg.tracked == tracked && reg.handler == handler)
+        .isNotEmpty;
+    if (alreadyAdded) return;
+    list.add(new EventHandlerReg(handler, tracked));
   }
 
   @override
@@ -76,11 +85,11 @@ class VdomElement extends VdomNode implements ElementProxy {
   }
 
   Iterable<R> mapEventHandlers<R>(
-      R fn(String type, EventHandler handler)) sync* {
+      R fn(String type, EventHandlerReg reg)) sync* {
     if (events == null) return;
     for (String type in events.keys) {
-      for (EventHandler handler in events[type]) {
-        final r = fn(type, handler);
+      for (EventHandlerReg reg in events[type]) {
+        final r = fn(type, reg);
         if (r != null) {
           yield r;
         }

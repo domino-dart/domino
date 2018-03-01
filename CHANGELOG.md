@@ -5,6 +5,7 @@
 - Do not override attributes and styles when the value matches the previous one (and the DOM may be different).
 - Relax DOM reuse restrictions on style properties.
 - Relax DOM reuse restrictions on event listeners.
+- Ability to use non-tracked event handlers (`on('click', fn, tracked: false)`).
 
 ## 0.3.2+1
 

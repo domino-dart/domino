@@ -51,12 +51,14 @@ class ClassAdder implements Setter {
 class EventSetter implements Setter {
   final String _type;
   final EventHandler _handler;
+  final bool _tracked;
 
-  const EventSetter(String type, EventHandler handler)
+  const EventSetter(String type, EventHandler handler, {bool tracked: true})
       : _type = type,
-        _handler = handler;
+        _handler = handler,
+        _tracked = tracked ?? true;
 
-  void apply(ElementProxy e) => e.addEventHandler(_type, _handler);
+  void apply(ElementProxy e) => e.addEventHandler(_type, _handler, _tracked);
 }
 
 class LifecycleSetter implements Setter {

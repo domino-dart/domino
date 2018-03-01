@@ -98,7 +98,7 @@ abstract class ElementProxy {
   void addClass(String className);
   void setAttribute(String name, String value);
   void setStyle(String name, String value);
-  void addEventHandler(String type, EventHandler handler);
+  void addEventHandler(String type, EventHandler handler, bool tracked);
   void addChangeHandler(ChangePhase phase, ChangeHandler handler);
 }
 
@@ -146,12 +146,16 @@ Setter id(String id) => attr('id', id);
 Setter clazz(class1, [class2, class3, class4, class5]) =>
     new ClassAdder(class1, class2, class3, class4, class5);
 
-/// Adds an [handler] to an [Element] for event [event]
+/// Adds an [handler] to an [Element] for event [event].
+///
+/// Event handlers by default trigger [View.invalidate] on their callback and on
+/// every asynchronous method that is associated with their run (e.g. `Future`,
+/// `Stream` or `Timer`). To turn this off, set [tracked] to `false`.
 ///
 /// Example:
-///     div(set: on('click', () => print('Clicked!')))
-Setter on(String event, EventHandler handler) =>
-    new EventSetter(event, handler);
+///     div(on('click', () => print('Clicked!')))
+Setter on(String event, EventHandler handler, {bool tracked: true}) =>
+    new EventSetter(event, handler, tracked: tracked);
 
 Setter afterInsert(ChangeHandler handler) {
   if (handler == null) return null;

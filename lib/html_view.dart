@@ -65,8 +65,9 @@ class _EventSubscription {
   final String type;
   final Function listener;
   final EventHandler handler;
+  final bool tracked;
 
-  _EventSubscription(this.type, this.listener, this.handler);
+  _EventSubscription(this.type, this.listener, this.handler, this.tracked);
 }
 
 typedef void _ContextCallbackFn();
@@ -256,21 +257,29 @@ class _ViewUpdater {
     final List<_EventSubscription> oldEvents = source.events;
     List<_EventSubscription> newEvents;
     if (vnode.hasEventHandlers) {
-      newEvents = vnode.mapEventHandlers((type, handler) {
-        if (handler == null) return null;
+      newEvents = vnode.mapEventHandlers((type, reg) {
+        if (reg == null) return null;
         if (oldEvents != null) {
           final old = oldEvents.firstWhere(
-              (es) => es.type == type && es.handler == handler,
+              (es) =>
+                  es.type == type &&
+                  es.handler == reg.handler &&
+                  es.tracked == reg.tracked,
               orElse: () => null);
           if (old != null) {
             return old;
           }
         }
         final listener = (e) {
-          return _view._tracker
-              .run(() => handler(new _DomEvent(type, dn, e, boundKeyedRefs)));
+          final body =
+              () => reg.handler(new _DomEvent(type, dn, e, boundKeyedRefs));
+          if (reg.tracked) {
+            return _view.track(body);
+          } else {
+            return _view.escape(body);
+          }
         };
-        return new _EventSubscription(type, listener, handler);
+        return new _EventSubscription(type, listener, reg.handler, reg.tracked);
       }).toList();
     }
     oldEvents
