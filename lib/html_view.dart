@@ -152,17 +152,6 @@ class _ViewUpdater {
     if (vnode is VdomElement &&
         dn is html.Element &&
         vnode.tag.toLowerCase() == dn.tagName.toLowerCase()) {
-      // We are not able to iterate the style keys to remove them properly.
-      if (dn.style.length > 0 && vnode.styles != null) {
-        if (vnode.styles.length != dn.style.length) {
-          return false;
-        }
-        for (String key in vnode.styles.keys) {
-          if (dn.style.getPropertyValue(key) == null) {
-            return false;
-          }
-        }
-      }
       return source.hasNoCallbacks;
     } else if (vnode is VdomText && dn is html.Text) {
       return source.hasNoCallbacks;
