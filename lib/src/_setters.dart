@@ -73,3 +73,13 @@ class LifecycleSetter implements Setter {
     proxy.addChangeHandler(_phase, _handler);
   }
 }
+
+class InnerHtmlSetter implements Setter {
+  final String _html;
+  InnerHtmlSetter(String html) : _html = html;
+
+  @override
+  void apply(ElementProxy proxy) {
+    proxy.setInnerHtml(_html);
+  }
+}

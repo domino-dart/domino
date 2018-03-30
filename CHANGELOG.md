@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.4-dev
+
+- Support `Element.innerHtml` setter.
+
 ## 0.3.3
 
 - Do not override attributes and styles when the value matches the previous one (and the DOM may be different).

@@ -293,7 +293,21 @@ class _ViewUpdater {
       source.events = newEvents;
     }
 
-    _update(dn, vnode.children);
+    if (vnode.innerHtml != null) {
+      if (source.innerHtml != vnode.innerHtml) {
+        source.innerHtml = vnode.innerHtml;
+        dn.innerHtml = vnode.innerHtml;
+      }
+      if (vnode.children != null && vnode.children.isNotEmpty) {
+        throw new ArgumentError(
+            'Element with innerHtml must not have other vnode children.');
+      }
+    } else {
+      if (source.innerHtml != null) {
+        source.innerHtml = null;
+      }
+      _update(dn, vnode.children);
+    }
   }
 
   void _removeAll(html.Node node) {
@@ -429,6 +443,7 @@ class _VdomSource {
   Map<String, String> attributes;
   List<String> classes;
   Map<String, String> styles;
+  String innerHtml;
 
   List<_EventSubscription> events;
   List<_ContextCallbackFn> onRemove;

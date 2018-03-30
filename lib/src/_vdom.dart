@@ -38,6 +38,7 @@ class VdomElement extends VdomNode implements ElementProxy {
   Map<String, String> attributes;
   Map<String, String> styles;
   Map<String, List<EventHandlerReg>> events;
+  String innerHtml;
 
   List<VdomNode> children;
 
@@ -82,6 +83,12 @@ class VdomElement extends VdomNode implements ElementProxy {
     if (value == null) return;
     styles ??= {};
     styles[name] = value;
+  }
+
+  @override
+  void setInnerHtml(String html) {
+    if (html == null) return;
+    innerHtml = html;
   }
 
   Iterable<R> mapEventHandlers<R>(

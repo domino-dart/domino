@@ -101,6 +101,7 @@ abstract class ElementProxy {
   void addClass(String className);
   void setAttribute(String name, String value);
   void setStyle(String name, String value);
+  void setInnerHtml(String html);
   void addEventHandler(String type, EventHandler handler, bool tracked);
   void addChangeHandler(ChangePhase phase, ChangeHandler handler);
 }
@@ -182,3 +183,8 @@ addIf(
   /* content or Function */ orElse,
 }) =>
     new Conditional(condition, then, orElse);
+
+Setter innerHtml(String html) {
+  if (html == null) return null;
+  return new InnerHtmlSetter(html);
+}
