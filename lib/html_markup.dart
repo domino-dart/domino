@@ -30,22 +30,29 @@ class HtmlMarkupBuilder {
         sink.writeln();
         _writeIndent(sink, level);
       }
-      if (node is VdomText) {
-        sink.write(_textEscaper.convert(node.value ?? ''));
-      } else if (node is VdomElement) {
-        sink.write('<${node.tag}');
-        _writeAttributes(sink, node.attributes, node.classes, node.styles);
-        if (node.children != null && node.children.isNotEmpty) {
-          sink.write('>');
-          _writeTo(sink, node.children, level: level + 1);
-          if (_hasIndent) {
-            sink.writeln();
-            _writeIndent(sink, level);
+      switch (node.type) {
+        case VdomNodeType.element:
+          if (node is VdomElement) {
+            sink.write('<${node.tag}');
+            _writeAttributes(sink, node.attributes, node.classes, node.styles);
+            if (node.children != null && node.children.isNotEmpty) {
+              sink.write('>');
+              _writeTo(sink, node.children, level: level + 1);
+              if (_hasIndent) {
+                sink.writeln();
+                _writeIndent(sink, level);
+              }
+              sink.write('</${node.tag}>');
+            } else {
+              sink.write(' />');
+            }
           }
-          sink.write('</${node.tag}>');
-        } else {
-          sink.write(' />');
-        }
+          break;
+        case VdomNodeType.text:
+          if (node is VdomText) {
+            sink.write(_textEscaper.convert(node.value ?? ''));
+          }
+          break;
       }
     }
   }

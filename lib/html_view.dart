@@ -150,32 +150,58 @@ class _ViewUpdater {
   }
 
   bool _mayUpdate(html.Node dn, _VdomSource source, VdomNode vnode) {
-    if (vnode is VdomElement &&
-        dn is html.Element &&
-        vnode.tag.toLowerCase() == dn.tagName.toLowerCase()) {
-      return source.hasNoRemove;
-    } else if (vnode is VdomText && dn is html.Text) {
-      return source.hasNoRemove;
-    } else {
-      return false;
+    if (vnode?.type == null) return false;
+    switch (vnode.type) {
+      case VdomNodeType.element:
+        if (vnode is VdomElement &&
+            dn is html.Element &&
+            vnode.tag.toLowerCase() == dn.tagName.toLowerCase()) {
+          return source.hasNoRemove;
+        }
+        break;
+      case VdomNodeType.text:
+        if (vnode is VdomText && dn is html.Text) {
+          return source.hasNoRemove;
+        }
+        break;
     }
+    return false;
   }
 
   html.Node _createDom(VdomNode vnode) {
-    if (vnode is VdomText) {
-      return new html.Text(vnode.value);
-    } else if (vnode is VdomElement) {
-      return new html.Element.tag(vnode.tag);
-    } else {
+    if (vnode?.type == null) {
       throw new Exception('Unknown vnode: $vnode');
     }
+    switch (vnode.type) {
+      case VdomNodeType.element:
+        if (vnode is VdomElement) {
+          return new html.Element.tag(vnode.tag);
+        }
+        break;
+      case VdomNodeType.text:
+        if (vnode is VdomText) {
+          return new html.Text(vnode.value);
+        }
+        break;
+    }
+    throw new Exception('Unknown vnode: $vnode');
   }
 
   void _updateNode(html.Node dn, _VdomSource source, VdomNode vnode) {
-    if (dn is html.Text && vnode is VdomText) {
-      _updateText(dn, vnode);
-    } else if (dn is html.Element && vnode is VdomElement) {
-      _updateElement(dn, source, vnode);
+    if (vnode?.type == null) {
+      throw new Exception('Unknown vnode: $vnode');
+    }
+    switch (vnode.type) {
+      case VdomNodeType.element:
+        if (dn is html.Element && vnode is VdomElement) {
+          _updateElement(dn, source, vnode);
+        }
+        break;
+      case VdomNodeType.text:
+        if (dn is html.Text && vnode is VdomText) {
+          _updateText(dn, vnode);
+        }
+        break;
     }
     source.symbol = vnode.symbol;
   }

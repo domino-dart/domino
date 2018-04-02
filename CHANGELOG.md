@@ -3,6 +3,7 @@
 ## 0.3.4-dev
 
 - Support `Element.innerHtml` setter.
+- Putting every VDom type check inside a type-based `switch` statement (to improve static type checking if there is a new type there).
 
 ## 0.3.3
 
