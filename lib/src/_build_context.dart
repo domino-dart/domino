@@ -74,6 +74,8 @@ class BuildContextImpl implements BuildContext {
         }
       } else if (item is BuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(this), nodes: nodes);
+      } else if (item is NoContextBuildFn) {
+        _buildNodes(pathState, path, nodeRefs, item(), nodes: nodes);
       } else {
         nodes.add(new VdomText(item.toString()));
       }

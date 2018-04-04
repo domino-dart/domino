@@ -18,6 +18,10 @@ abstract class BuildContext {
 /// Builds a single or List-embedded structure of Nodes and/or Components.
 typedef BuildFn(BuildContext context);
 
+/// Builds a single or List-embedded structure of Nodes and/or Components
+/// without the need of [BuildContext].
+typedef NoContextBuildFn();
+
 /// Builds a single or List-embedded structure of Nodes and/or Components.
 abstract class Component {
   /// Builds a single or List-embedded structure of Nodes and/or Components.

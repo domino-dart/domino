@@ -4,6 +4,7 @@
 
 - Support `Element.innerHtml` setter.
 - Putting every VDom type check inside a type-based `switch` statement (to improve static type checking if there is a new type there).
+- Support no-arg functions in generic content.
 
 ## 0.3.3
 
