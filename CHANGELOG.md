@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0-dev
+
+**Breaking API changes**:
+
+- renamed `Event` to `EventContext`
+- renamed `getNodeBySymbol` to `getNode` (in `Event`/`EventContext`)
+
 ## 0.3.4
 
 - Support `Element.innerHtml` setter.

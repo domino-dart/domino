@@ -63,7 +63,7 @@ abstract class View {
 }
 
 /// DOM Event wrapper.
-abstract class Event {
+abstract class EventContext {
   /// The current [View] which triggered the event.
   View get view;
 
@@ -76,8 +76,8 @@ abstract class Event {
   /// The native event.
   get event;
 
-  /// Returns a DOM Element identified with a Symbol.
-  N getNodeBySymbol<N>(Symbol symbol);
+  /// Returns a DOM Node identified with a Symbol.
+  N getNode<N>(Symbol symbol);
 
   bool get defaultPrevented;
   void preventDefault();
@@ -86,7 +86,7 @@ abstract class Event {
 }
 
 /// Handles events.
-typedef void EventHandler(Event event);
+typedef void EventHandler(EventContext ctx);
 
 /// A virtual dom element that has a 1:1 mapping to an element in the real DOM.
 class Element {

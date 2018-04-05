@@ -358,7 +358,7 @@ class _ViewUpdater {
   }
 }
 
-class _DomEvent implements Event {
+class _DomEvent implements EventContext {
   final View _view;
   final String _type;
   final html.Element _element;
@@ -379,7 +379,7 @@ class _DomEvent implements Event {
   @override
   dynamic get event => _event;
 
-  N getNodeBySymbol<N>(Symbol symbol) {
+  N getNode<N>(Symbol symbol) {
     if (_nodesBySymbol == null) return null;
     return _nodesBySymbol[symbol];
   }
