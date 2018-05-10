@@ -50,10 +50,10 @@ class ClassAdder implements Setter {
 ///     div(set: on('click', () => print('Clicked!')))
 class EventSetter implements Setter {
   final String _type;
-  final EventHandler _handler;
+  final Function _handler;
   final bool _tracked;
 
-  const EventSetter(String type, EventHandler handler, {bool tracked})
+  const EventSetter(String type, Function handler, {bool tracked})
       : _type = type,
         _handler = handler,
         _tracked = tracked ?? true;

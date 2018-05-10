@@ -1,7 +1,7 @@
 import '../domino.dart';
 
 class EventHandlerReg {
-  final EventHandler handler;
+  final Function handler;
   final bool tracked;
 
   EventHandlerReg(this.handler, this.tracked);
@@ -60,7 +60,7 @@ class VdomElement extends VdomNode implements ElementProxy {
   }
 
   @override
-  void addEventHandler(String type, EventHandler handler, bool tracked) {
+  void addEventHandler(String type, Function handler, bool tracked) {
     if (handler == null) return;
     events ??= {};
     final list = events.putIfAbsent(type, () => []);

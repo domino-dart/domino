@@ -64,7 +64,7 @@ class _View implements View {
 class _EventSubscription {
   final String type;
   final Function listener;
-  final EventHandler handler;
+  final Function handler;
   final bool tracked;
 
   _EventSubscription(this.type, this.listener, this.handler, this.tracked);
@@ -297,8 +297,23 @@ class _ViewUpdater {
           }
         }
         final listener = (e) {
-          final body = () =>
-              reg.handler(new _DomEvent(_view, type, dn, e, boundKeyedRefs));
+          _NoArgFn wrappedHandler(Function handler) {
+            if (handler is EventHandler) {
+              return () =>
+                  handler(new _DomEvent(_view, type, dn, e, boundKeyedRefs));
+            } else if (handler is _NoArgFn) {
+              return handler;
+            } else if (handler is _HtmlEventFn) {
+              return () => handler(e);
+            } else if (handler is _HtmlEventElementFn) {
+              return () => handler(e, dn);
+            } else {
+              throw new ArgumentError(
+                  'Unsupported function signature: $handler');
+            }
+          }
+
+          final body = wrappedHandler(reg.handler);
           if (reg.tracked) {
             return _view.track(body);
           } else {
@@ -357,6 +372,10 @@ class _ViewUpdater {
     }
   }
 }
+
+typedef _NoArgFn();
+typedef _HtmlEventFn(html.Event event);
+typedef _HtmlEventElementFn(html.Event event, html.Element element);
 
 class _DomEvent implements EventContext {
   final View _view;

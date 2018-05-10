@@ -7,6 +7,10 @@
 - renamed `Event` to `EventContext`
 - renamed `getNodeBySymbol` to `getNode` (in `Event`/`EventContext`)
 
+Updates:
+
+- Support multiple event handler signature.
+
 ## 0.3.4
 
 - Support `Element.innerHtml` setter.

@@ -21,7 +21,7 @@ class SimpleComponent extends Component {
     ];
   }
 
-  void _onClick(_) {
+  void _onClick() {
     counter++;
   }
 }

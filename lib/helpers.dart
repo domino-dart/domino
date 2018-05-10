@@ -2,7 +2,7 @@ import 'domino.dart';
 
 Element div([content]) => new Element('div', content);
 
-Element button(content, {EventHandler onClick}) =>
+Element button(content, {Function onClick}) =>
     new Element('button', [content, on('click', onClick)]);
 
 Setter background(String value) => style('background', value);

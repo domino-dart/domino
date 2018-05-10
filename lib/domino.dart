@@ -106,7 +106,7 @@ abstract class ElementProxy {
   void setAttribute(String name, String value);
   void setStyle(String name, String value);
   void setInnerHtml(String html);
-  void addEventHandler(String type, EventHandler handler, bool tracked);
+  void addEventHandler(String type, Function handler, bool tracked);
   void addChangeHandler(ChangePhase phase, ChangeHandler handler);
 }
 
@@ -162,8 +162,9 @@ Setter clazz(class1, [class2, class3, class4, class5]) =>
 ///
 /// Example:
 ///     div(on('click', () => print('Clicked!')))
-Setter on(String event, EventHandler handler, {bool tracked}) =>
-    new EventSetter(event, handler, tracked: tracked);
+Setter on(String event, Function handler, {bool tracked}) {
+  return new EventSetter(event, handler, tracked: tracked);
+}
 
 Setter afterInsert(ChangeHandler handler) {
   if (handler == null) return null;
