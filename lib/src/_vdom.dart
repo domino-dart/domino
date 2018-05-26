@@ -29,7 +29,7 @@ class VdomElement extends VdomNode implements ElementProxy {
   @override
   final VdomNodeType type = VdomNodeType.element;
 
-  dynamic tag;
+  String tag;
 
   @override
   Symbol symbol;

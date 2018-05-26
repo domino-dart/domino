@@ -63,7 +63,7 @@ class _View implements View {
 
 class _EventSubscription {
   final String type;
-  final Function listener;
+  final html.EventListener listener;
   final Function handler;
   final bool tracked;
 
@@ -296,7 +296,7 @@ class _ViewUpdater {
             return old;
           }
         }
-        final listener = (e) {
+        final listener = (html.Event e) {
           _NoArgFn wrappedHandler(Function handler) {
             if (handler is EventHandler) {
               return () =>
@@ -400,7 +400,7 @@ class _DomEvent implements EventContext {
 
   N getNode<N>(Symbol symbol) {
     if (_nodesBySymbol == null) return null;
-    return _nodesBySymbol[symbol];
+    return _nodesBySymbol[symbol] as N;
   }
 
   @override
@@ -443,7 +443,7 @@ class SubView implements Component {
   }
 
   void _afterInsert(Change context) {
-    _container = context.node;
+    _container = context.node as html.Element;
     _view = registerHtmlView(_container, _content);
   }
 

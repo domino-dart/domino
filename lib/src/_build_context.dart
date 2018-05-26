@@ -91,7 +91,7 @@ class BuildContextImpl implements BuildContext {
       if (item is Setter) {
         item.apply(proxy);
         continue;
-      } else if (item is Map) {
+      } else if (item is Map<String, String>) {
         for (String key in item.keys) {
           proxy.setAttribute(key, item[key]);
         }

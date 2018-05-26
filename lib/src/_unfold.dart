@@ -10,7 +10,7 @@ Iterable<R> unfold<R>(content) sync* {
       } else if (child is Conditional) {
         yield* child.unfoldConditional();
       } else {
-        yield child;
+        yield child as R;
       }
     }
     return;
@@ -18,7 +18,7 @@ Iterable<R> unfold<R>(content) sync* {
     yield* content.unfoldConditional();
     return;
   }
-  yield content;
+  yield content as R;
 }
 
 typedef bool BoolFn();
@@ -41,7 +41,7 @@ class Conditional {
 
   bool evaluate() {
     if (_cond == null) return false;
-    if (_cond is bool) return _cond;
+    if (_cond is bool) return _cond as bool;
     if (_cond is Function) {
       final v = _cond();
       if (v is bool) return v;
