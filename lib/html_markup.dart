@@ -23,7 +23,7 @@ class HtmlMarkupBuilder {
     return buffer.toString().trim();
   }
 
-  void _writeTo(StringSink sink, List<VdomNode> nodes, {int level: 0}) {
+  void _writeTo(StringSink sink, List<VdomNode> nodes, {int level = 0}) {
     if (nodes == null) return;
     for (VdomNode node in nodes) {
       if (_hasIndent) {
