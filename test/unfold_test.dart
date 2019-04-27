@@ -29,7 +29,7 @@ void main() {
     test('Conditional', () {
       expect(
           unfold([
-            new Conditional(() => true, () => ['a'], ['b'])
+            Conditional(() => true, () => ['a'], ['b'])
           ]),
           ['a']);
     });

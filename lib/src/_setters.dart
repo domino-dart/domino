@@ -13,6 +13,7 @@ class StyleSetter implements Setter {
 
   const StyleSetter(this._name, this._value);
 
+  @override
   void apply(ElementProxy e) => e.setStyle(_name, _value);
 }
 
@@ -27,6 +28,7 @@ class AttrSetter implements Setter {
 
   const AttrSetter(this._name, this._value);
 
+  @override
   void apply(ElementProxy e) => e.setAttribute(_name, _value);
 }
 
@@ -41,6 +43,7 @@ class ClassAdder implements Setter {
       : _classes =
             unfold<String>([class1, class2, class3, class4, class5]).toList();
 
+  @override
   void apply(ElementProxy e) => _classes.forEach(e.addClass);
 }
 
@@ -58,6 +61,7 @@ class EventSetter implements Setter {
         _handler = handler,
         _tracked = tracked ?? true;
 
+  @override
   void apply(ElementProxy e) => e.addEventHandler(_type, _handler, _tracked);
 }
 

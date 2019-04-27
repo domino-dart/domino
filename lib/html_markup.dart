@@ -5,8 +5,8 @@ import 'domino.dart';
 import 'src/_build_context.dart';
 import 'src/_vdom.dart';
 
-HtmlEscape _attrEscaper = new HtmlEscape(HtmlEscapeMode.attribute);
-HtmlEscape _textEscaper = new HtmlEscape(HtmlEscapeMode.element);
+final _attrEscaper = HtmlEscape(HtmlEscapeMode.attribute);
+final _textEscaper = HtmlEscape(HtmlEscapeMode.element);
 
 /// Builds HTML markup based on the hierarchy of [Component]s and [Element]s.
 /// Intended mostly for testing, but it could work as a server-side renderer too.
@@ -17,8 +17,8 @@ class HtmlMarkupBuilder {
       : _hasIndent = indent != null && indent.isNotEmpty;
 
   String convert(dynamic item) {
-    final buffer = new StringBuffer();
-    final nodes = new BuildContextImpl(new _HtmlMarkupView()).buildNodes(item);
+    final buffer = StringBuffer();
+    final nodes = BuildContextImpl(_HtmlMarkupView()).buildNodes(item);
     _writeTo(buffer, nodes);
     return buffer.toString().trim();
   }
@@ -98,7 +98,7 @@ class HtmlMarkupBuilder {
     }
 
     if (attrs != null) {
-      List<String> keys = attrs.keys
+      final keys = attrs.keys
           .where((s) => s != 'id' && s != 'class' && s != 'style')
           .toList();
       keys.sort();

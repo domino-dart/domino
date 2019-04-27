@@ -24,9 +24,9 @@ Iterable<R> unfold<R>(content) sync* {
 typedef bool BoolFn();
 
 class Conditional {
-  final _cond;
-  final _then;
-  final _orElse;
+  final dynamic _cond;
+  final dynamic _then;
+  final dynamic _orElse;
 
   Conditional(this._cond, this._then, this._orElse);
 

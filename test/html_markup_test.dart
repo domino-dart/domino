@@ -5,11 +5,11 @@ import 'package:domino/html_markup.dart';
 
 void main() {
   group('HTML markup tests', () {
-    final builder = new HtmlMarkupBuilder(indent: '  ');
+    final builder = HtmlMarkupBuilder(indent: '  ');
 
     test('Simple DIV', () {
       expect(
-          builder.convert(new Element(
+          builder.convert(Element(
             'div',
             [attr('attr', 'value'), clazz('c1', 'c2'), style('width', '100%')],
           )),
@@ -18,9 +18,9 @@ void main() {
 
     test('Hierarchy', () {
       expect(
-          builder.convert(new Element('div', [
+          builder.convert(Element('div', [
             'a',
-            new Element('span', 'in-span'),
+            Element('span', 'in-span'),
             'b',
           ])),
           '<div>\n'

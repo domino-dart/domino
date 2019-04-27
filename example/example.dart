@@ -5,7 +5,7 @@ import 'package:domino/html_view.dart';
 import 'package:domino/helpers.dart';
 
 main() {
-  registerHtmlView(html.querySelector('#main'), new SimpleComponent());
+  registerHtmlView(html.querySelector('#main'), SimpleComponent());
 }
 
 class SimpleComponent extends Component {

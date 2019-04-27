@@ -12,21 +12,21 @@ export 'domino.dart';
 /// Register [content] (e.g. single [Component] or list of [Component] and
 /// [Node]s) to the [container] Element and start a [View].
 View registerHtmlView(html.Element container, dynamic content) {
-  return new _View(container, content);
+  return _View(container, content);
 }
 
 class _View implements View {
   final html.Element _container;
-  final _content;
+  final dynamic _content;
 
   AsyncTracker _tracker;
-  PathState _pathState = new PathState();
+  PathState _pathState = PathState();
 
   Future _invalidate;
   bool _isDisposed = false;
 
   _View(this._container, this._content) {
-    _tracker = new AsyncTracker()..addListener(invalidate);
+    _tracker = AsyncTracker()..addListener(invalidate);
     invalidate();
   }
 
@@ -38,13 +38,13 @@ class _View implements View {
 
   @override
   Future invalidate() {
-    _invalidate ??= new Future.delayed(Duration.zero, () {
+    _invalidate ??= Future.delayed(Duration.zero, () {
       try {
         _pathState = _pathState.fork();
-        final nodes = new BuildContextImpl(this)
+        final nodes = BuildContextImpl(this)
                 .buildNodes(_content, pathState: _pathState) ??
             const <VdomNode>[];
-        final updater = new _ViewUpdater(this);
+        final updater = _ViewUpdater(this);
         updater._update(_container, _isDisposed ? const [] : nodes);
         updater._runCallbacks();
       } finally {
@@ -114,7 +114,7 @@ class _ViewUpdater {
       if (domNode != null) {
         _updateNode(domNode, source, vnode);
         if (vnode.hasAfterUpdates) {
-          final c = new _Change(ChangePhase.update, domNode);
+          final c = _Change(ChangePhase.update, domNode);
           final list =
               vnode.changes[ChangePhase.update].map((fn) => () => fn(c));
           _onUpdateQueue.addAll(list);
@@ -129,13 +129,13 @@ class _ViewUpdater {
           container.append(dn);
         }
         if (vnode.hasAfterInserts) {
-          final c = new _Change(ChangePhase.insert, dn);
+          final c = _Change(ChangePhase.insert, dn);
           final list =
               vnode.changes[ChangePhase.insert].map((fn) => () => fn(c));
           _onInsertQueue.addAll(list);
         }
         if (vnode.hasAfterRemoves) {
-          final p = new _Change(ChangePhase.insert, dn);
+          final p = _Change(ChangePhase.insert, dn);
           dnsrc.onRemove = vnode.changes[ChangePhase.remove]
               .map((fn) => () => fn(p))
               .toList();
@@ -170,26 +170,26 @@ class _ViewUpdater {
 
   html.Node _createDom(VdomNode vnode) {
     if (vnode?.type == null) {
-      throw new Exception('Unknown vnode: $vnode');
+      throw Exception('Unknown vnode: $vnode');
     }
     switch (vnode.type) {
       case VdomNodeType.element:
         if (vnode is VdomElement) {
-          return new html.Element.tag(vnode.tag);
+          return html.Element.tag(vnode.tag);
         }
         break;
       case VdomNodeType.text:
         if (vnode is VdomText) {
-          return new html.Text(vnode.value);
+          return html.Text(vnode.value);
         }
         break;
     }
-    throw new Exception('Unknown vnode: $vnode');
+    throw Exception('Unknown vnode: $vnode');
   }
 
   void _updateNode(html.Node dn, _VdomSource source, VdomNode vnode) {
     if (vnode?.type == null) {
-      throw new Exception('Unknown vnode: $vnode');
+      throw Exception('Unknown vnode: $vnode');
     }
     switch (vnode.type) {
       case VdomNodeType.element:
@@ -300,7 +300,7 @@ class _ViewUpdater {
           _NoArgFn wrappedHandler(Function handler) {
             if (handler is EventHandler) {
               return () =>
-                  handler(new _DomEvent(_view, type, dn, e, boundKeyedRefs));
+                  handler(_DomEvent(_view, type, dn, e, boundKeyedRefs));
             } else if (handler is _NoArgFn) {
               return handler;
             } else if (handler is _HtmlEventFn) {
@@ -308,8 +308,7 @@ class _ViewUpdater {
             } else if (handler is _HtmlEventElementFn) {
               return () => handler(e, dn);
             } else {
-              throw new ArgumentError(
-                  'Unsupported function signature: $handler');
+              throw ArgumentError('Unsupported function signature: $handler');
             }
           }
 
@@ -320,7 +319,7 @@ class _ViewUpdater {
             return _view.escape(body);
           }
         };
-        return new _EventSubscription(type, listener, reg.handler, reg.tracked);
+        return _EventSubscription(type, listener, reg.handler, reg.tracked);
       }).toList();
     }
     oldEvents
@@ -340,7 +339,7 @@ class _ViewUpdater {
         dn.innerHtml = vnode.innerHtml;
       }
       if (vnode.children != null && vnode.children.isNotEmpty) {
-        throw new ArgumentError(
+        throw ArgumentError(
             'Element with innerHtml must not have other vnode children.');
       }
     } else {
@@ -398,6 +397,7 @@ class _DomEvent implements EventContext {
   @override
   dynamic get event => _event;
 
+  @override
   N getNode<N>(Symbol symbol) {
     if (_nodesBySymbol == null) return null;
     return _nodesBySymbol[symbol] as N;
@@ -419,7 +419,7 @@ class _DomEvent implements EventContext {
 /// Creates a detachable sub-[View].
 class SubView implements Component {
   final String _tag;
-  final _content;
+  final dynamic _content;
   final Invalidation _invalidation;
 
   html.Element _container;
@@ -435,7 +435,7 @@ class SubView implements Component {
 
   @override
   build(BuildContext context) {
-    return new Element(_tag, [
+    return Element(_tag, [
       afterInsert(_afterInsert),
       afterUpdate(_afterUpdate),
       afterRemove(_afterRemove),
@@ -478,7 +478,7 @@ class _Change extends Change {
   final ChangePhase phase;
 
   @override
-  final node;
+  final dynamic node;
 
   _Change(this.phase, this.node);
 }
@@ -496,12 +496,12 @@ class _VdomSource {
   bool get hasNoRemove => (onRemove == null || onRemove.isEmpty);
 }
 
-final Expando<_VdomSource> _vdomSourceExpando = new Expando();
+final Expando<_VdomSource> _vdomSourceExpando = Expando();
 
 _VdomSource _getSource(html.Node node) {
   var src = _vdomSourceExpando[node];
   if (src == null) {
-    src = new _VdomSource();
+    src = _VdomSource();
     _vdomSourceExpando[node] = src;
   }
   return src;

@@ -68,7 +68,7 @@ class VdomElement extends VdomNode implements ElementProxy {
         .where((reg) => reg.tracked == tracked && reg.handler == handler)
         .isNotEmpty;
     if (alreadyAdded) return;
-    list.add(new EventHandlerReg(handler, tracked));
+    list.add(EventHandlerReg(handler, tracked));
   }
 
   @override

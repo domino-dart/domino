@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'src/_unfold.dart' show Conditional;
 import 'src/_setters.dart';
+import 'src/_unfold.dart' show Conditional;
 
 /// The context of the current build.
 abstract class BuildContext {
@@ -91,12 +91,12 @@ typedef void EventHandler(EventContext ctx);
 /// A virtual dom element that has a 1:1 mapping to an element in the real DOM.
 class Element {
   final String tag;
-  final content;
+  final dynamic content;
 
   Element(this.tag, [this.content]);
 
-  /// Creates a new instance with [items] appended as content.
-  Element append(items) => new Element(tag, [content, items]);
+  /// Creates a instance with [items] appended as content.
+  Element append(items) => Element(tag, [content, items]);
 }
 
 /// Enables collecting of virtual dom properties that will be applied on real DOM.
@@ -133,13 +133,13 @@ typedef void ChangeHandler(Change lifecycle);
 ///
 /// Example:
 ///     div(style('color', 'blue'))
-Setter style(String name, String value) => new StyleSetter(name, value);
+Setter style(String name, String value) => StyleSetter(name, value);
 
 /// Adds an attribute to an [Element] with [name] and [value]
 ///
 /// Example:
 ///     div(attr('id', 'main'))
-Setter attr(String name, String value) => new AttrSetter(name, value);
+Setter attr(String name, String value) => AttrSetter(name, value);
 
 /// Adds an `id` attribute to an [Element] with [id] as value.
 ///
@@ -152,7 +152,7 @@ Setter id(String id) => attr('id', id);
 /// Example:
 ///     div(clazz('main'))
 Setter clazz(class1, [class2, class3, class4, class5]) =>
-    new ClassAdder(class1, class2, class3, class4, class5);
+    ClassAdder(class1, class2, class3, class4, class5);
 
 /// Adds an [handler] to an [Element] for event [event].
 ///
@@ -163,22 +163,22 @@ Setter clazz(class1, [class2, class3, class4, class5]) =>
 /// Example:
 ///     div(on('click', () => print('Clicked!')))
 Setter on(String event, Function handler, {bool tracked}) {
-  return new EventSetter(event, handler, tracked: tracked);
+  return EventSetter(event, handler, tracked: tracked);
 }
 
 Setter afterInsert(ChangeHandler handler) {
   if (handler == null) return null;
-  return new LifecycleSetter(ChangePhase.insert, handler);
+  return LifecycleSetter(ChangePhase.insert, handler);
 }
 
 Setter afterUpdate(ChangeHandler handler) {
   if (handler == null) return null;
-  return new LifecycleSetter(ChangePhase.update, handler);
+  return LifecycleSetter(ChangePhase.update, handler);
 }
 
 Setter afterRemove(ChangeHandler handler) {
   if (handler == null) return null;
-  return new LifecycleSetter(ChangePhase.remove, handler);
+  return LifecycleSetter(ChangePhase.remove, handler);
 }
 
 /// Conditional structure in the content.
@@ -187,9 +187,9 @@ addIf(
   /* content or Function */ then, {
   /* content or Function */ orElse,
 }) =>
-    new Conditional(condition, then, orElse);
+    Conditional(condition, then, orElse);
 
 Setter innerHtml(String html) {
   if (html == null) return null;
-  return new InnerHtmlSetter(html);
+  return InnerHtmlSetter(html);
 }

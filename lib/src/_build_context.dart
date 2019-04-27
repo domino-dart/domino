@@ -16,7 +16,7 @@ class BuildContextImpl implements BuildContext {
         _component = null;
 
   BuildContextImpl _fork(Component component) =>
-      new BuildContextImpl._(view, this, component);
+      BuildContextImpl._(view, this, component);
 
   @override
   Component get component => _component;
@@ -33,7 +33,7 @@ class BuildContextImpl implements BuildContext {
   }
 
   List<VdomNode> buildNodes(content, {PathState pathState}) =>
-      _buildNodes(pathState, new _Path._init('@root'), new NodeRefs(), content);
+      _buildNodes(pathState, _Path._init('@root'), NodeRefs(), content);
 
   List<VdomNode> _buildNodes(
       PathState pathState, _Path path, NodeRefs nodeRefs, dynamic content,
@@ -46,7 +46,7 @@ class BuildContextImpl implements BuildContext {
       if (item == null) {
         continue;
       } else if (item is Element) {
-        final velem = new VdomElement()..tag = item.tag;
+        final velem = VdomElement()..tag = item.tag;
         final contentChildren = _contentChildren(velem, item.content);
         if (velem.symbol != null || velem.events != null) {
           nodeRefs.add(velem);
@@ -59,25 +59,24 @@ class BuildContextImpl implements BuildContext {
             nodeRefs,
             contentChildren);
       } else if (item is Component) {
-        final newPath = path.append(nodes.length, item.runtimeType);
+        final p = path.append(nodes.length, item.runtimeType);
         var component = item;
         if (item is StatefulComponent) {
-          final stored = pathState.get(newPath);
+          final stored = pathState.get(p);
           component = item.restoreState(stored) ?? item;
         }
         final forked = _fork(component);
-        forked._buildNodes(
-            pathState, newPath, new NodeRefs(), component.build(forked),
+        forked._buildNodes(pathState, p, NodeRefs(), component.build(forked),
             nodes: nodes);
         if (component is StatefulComponent) {
-          pathState.add(newPath, component);
+          pathState.add(p, component);
         }
       } else if (item is BuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(this), nodes: nodes);
       } else if (item is NoContextBuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(), nodes: nodes);
       } else {
-        nodes.add(new VdomText(item.toString()));
+        nodes.add(VdomText(item.toString()));
       }
     }
 
@@ -117,15 +116,15 @@ class _Path {
       : index = 0,
         previous = null;
 
-  _Path append(dynamic index, value) => new _Path._(this, index, value);
+  _Path append(dynamic index, value) => _Path._(this, index, value);
 
   bool matches(_Path other) {
     if (other == null) return false;
-    if (this.index != other.index) return false;
-    if (this.value != other.value) return false;
-    if (this.previous == null && other.previous == null) return true;
-    if (this.previous == null || other.previous == null) return false;
-    return this.previous.matches(other.previous);
+    if (index != other.index) return false;
+    if (value != other.value) return false;
+    if (previous == null && other.previous == null) return true;
+    if (previous == null || other.previous == null) return false;
+    return previous.matches(other.previous);
   }
 }
 
@@ -137,12 +136,13 @@ class _PathComponent {
 
 class PathState {
   final List<_PathComponent> _oldState;
-  final List<_PathComponent> _newState = [];
+  final _state = <_PathComponent>[];
 
-  PathState([List<_PathComponent> oldState]) : _oldState = oldState ?? [];
+  PathState([List<_PathComponent> oldState])
+      : _oldState = oldState ?? <_PathComponent>[];
 
   void add(_Path path, StatefulComponent component) {
-    _newState.add(new _PathComponent(path, component));
+    _state.add(_PathComponent(path, component));
   }
 
   StatefulComponent get(_Path path) {
@@ -151,5 +151,5 @@ class PathState {
         ?.component;
   }
 
-  PathState fork() => new PathState(_newState);
+  PathState fork() => PathState(_state);
 }
