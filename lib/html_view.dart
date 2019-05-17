@@ -135,7 +135,7 @@ class _ViewUpdater {
           _onInsertQueue.addAll(list);
         }
         if (vnode.hasAfterRemoves) {
-          final p = _Change(ChangePhase.insert, dn);
+          final p = _Change(ChangePhase.remove, dn);
           dnsrc.onRemove = vnode.changes[ChangePhase.remove]
               .map((fn) => () => fn(p))
               .toList();
@@ -280,53 +280,69 @@ class _ViewUpdater {
     }
     source.styles = vnode.styles;
 
-    final List<_EventSubscription> oldEvents = source.events;
-    List<_EventSubscription> newEvents;
+    final oldEvents = source.events;
+    Map<String, _DomListener> newEvents;
     if (vnode.hasEventHandlers) {
-      newEvents = vnode.mapEventHandlers((type, reg) {
-        if (reg == null) return null;
-        if (oldEvents != null) {
-          final old = oldEvents.firstWhere(
-              (es) =>
-                  es.type == type &&
-                  es.handler == reg.handler &&
-                  es.tracked == reg.tracked,
+      newEvents = <String, _DomListener>{};
+
+      for (String type in vnode.events.keys) {
+        final oldListener = oldEvents == null ? null : oldEvents[type];
+        final oldList = oldListener?.subscriptions;
+        final newList = <_EventSubscription>[];
+        final newListener = oldListener ?? _DomListener(type, null, null);
+
+        for (EventHandlerReg reg in vnode.events[type]) {
+          final old = oldList?.firstWhere(
+              (es) => es.handler == reg.handler && es.tracked == reg.tracked,
               orElse: () => null);
           if (old != null) {
-            return old;
+            newList.add(old);
+          } else {
+            final listener = (html.Event e) {
+              _NoArgFn wrappedHandler(Function handler) {
+                if (handler is EventHandler) {
+                  return () =>
+                      handler(_DomEvent(_view, type, dn, e, boundKeyedRefs));
+                } else if (handler is _NoArgFn) {
+                  return handler;
+                } else if (handler is _HtmlEventFn) {
+                  return () => handler(e);
+                } else if (handler is _HtmlEventElementFn) {
+                  return () => handler(e, dn);
+                } else {
+                  throw ArgumentError(
+                      'Unsupported function signature: $handler');
+                }
+              }
+
+              final body = wrappedHandler(reg.handler);
+              if (reg.tracked) {
+                return _view.track(body);
+              } else {
+                return _view.escape(body);
+              }
+            };
+            newList.add(
+                _EventSubscription(type, listener, reg.handler, reg.tracked));
           }
         }
-        final listener = (html.Event e) {
-          _NoArgFn wrappedHandler(Function handler) {
-            if (handler is EventHandler) {
-              return () =>
-                  handler(_DomEvent(_view, type, dn, e, boundKeyedRefs));
-            } else if (handler is _NoArgFn) {
-              return handler;
-            } else if (handler is _HtmlEventFn) {
-              return () => handler(e);
-            } else if (handler is _HtmlEventElementFn) {
-              return () => handler(e, dn);
-            } else {
-              throw ArgumentError('Unsupported function signature: $handler');
-            }
-          }
-
-          final body = wrappedHandler(reg.handler);
-          if (reg.tracked) {
-            return _view.track(body);
-          } else {
-            return _view.escape(body);
-          }
-        };
-        return _EventSubscription(type, listener, reg.handler, reg.tracked);
-      }).toList();
+        if (newListener.listener == null) {
+          newListener.subscriptions = newList;
+          newListener.listener = (html.Event event) {
+            newListener.subscriptions.forEach((s) => s.listener(event));
+          };
+        } else {
+          newListener.subscriptions.clear();
+          newListener.subscriptions.addAll(newList);
+        }
+        newEvents[type] = newListener;
+      }
     }
-    oldEvents
-        ?.where((es) => newEvents == null || !newEvents.contains(es))
+    oldEvents?.values
+        ?.where((dl) => newEvents == null || !newEvents.containsKey(dl.type))
         ?.forEach((es) => dn.removeEventListener(es.type, es.listener));
-    newEvents
-        ?.where((es) => oldEvents == null || !oldEvents.contains(es))
+    newEvents?.values
+        ?.where((dl) => oldEvents == null || !oldEvents.containsKey(dl.type))
         ?.forEach((es) => dn.addEventListener(es.type, es.listener));
 
     if (newEvents != null || oldEvents != null) {
@@ -352,12 +368,9 @@ class _ViewUpdater {
 
   void _removeAll(html.Node node) {
     final source = _getSource(node);
-    final List<_EventSubscription> oldEvents = source.events;
-    if (oldEvents != null) {
-      for (var es in oldEvents) {
-        node.removeEventListener(es.type, es.listener);
-      }
-    }
+    source.events?.forEach((type, dl) {
+      node.removeEventListener(dl.type, dl.listener);
+    });
 
     final List<_ContextCallbackFn> onRemoveCallbacks = source.onRemove;
     if (onRemoveCallbacks != null) {
@@ -490,10 +503,18 @@ class _VdomSource {
   Map<String, String> styles;
   String innerHtml;
 
-  List<_EventSubscription> events;
+  Map<String, _DomListener> events;
   List<_ContextCallbackFn> onRemove;
 
   bool get hasNoRemove => (onRemove == null || onRemove.isEmpty);
+}
+
+class _DomListener {
+  final String type;
+  html.EventListener listener;
+  List<_EventSubscription> subscriptions;
+
+  _DomListener(this.type, this.listener, this.subscriptions);
 }
 
 final Expando<_VdomSource> _vdomSourceExpando = Expando();

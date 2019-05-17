@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.5
+
+- Using (and re-using) a single DOM event registration for each kind of actions.
+
 ## 0.4.4
 
 - Extra lints and Dart 2.2 code. 
