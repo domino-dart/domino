@@ -61,6 +61,7 @@ class BuildContextImpl implements BuildContext {
       } else if (item is Component) {
         final p = path.append(nodes.length, item.runtimeType);
         var component = item;
+        // ignore: deprecated_member_use_from_same_package
         if (item is StatefulComponent) {
           final stored = pathState.get(p);
           component = item.restoreState(stored) ?? item;
@@ -68,11 +69,14 @@ class BuildContextImpl implements BuildContext {
         final forked = _fork(component);
         forked._buildNodes(pathState, p, NodeRefs(), component.build(forked),
             nodes: nodes);
+        // ignore: deprecated_member_use_from_same_package
         if (component is StatefulComponent) {
           pathState.add(p, component);
         }
+      // ignore: deprecated_member_use_from_same_package
       } else if (item is BuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(this), nodes: nodes);
+      // ignore: deprecated_member_use_from_same_package
       } else if (item is NoContextBuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(), nodes: nodes);
       } else {
@@ -130,6 +134,7 @@ class _Path {
 
 class _PathComponent {
   final _Path path;
+  // ignore: deprecated_member_use_from_same_package
   final StatefulComponent component;
   _PathComponent(this.path, this.component);
 }
@@ -141,10 +146,12 @@ class PathState {
   PathState([List<_PathComponent> oldState])
       : _oldState = oldState ?? <_PathComponent>[];
 
+  // ignore: deprecated_member_use_from_same_package
   void add(_Path path, StatefulComponent component) {
     _state.add(_PathComponent(path, component));
   }
 
+  // ignore: deprecated_member_use_from_same_package
   StatefulComponent get(_Path path) {
     return _oldState
         .firstWhere((pc) => pc.path.matches(path), orElse: () => null)

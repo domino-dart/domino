@@ -29,6 +29,7 @@ void main() {
     test('Conditional', () {
       expect(
           unfold([
+            // ignore: deprecated_member_use_from_same_package
             Conditional(() => true, () => ['a'], ['b'])
           ]),
           ['a']);

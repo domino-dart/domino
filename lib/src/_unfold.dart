@@ -7,6 +7,7 @@ Iterable<R> unfold<R>(content) sync* {
       if (child == null) continue;
       if (child is Iterable) {
         yield* unfold(child);
+      // ignore: deprecated_member_use_from_same_package
       } else if (child is Conditional) {
         yield* child.unfoldConditional();
       } else {
@@ -14,6 +15,7 @@ Iterable<R> unfold<R>(content) sync* {
       }
     }
     return;
+  // ignore: deprecated_member_use_from_same_package
   } else if (content is Conditional) {
     yield* content.unfoldConditional();
     return;
@@ -23,6 +25,7 @@ Iterable<R> unfold<R>(content) sync* {
 
 typedef bool BoolFn();
 
+@Deprecated('Use Dart built-in conditionals.')
 class Conditional {
   final dynamic _cond;
   final dynamic _then;

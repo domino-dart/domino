@@ -8,6 +8,7 @@ Element button(content, {Function onClick}) =>
 
 Setter background(String value) => style('background', value);
 
+@Deprecated('Use Dart built-in conditionals.')
 clazzIf(
   /* bool fn() | bool */ condition,
   /* String | List<String> */ then, {

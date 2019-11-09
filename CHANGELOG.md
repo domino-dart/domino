@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.6
+
+- Marking planned deprecation.
+
 ## 0.4.5
 
 - Using (and re-using) a single DOM event registration for each kind of actions.

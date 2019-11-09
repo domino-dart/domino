@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'src/_setters.dart';
+// ignore: deprecated_member_use_from_same_package
 import 'src/_unfold.dart' show Conditional;
 
 /// The context of the current build.
@@ -16,10 +17,12 @@ abstract class BuildContext {
 }
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
+@Deprecated('typedef will be private')
 typedef BuildFn(BuildContext context);
 
 /// Builds a single or List-embedded structure of Nodes and/or Components
 /// without the need of [BuildContext].
+@Deprecated('typedef will be private')
 typedef NoContextBuildFn();
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
@@ -29,6 +32,7 @@ abstract class Component {
 }
 
 /// A component that can restore its state from a previous build.
+@Deprecated('StatefulComponent is obsolete, keep references instead.')
 abstract class StatefulComponent implements Component {
   /// Restores the state from [previous] component, and returns the instance
   /// that will be used for the build.
@@ -182,6 +186,7 @@ Setter afterRemove(ChangeHandler handler) {
 }
 
 /// Conditional structure in the content.
+@Deprecated('Use Dart built-in conditionals.')
 addIf(
   /* bool fn() | bool */ condition,
   /* content or Function */ then, {
