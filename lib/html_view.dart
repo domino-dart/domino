@@ -20,7 +20,6 @@ class _View implements View {
   final dynamic _content;
 
   AsyncTracker _tracker;
-  PathState _pathState = PathState();
 
   Future _invalidate;
   bool _isDisposed = false;
@@ -40,10 +39,8 @@ class _View implements View {
   Future invalidate() {
     _invalidate ??= Future.delayed(Duration.zero, () {
       try {
-        _pathState = _pathState.fork();
-        final nodes = BuildContextImpl(this)
-                .buildNodes(_content, pathState: _pathState) ??
-            const <VdomNode>[];
+        final nodes =
+            BuildContextImpl(this).buildNodes(_content) ?? const <VdomNode>[];
         final updater = _ViewUpdater(this);
         updater._update(_container, _isDisposed ? const [] : nodes);
         updater._runCallbacks();

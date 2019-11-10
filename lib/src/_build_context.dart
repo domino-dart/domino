@@ -39,11 +39,9 @@ class BuildContextImpl implements BuildContext {
     }
   }
 
-  List<VdomNode> buildNodes(content, {PathState pathState}) =>
-      _buildNodes(pathState, _Path._init('@root'), NodeRefs(), content);
+  List<VdomNode> buildNodes(content) => _buildNodes(NodeRefs(), content);
 
-  List<VdomNode> _buildNodes(
-      PathState pathState, _Path path, NodeRefs nodeRefs, dynamic content,
+  List<VdomNode> _buildNodes(NodeRefs nodeRefs, dynamic content,
       {List<VdomNode> nodes}) {
     if (content == null) {
       return nodes;
@@ -60,32 +58,15 @@ class BuildContextImpl implements BuildContext {
         }
         velem.nodeRefs = nodeRefs;
         nodes.add(velem);
-        velem.children = _buildNodes(
-            pathState,
-            path.append(velem.symbol ?? nodes.length, item.tag),
-            nodeRefs,
-            contentChildren);
+        velem.children = _buildNodes(nodeRefs, contentChildren);
       } else if (item is Component) {
-        final p = path.append(nodes.length, item.runtimeType);
-        var component = item;
-        // ignore: deprecated_member_use_from_same_package
-        if (item is StatefulComponent) {
-          final stored = pathState.get(p);
-          component = item.restoreState(stored) ?? item;
-        }
+        final component = item;
         final forked = _fork(component);
-        forked._buildNodes(pathState, p, NodeRefs(), component.build(forked),
-            nodes: nodes);
-        // ignore: deprecated_member_use_from_same_package
-        if (component is StatefulComponent) {
-          pathState.add(p, component);
-        }
-        // ignore: deprecated_member_use_from_same_package
+        forked._buildNodes(NodeRefs(), component.build(forked), nodes: nodes);
       } else if (item is _BuildFn) {
-        _buildNodes(pathState, path, nodeRefs, item(this), nodes: nodes);
-        // ignore: deprecated_member_use_from_same_package
+        _buildNodes(nodeRefs, item(this), nodes: nodes);
       } else if (item is _NoContextBuildFn) {
-        _buildNodes(pathState, path, nodeRefs, item(), nodes: nodes);
+        _buildNodes(nodeRefs, item(), nodes: nodes);
       } else {
         nodes.add(VdomText(item.toString()));
       }
@@ -115,55 +96,4 @@ class BuildContextImpl implements BuildContext {
     }
     return result;
   }
-}
-
-class _Path {
-  final _Path previous;
-  final dynamic index;
-  final dynamic value;
-
-  _Path._(this.previous, this.index, this.value);
-  _Path._init(this.value)
-      : index = 0,
-        previous = null;
-
-  _Path append(dynamic index, value) => _Path._(this, index, value);
-
-  bool matches(_Path other) {
-    if (other == null) return false;
-    if (index != other.index) return false;
-    if (value != other.value) return false;
-    if (previous == null && other.previous == null) return true;
-    if (previous == null || other.previous == null) return false;
-    return previous.matches(other.previous);
-  }
-}
-
-class _PathComponent {
-  final _Path path;
-  // ignore: deprecated_member_use_from_same_package
-  final StatefulComponent component;
-  _PathComponent(this.path, this.component);
-}
-
-class PathState {
-  final List<_PathComponent> _oldState;
-  final _state = <_PathComponent>[];
-
-  PathState([List<_PathComponent> oldState])
-      : _oldState = oldState ?? <_PathComponent>[];
-
-  // ignore: deprecated_member_use_from_same_package
-  void add(_Path path, StatefulComponent component) {
-    _state.add(_PathComponent(path, component));
-  }
-
-  // ignore: deprecated_member_use_from_same_package
-  StatefulComponent get(_Path path) {
-    return _oldState
-        .firstWhere((pc) => pc.path.matches(path), orElse: () => null)
-        ?.component;
-  }
-
-  PathState fork() => PathState(_state);
 }

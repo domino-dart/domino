@@ -5,6 +5,7 @@
 **BREAKING CHANGES**:
 - Removed `addIf`, `clazzIf` and `Conditional`, use Dart's inlined `if (cond) value` instead.
 - `BuildFn` and `NoContextBuildFn` is removed from the public API.
+- Removed state handling (`StatefulComponent`, `PathState`). Keep references for singleton components, that's more effective.
 
 ## 0.4.6
 
