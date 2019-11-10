@@ -15,15 +15,6 @@ abstract class BuildContext {
 }
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
-@Deprecated('typedef will be private')
-typedef BuildFn(BuildContext context);
-
-/// Builds a single or List-embedded structure of Nodes and/or Components
-/// without the need of [BuildContext].
-@Deprecated('typedef will be private')
-typedef NoContextBuildFn();
-
-/// Builds a single or List-embedded structure of Nodes and/or Components.
 abstract class Component {
   /// Builds a single or List-embedded structure of Nodes and/or Components.
   build(BuildContext context);

@@ -3,6 +3,13 @@ import '../domino.dart';
 import '_unfold.dart';
 import '_vdom.dart';
 
+/// Builds a single or List-embedded structure of Nodes and/or Components.
+typedef _BuildFn(BuildContext context);
+
+/// Builds a single or List-embedded structure of Nodes and/or Components
+/// without the need of [BuildContext].
+typedef _NoContextBuildFn();
+
 class BuildContextImpl implements BuildContext {
   @override
   final View view;
@@ -73,11 +80,11 @@ class BuildContextImpl implements BuildContext {
         if (component is StatefulComponent) {
           pathState.add(p, component);
         }
-      // ignore: deprecated_member_use_from_same_package
-      } else if (item is BuildFn) {
+        // ignore: deprecated_member_use_from_same_package
+      } else if (item is _BuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(this), nodes: nodes);
-      // ignore: deprecated_member_use_from_same_package
-      } else if (item is NoContextBuildFn) {
+        // ignore: deprecated_member_use_from_same_package
+      } else if (item is _NoContextBuildFn) {
         _buildNodes(pathState, path, nodeRefs, item(), nodes: nodes);
       } else {
         nodes.add(VdomText(item.toString()));

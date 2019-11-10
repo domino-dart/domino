@@ -4,6 +4,7 @@
 
 **BREAKING CHANGES**:
 - Removed `addIf`, `clazzIf` and `Conditional`, use Dart's inlined `if (cond) value` instead.
+- `BuildFn` and `NoContextBuildFn` is removed from the public API.
 
 ## 0.4.6
 
