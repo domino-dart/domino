@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+**BREAKING CHANGES**:
+- Removed `addIf`, `clazzIf` and `Conditional`, use Dart's inlined `if (cond) value` instead.
+
 ## 0.4.6
 
 - Marking planned deprecation.

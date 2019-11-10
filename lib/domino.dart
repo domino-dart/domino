@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'src/_setters.dart';
-// ignore: deprecated_member_use_from_same_package
-import 'src/_unfold.dart' show Conditional;
 
 /// The context of the current build.
 abstract class BuildContext {
@@ -184,15 +182,6 @@ Setter afterRemove(ChangeHandler handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.remove, handler);
 }
-
-/// Conditional structure in the content.
-@Deprecated('Use Dart built-in conditionals.')
-addIf(
-  /* bool fn() | bool */ condition,
-  /* content or Function */ then, {
-  /* content or Function */ orElse,
-}) =>
-    Conditional(condition, then, orElse);
 
 Setter innerHtml(String html) {
   if (html == null) return null;
