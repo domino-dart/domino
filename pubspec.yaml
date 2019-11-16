@@ -1,6 +1,6 @@
 name: domino
 description: An experimental virtual dom library, which allows mixing DOM elements with components.
-version: 0.5.0-dev
+version: 0.5.0
 homepage: https://github.com/domino-dart/domino
 authors:
   - Istvan Soos <istvan.soos@gmail.com>
