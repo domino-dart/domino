@@ -1,4 +1,10 @@
-Iterable<R> unfold<R>(content) sync* {
+List<R> unfold<R>(content) {
+  final list = <R>[];
+  _unfoldList(list, content);
+  return list;
+}
+
+void _unfoldList<R>(List<R> list, content) {
   if (content == null) {
     return;
   }
@@ -6,14 +12,14 @@ Iterable<R> unfold<R>(content) sync* {
     for (var child in content) {
       if (child == null) continue;
       if (child is Iterable) {
-        yield* unfold(child);
+        _unfoldList(list, child);
       } else {
-        yield child as R;
+        list.add(child as R);
       }
     }
     return;
   } else {
-    yield content as R;
+    list.add(content as R);
   }
 }
 
