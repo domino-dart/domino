@@ -3,6 +3,12 @@ import 'dart:html';
 
 import 'idom.dart';
 
+void patch(Element host, Function (DomContext ctx) fn) {
+  final ctx = BrowserDomContext(host);
+  fn(ctx);
+  ctx.cleanup();
+}
+
 class BrowserDomContext implements DomContext<Element, Event> {
   final Element _hostElement;
   final _lifecycleEvents = <_LifecycleEventData>[];
