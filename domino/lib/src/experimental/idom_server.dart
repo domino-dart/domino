@@ -35,7 +35,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
   @override
   void open(String tag, {String key, onCreate, onRemove}) {
     // Create a new pseudo-element with empty properties
-    final newElem = _IdomElem(tag, key: key, parent: element);
+    final newElem = _IdomElem(tag, key: key);
 
     // Pull nodes list if matches an element from the list.
     final match = _shadowElement.nodes.indexWhere(
@@ -72,7 +72,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
       }
     } else {
       // Insert text node
-      final newText = _IdomText(value, element);
+      final newText = _IdomText(value);
       _shadowElement.nodes.insert(_indexes.last, newText);
       _indexes.last = _indexes.last + 1;
     }
@@ -111,7 +111,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
 
   @override
   void innerHtml(String value) {
-    _shadowElement.nodes = [_IdomHtml(value, element)];
+    _shadowElement.nodes = [_IdomHtml(value)];
     _indexes.last = 1;
   }
 
@@ -209,7 +209,6 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
 
 // Base class possible node types
 abstract class _IdomNode {
-  _IdomElem get parent;
 }
 
 // Element node
@@ -220,11 +219,8 @@ class _IdomElem implements _IdomNode {
   Set<String> clazz;
   Map<String, String> style;
   List<_IdomNode> nodes;
-  @override
-  _IdomElem parent;
-
   _IdomElem(this.tag,
-      {this.key, this.attr, this.style, this.clazz, this.nodes, this.parent}) {
+      {this.key, this.attr, this.style, this.clazz, this.nodes}) {
     attr ??= {};
     style ??= {};
     clazz ??= {};
@@ -239,20 +235,15 @@ class _IdomElem implements _IdomNode {
     clazz = other.clazz;
     style = other.style;
     nodes = other.nodes;
-    parent = other.parent;
   }
 }
 
 class _IdomText implements _IdomNode {
   String text;
-  @override
-  _IdomElem parent;
-  _IdomText(this.text, this.parent);
+  _IdomText(this.text);
 }
 
 class _IdomHtml implements _IdomNode {
   String html;
-  @override
-  _IdomElem parent;
-  _IdomHtml(this.html, this.parent);
+  _IdomHtml(this.html);
 }
