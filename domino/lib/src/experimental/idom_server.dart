@@ -129,6 +129,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
       {_IdomElem elem,
       String indent,
       bool indentAttr = false,
+      String lineEnd,
       int indentLevel = 0}) {
     elem ??= _rootElem;
 
@@ -137,7 +138,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
       indentLevel = indentLevel - 1;
     }
     if (indent == null) indentAttr = false;
-    final indEnd = indent != null ? '\n' : '';
+    lineEnd ??= indent != null ? '\n' : '';
     final curInd = (indent ?? '') * indentLevel;
     final nextInd = (indent ?? '') * (indentLevel + 1);
     final ml = indentAttr ? '\n$nextInd' : ' ';
@@ -168,10 +169,10 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
             .join(ml));
         simple = false;
       }
-      if (!simple) {
-        out.write(ml);
+      if (!simple && indentAttr) {
+        out.write('$lineEnd$nextInd');
       }
-      out.write('>$indEnd');
+      out.write('>$lineEnd');
     }
 
     // wrting nodes, each ends in a new line if indent is not null
@@ -185,7 +186,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
             indentLevel: indentLevel + 1);
       } else if (node is _IdomText) {
         // text
-        out.write('$nextInd${_textEscaper.convert(node.text)}$indEnd');
+        out.write('$nextInd${_textEscaper.convert(node.text)}$lineEnd');
       } else if (node is _IdomHtml) {
         // inline html block
         out.write(node.html);
@@ -194,7 +195,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
 
     // closing tag
     if (elem.tag != null) {
-      out.write('$curInd</${elem.tag}>$indEnd');
+      out.write('$curInd</${elem.tag}>$lineEnd');
     }
   }
 }
