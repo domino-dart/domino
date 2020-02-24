@@ -5,53 +5,60 @@ import 'idom.dart';
 final _attrEscaper = HtmlEscape(HtmlEscapeMode.attribute);
 final _textEscaper = HtmlEscape(HtmlEscapeMode.element);
 
+/// DomContext for rendering to HTML files using virtual nodes.
 class ServerDomContext implements DomContext<_IdomElem, Function> {
+  /// root element of the current context
   final _IdomElem _rootElem;
+  /// path of the normal elements, not changed before closing call
   final _path = <_IdomElem>[];
-  final _shdPath = <_IdomElem>[];
-  final _index = <int>[];
+  /// shadow path, attribute and node changes are added to its last element,
+  /// and copied to the normal element after closing it
+  final _shadowPath = <_IdomElem>[];
+  /// stores the indexes of currently selected node in the _shadowPath
+  final _indexes = <int>[];
 
   @override
   _IdomElem get element => _path.last;
-  _IdomElem get _shdElement => _shdPath.last;
+  _IdomElem get _shadowElement => _shadowPath.last;
   @override
-  _IdomNode get pointer => _index.last < _shdElement.nodes.length
-      ? _shdElement.nodes[_index.last]
+  _IdomNode get pointer => _indexes.last < _shadowElement.nodes.length
+      ? _shadowElement.nodes[_indexes.last]
       : null;
 
+  /// Creates a ServerDomContext for rendering a context to a html file
   ServerDomContext([_IdomElem root]) : _rootElem = root ?? _IdomElem(null) {
-    _index.add(0);
+    _indexes.add(0);
     _path.add(_rootElem);
-    _shdPath.add(_rootElem);
+    _shadowPath.add(_rootElem);
   }
 
-  // TODO: onCreate, onRemove?
   @override
   void open(String tag, {String key, onCreate, onRemove}) {
     // Create a new pseudo-element with empty properties
     final newElem = _IdomElem(tag, key: key, parent: element);
 
     // Pull nodes list if matches an element from the list.
-    final match = _shdElement.nodes.indexWhere(
+    final match = _shadowElement.nodes.indexWhere(
         (node) =>
             (node is _IdomElem) &&
             (node.tag == tag) &&
             (key == null || key == node.key),
-        _index.last);
+        _indexes.last);
 
     if (match == -1) {
       // no match, insert new elem at the current index
-      _shdElement.nodes.insert(_index.last, newElem);
-      _index.last = _index.last + 1;
+      _shadowElement.nodes.insert(_indexes.last, newElem);
+      _indexes.last = _indexes.last + 1;
       _path.add(newElem);
-      _shdPath.add(newElem);
-      _index.add(0);
+      _shadowPath.add(newElem);
+      _indexes.add(0);
     } else {
-      // match, remove everything between the index and the match
-      _shdElement.nodes.removeRange(_index.last, match);
+      // match, remove everything between the index and the match, copy nodes
+      _shadowElement.nodes.removeRange(_indexes.last, match);
+      newElem.nodes.addAll((pointer as _IdomElem).nodes);
       _path.add(pointer as _IdomElem);
-      _shdPath.add(newElem);
-      _index.add(0);
+      _shadowPath.add(newElem);
+      _indexes.add(0);
     }
   }
 
@@ -66,63 +73,63 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
     } else {
       // Insert text node
       final newText = _IdomText(value, element);
-      _shdElement.nodes.insert(_index.last, newText);
-      _index.last = _index.last + 1;
+      _shadowElement.nodes.insert(_indexes.last, newText);
+      _indexes.last = _indexes.last + 1;
     }
   }
 
   @override
   void close({String tag}) {
     // Remove unwalked nodes
-    _shdElement.nodes.removeRange(_index.last, _shdElement.nodes.length);
+    _shadowElement.nodes.removeRange(_indexes.last, _shadowElement.nodes.length);
 
     // Deep copy
-    _path.last.moveFrom(_shdPath.last);
+    _path.last.moveFrom(_shadowPath.last);
     _path.removeLast();
-    _shdPath.removeLast();
-    _index.removeLast();
+    _shadowPath.removeLast();
+    _indexes.removeLast();
   }
 
   @override
   void attr(String name, String value) {
-    _shdElement.attr[name] = value;
+    _shadowElement.attr[name] = value;
   }
 
   @override
   void clazz(String name, {bool present = true}) {
     if (present) {
-      _shdElement.clazz.add(name);
+      _shadowElement.clazz.add(name);
     } else {
-      _shdElement.clazz.remove(name);
+      _shadowElement.clazz.remove(name);
     }
   }
 
   @override
   void style(String name, String value) {
-    _shdElement.style[name] = value;
+    _shadowElement.style[name] = value;
   }
 
   @override
   void innerHtml(String value) {
-    _shdElement.nodes = [_IdomHtml(value, element)];
-    _index.last = 1;
+    _shadowElement.nodes = [_IdomHtml(value, element)];
+    _indexes.last = 1;
   }
 
   @override
   void skipNode() {
-    if (_index.last < element.nodes.length) {
-      _index.last = _index.last + 1;
+    if (_indexes.last < element.nodes.length) {
+      _indexes.last = _indexes.last + 1;
     }
   }
 
   @override
   void skipRemainingNodes() {
-    _index.last = element.nodes.length;
+    _indexes.last = element.nodes.length;
   }
 
   @override
   void event(String name, {fn, String key, bool tracked = true}) {
-    // TODO: implement event
+    // no-op for server context
   }
 
   void writeHTML(StringSink out,
