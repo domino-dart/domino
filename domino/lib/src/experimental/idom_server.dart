@@ -26,7 +26,8 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
       : null;
 
   /// Creates a ServerDomContext for rendering a context to a html file
-  ServerDomContext([_IdomElem root]) : _rootElem = root ?? _IdomElem(null) {
+  ServerDomContext({_IdomElem root, this.out, this.indent, this.indentAttr, this.lineEnd}) : _rootElem = root ?? _IdomElem(null) {
+    out ??= StringBuffer('');
     _indexes.add(0);
     _path.add(_rootElem);
     _shadowPath.add(_rootElem);
@@ -132,24 +133,34 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
     // no-op for server context
   }
 
-  void writeHTML(StringSink out,
-      {_IdomElem elem,
+
+  StringSink out;
+  String indent;
+  bool indentAttr;
+  String lineEnd;
+
+
+  StringSink writeHTML({StringSink out,
+      _IdomElem elem,
       String indent,
-      bool indentAttr = false,
+      bool indentAttr,
       String lineEnd,
       int indentLevel = 0}) {
+    out ??= this.out;
     elem ??= _rootElem;
+    indent ??= this.indent;
+    lineEnd ??= this.lineEnd ?? (indent != null ? '\n' : '');
+    if(indent == null) indentAttr = false;
+    indentAttr ??= this.indentAttr ?? false;
 
     // if elem.tag == null, then this elem is just a node list.
     if (elem.tag == null) {
       indentLevel = indentLevel - 1;
     }
-    if (indent == null) indentAttr = false;
-    lineEnd ??= indent != null ? '\n' : '';
     final curInd = (indent ?? '') * indentLevel;
     final nextInd = (indent ?? '') * (indentLevel + 1);
-    final ml = indentAttr ? '\n$nextInd' : ' ';
-    final mml = indentAttr ? '\n$nextInd$indent' : ' ';
+    final ml = indentAttr ? '$lineEnd$nextInd' : ' ';
+    final mml = indentAttr ? '$lineEnd$nextInd$indent' : ' ';
 
     // tag generation, if indent is not null, ends on a new line
     if (elem.tag != null) {
@@ -186,7 +197,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
     for (final node in elem.nodes) {
       if (node is _IdomElem) {
         // recursive element
-        writeHTML(out,
+        writeHTML(out: out,
             elem: node,
             indent: indent,
             indentAttr: indentAttr,
@@ -204,6 +215,13 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
     if (elem.tag != null) {
       out.write('$curInd</${elem.tag}>$lineEnd');
     }
+  }
+
+  @override
+  String toString() {
+    final buffer = StringBuffer('');
+    writeHTML(out: buffer);
+    return buffer.toString();
   }
 }
 

@@ -25,10 +25,10 @@ void main() {
 
   renderEx1(ctx, extra: true, obj: ex1);
 
-  ctx.writeHTML(File('example/ex1/ex1_indent.html').openWrite(),
+  ctx.writeHTML(out: File('example/ex1/ex1_indent.html').openWrite(),
       indent: '    ');
-  ctx.writeHTML(File('example/ex1/ex1_indentattr.html').openWrite(),
+  ctx.writeHTML(out: File('example/ex1/ex1_indentattr.html').openWrite(),
       indent: '    ', indentAttr: true);
-  ctx.writeHTML(File('example/ex1/ex1_noindent.html').openWrite(),
+  ctx.writeHTML(out: File('example/ex1/ex1_noindent.html').openWrite(),
       indent: null);
 }
