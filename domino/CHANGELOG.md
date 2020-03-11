@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+- Experimental incremental DOM API.
+
 ## 0.5.0
 
 - More efficient virtual DOM building (`unfold` revisited).
