@@ -1,11 +1,15 @@
+import 'dart:io';
+
 import 'package:dart_style/dart_style.dart';
 import 'package:html/dom.dart';
 
 import 'canonical.dart';
+import 'template_registry.dart';
 
 class ComponentGenerator {
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
+  final _registry = TemplateRegistry();
 
   void _reset() {
     _imports.clear();
@@ -37,6 +41,19 @@ class ComponentGenerator {
         .join();
   }
 
+  void compileDirectory(String path, {bool recursive = true}) {
+    _registry.registerDirectory(path, recursive: recursive);
+    for(final file in Directory(path).listSync(recursive: recursive)) {
+      if(file is File && file.path.endsWith('.html')) {
+        final genPath = file.path.replaceAll('.html', '.g.dart');
+        final htmlSource = file.readAsStringSync();
+        _registry.basePath = file.parent.path;
+        final dartSource = generateSource(htmlSource);
+        File(genPath).writeAsStringSync(dartSource);
+      }
+    }
+  }
+
   String generateSource(String sourceHtml) {
     _reset();
     final parsed = parseToCanonical(sourceHtml);
@@ -44,11 +61,11 @@ class ComponentGenerator {
         'package:domino/src/experimental/idom.dart', ['DomContext']);
 
     for (final template in parsed.templates) {
-      final name = template.attributes['*'] ?? '';
+      final name = template.attributes['*'].replaceAll('-', '_') ?? 'render';
 
       final topLevelObjects = <String>[];
 
-      _sb.writeln('void render$name($idomcAlias.DomContext \$d');
+      _sb.writeln('void $name($idomcAlias.DomContext \$d');
       final defaultInits = <String>[];
       for (final ve in template.querySelectorAll('d-template-var').toList()) {
         ve.remove();
@@ -149,13 +166,18 @@ class ComponentGenerator {
   void _renderCall(Stack stack, Element elem) {
     final library = elem.attributes.remove('d-library');
     final method = elem.attributes.remove('d-method') ?? '';
+    final namespace = elem.attributes.remove('d-namespace') ?? '';
     final params = <String>[];
     for (final attrKey in elem.attributes.keys) {
       final name = attrKey.toString();
       final expr = elem.attributes[attrKey];
       params.add(', $name: $expr');
     }
-    final alias = _importAlias(library, [method]);
+    final alias = _importAlias(
+        library ??
+            _registry.resolveNamePath('$namespace:$method') ??
+            _registry.resolveNamePath(method),
+        [method]);
     if (alias != null) {
       _sb.write(alias == null ? '' : '$alias.');
     }
