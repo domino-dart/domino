@@ -119,10 +119,7 @@ void _rewrite(Node node) {
         }
         if (parts.isNotEmpty) {
           final method = parts.removeAt(0);
-          final fullMethod =
-              method.substring(0, 1).toLowerCase() == method.substring(0, 1)
-                  ? method
-                  : 'render$method';
+          final fullMethod = method.replaceAll('-', '_');
           node.attributes['d-method'] ??= fullMethod;
         }
       }
