@@ -2,7 +2,7 @@ import 'package:domino/src/experimental/idom.dart' as _i0 show DomContext;
 import 'package:meta/meta.dart' as _i2 show required;
 import 'ex1_model.dart' as _i1 show Example;
 
-void renderEx1(
+void Ex1(
   _i0.DomContext $d, {
 
   /// Go recursive
@@ -37,12 +37,12 @@ void renderEx1(
   }
   $d.close();
   if (extra) {
-    renderEx1($d, obj: obj, extra: false);
+    Ex1($d, obj: obj, extra: false);
   }
-  renderEx2($d);
+  Ex2($d);
 }
 
-void renderEx2(_i0.DomContext $d) {
+void Ex2(_i0.DomContext $d) {
   $d.open('div');
   $d.text('X');
   $d.close();

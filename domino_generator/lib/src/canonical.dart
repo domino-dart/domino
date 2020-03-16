@@ -3,14 +3,34 @@ import 'package:html/dom.dart';
 
 class ParsedSource {
   final List<Element> templates;
+  final String path;
 
-  ParsedSource(this.templates);
+  ParsedSource(this.templates, [this.path]);
 }
 
-ParsedSource parseToCanonical(String html) {
+ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
   final templates = <Element>[];
 
   final root = html_parser.parseFragment(html);
+
+  for(final element in root.children) {
+    final localName = element.localName;
+    if(element.localName.endsWith('.')) {
+      final parts = localName.split('.');
+      final methodName = parts[parts.length-2];
+      String namespace = parts.sublist(0, parts.length-2).join('.');
+      if(namespace == '') {
+        namespace = defaultNamespace;
+      }
+      final template = Element.tag('d-template');
+      template.attributes.addAll(element.attributes);
+      template.nodes.addAll(element.nodes);
+      template.attributes['*'] = methodName;
+      template.attributes['d-namespace'] = namespace;
+      templates.add(template);
+    }
+  }
+
   templates.addAll(root.children.where((e)=>e.localName == 'd-template'));
 
   if (templates.isEmpty) {

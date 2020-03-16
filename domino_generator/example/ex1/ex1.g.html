@@ -1,0 +1,22 @@
+<d-template *="Ex1">
+    <d-template-var name="extra" library="dart:core" type="bool" default="false" doc="Go recursive"></d-template-var>
+    <d-template-var name="obj" library="ex1_model.dart" type="Example" required="true"></d-template-var>
+    <div title="Some help {{obj.name}}." d-key="'key1'">Some {{obj.text}} and {{obj.number}}.</div>
+    <d-if *="obj.cond1"><span d-key="obj.number.toString()">cond1</span></d-if>
+    <d-else-if *="obj.cond2 &amp;&amp; extra"><span>cond2</span></d-else-if>
+    <d-else><span>cond3</span></d-else>
+    <ul>
+        <d-for *="item in obj.items">
+            <d-if *="item.visible">
+                <li>{{item.label}} {{obj.name}}</li>
+            </d-if>
+        </d-for>
+    </ul>
+    <d-if *="extra">
+        <d-call obj="obj" extra="false" d-method="Ex1"></d-call>
+    </d-if>
+    <d-call d-method="Ex2"></d-call>
+</d-template>
+<d-template *="Ex2">
+    <div>X</div>
+</d-template>

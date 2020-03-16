@@ -35,7 +35,7 @@ class TemplateRegistry {
   /// Tries to resolve a library path for the element if it is in the registry.
   /// Returns null, if element should be included as it is
   String resolveNamePath(String localName) {
-    if (['button', 'a', 'div'].contains(localName)) {
+    if (!localName.contains('-') && !localName.contains('.')) {
       return null;
     }
     if (localName.startsWith('d.')) {
