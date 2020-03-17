@@ -38,6 +38,14 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
   }
 
   for (final templateElem in templates) {
+    final varSlot = Element.tag('d-template-var')
+        ..attributes['name'] = '\$dSlots'
+        // TODO: _i0 import alias is hardcoded
+        ..attributes['type'] = 'Map<String, void Function(_i0.DomContext)>'
+        //..attributes['library'] = 'package:domino/src/experimental/idom.dart'
+        ..attributes['default'] = '{}';
+    templateElem.append(varSlot);
+
     for (final key in templateElem.attributes.keys.toList()) {
       final attr = key.toString();
       if (!attr.contains('-') && !attr.contains('*')) {
@@ -147,6 +155,31 @@ void _rewrite(Node node) {
       if (libValue != null && libValue.endsWith('.html')) {
         node.attributes['d-library'] = libValue.replaceAll('.html', '.g.dart');
       }
+
+      if(!node.children.any((c) => c.localName == 'd-slot')) {
+        // add default node if it does not have any
+        final dslot = Element.tag('d-slot')
+          ..attributes['d-method'] = ''
+          ..nodes.addAll(node.nodes);
+        node.nodes.clear();
+        node.append(dslot);
+      } else {
+        // remove every non-slot node
+        for(final cnode in node.nodes) {
+          if(cnode is Element && cnode.localName == 'd-slot') {
+            continue;
+          } else {
+            cnode.remove();
+          }
+        }
+      }
+    }
+
+    if(node.localName == 'd-call-slot') {
+      node.attributes['d-method'] ??= '';
+    }
+    if(node.localName == 'd-slot') {
+      node.attributes['d-method'] ??= '';
     }
 
     _rewriteAll(node.nodes);

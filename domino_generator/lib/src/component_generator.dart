@@ -105,6 +105,7 @@ class ComponentGenerator {
 
       _sb.writeln('}');
     }
+    return '${_renderImports()}\n$_sb';
     return DartFormatter().format('${_renderImports()}\n$_sb');
   }
 
@@ -135,6 +136,10 @@ class ComponentGenerator {
           _sb.writeln('}');
         } else if (node.localName == 'd-call') {
           _renderCall(stack, node);
+        } else if (node.localName == 'd-call-slot') {
+          _renderCallSlot(stack, node);
+        } else if (node.localName == 'd-slot') {
+          _renderSlot(stack, node);
         } else {
           _renderElem(stack, node);
         }
@@ -181,8 +186,13 @@ class ComponentGenerator {
     if (alias != null) {
       _sb.write(alias == null ? '' : '$alias.');
     }
+
+
+    _render(stack, elem.nodes);
+
     _sb.write('$method(\$d');
     _sb.write(params.join());
+    _sb.writeln(', \$dSlots: \$dSlots');
     _sb.writeln(');');
   }
 
@@ -216,6 +226,22 @@ class ComponentGenerator {
       addText(value.substring(pos));
     }
     return parts.join();
+  }
+
+  void _renderCallSlot(Stack stack, Element elem) {
+    final method = elem.attributes.remove('d-method');
+    _sb.writeln('    if(\$dSlots[$method] != null) \$dSlots[$method](\$d);');
+  }
+
+  void _renderSlot(Stack stack, Element elem) {
+    final aliasdc = _importAlias(
+      'package:domino/src/experimental/idom.dart', ['DomContext']);
+    _sb.writeln('\$dSlots[${elem.attributes['d-method']}]=');
+    _sb.writeln('    void ($aliasdc.DomContext \$d){');
+
+    _render(stack, elem.nodes);
+
+    _sb.writeln('};');
   }
 }
 
