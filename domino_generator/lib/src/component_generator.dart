@@ -236,8 +236,8 @@ class ComponentGenerator {
   void _renderSlot(Stack stack, Element elem) {
     final aliasdc = _importAlias(
       'package:domino/src/experimental/idom.dart', ['DomContext']);
-    _sb.writeln('\$dSlots[${elem.attributes['d-method']}]=');
-    _sb.writeln('    void ($aliasdc.DomContext \$d){');
+    _sb.writeln('\$dSlots[\'${elem.attributes['d-method']}\']=');
+    _sb.writeln('    ($aliasdc.DomContext \$d){');
 
     _render(stack, elem.nodes);
 
