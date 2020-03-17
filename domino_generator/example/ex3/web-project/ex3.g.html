@@ -1,12 +1,12 @@
-<d-template><button>
+<d-template *="render"><button>
     The best button
 </button>
-<named-div.button>
-<red-box>
+<d-call d-method="button" d-namespace="named-div"><d-slot d-method=""></d-slot></d-call>
+<d-call d-method="red_box" d-namespace="d"><d-slot d-method="">
     Here is an input field:
     <input>
     And a button component from somewhere
     <!-- d. means it should look at any namespace -->
-    <d.button>
-</d.button></red-box>
-</named-div.button></d-template>
+    <d-call d-method="button" d-namespace="d"><d-slot d-method=""></d-slot></d-call>
+</d-slot></d-call>
+<d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>

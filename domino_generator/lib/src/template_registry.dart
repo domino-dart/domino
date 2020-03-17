@@ -17,17 +17,14 @@ class TemplateRegistry {
   registerFile(String path) {
     final html = File(path).readAsStringSync();
     final templates = parseToCanonical(html).templates;
-    final genPath = path.replaceAll('.html', '.g.dart');
+    final genPath = path.replaceAll('.html', '.g.dart').replaceAll('.g.g', '.g');
     for (final template in templates) {
       final namespace = template.attributes['d-namespace'];
       final method = template.attributes['*'];
-      final method_ = method.replaceAll('-', '_');
 
       _location[method] = genPath;
-      _location[method_] = genPath;
       if (namespace != null) {
-        _location['$namespace:$method'] = genPath;
-        _location['$namespace:$method_'] = genPath;
+        _location['$namespace.$method'] = genPath;
       }
     }
   }
@@ -39,7 +36,7 @@ class TemplateRegistry {
       return null;
     }
     if (localName.startsWith('d.')) {
-      localName = localName.substring(1);
+      localName = localName.substring(2);
     }
     return _location[localName] != null
         ? p.relative(_location[localName], from: basePath)

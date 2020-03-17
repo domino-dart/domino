@@ -1,6 +1,6 @@
 import 'dart:io';
 
-//import 'package:domino_generator/src/component_generator.dart';
+import 'package:domino_generator/src/component_generator.dart';
 import 'package:domino_generator/src/canonical.dart';
 import 'package:path/path.dart' as p;
 
@@ -12,7 +12,7 @@ void main() {
       File(p.withoutExtension(file.path) + '.g.html').writeAsStringSync(canSource.templates.map((t) => t.outerHtml).join('\n\n'));
     }
   }
-  return;
-  //final gen = ComponentGenerator();
-  //gen.compileDirectory('example/ex3/web-project');
+
+  final gen = ComponentGenerator();
+  gen.compileDirectory('example/ex3/web-project');
 }

@@ -40,14 +40,14 @@ if (item.visible) {
 }
     $d.close();
 if (extra) {
-$dSlots[]=
-    void (_i0.DomContext $d){
+$dSlots['']=
+    (_i0.DomContext $d){
 };
 Ex1($d, obj: obj, extra: false, $dSlots: $dSlots
 );
 }
-$dSlots[]=
-    void (_i0.DomContext $d){
+$dSlots['']=
+    (_i0.DomContext $d){
 };
 Ex2($d, $dSlots: $dSlots
 );

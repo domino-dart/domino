@@ -13,6 +13,7 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
 
   final root = html_parser.parseFragment(html);
 
+  // Short d-template
   for(final element in root.children) {
     final localName = element.localName;
     if(element.localName.endsWith('.')) {
@@ -25,7 +26,7 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
       final template = Element.tag('d-template');
       template.attributes.addAll(element.attributes);
       template.nodes.addAll(element.nodes);
-      template.attributes['*'] = methodName;
+      template.attributes['*'] = _dartName(methodName);
       template.attributes['d-namespace'] = namespace;
       templates.add(template);
     }
@@ -34,10 +35,12 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
   templates.addAll(root.children.where((e)=>e.localName == 'd-template'));
 
   if (templates.isEmpty) {
-    templates.add(Element.tag('d-template')..nodes.addAll(root.nodes));
+    templates.add(Element.tag('d-template')..nodes.addAll(root.nodes)
+    ..attributes['*'] = 'render');
   }
 
   for (final templateElem in templates) {
+    // Add slot variable
     final varSlot = Element.tag('d-template-var')
         ..attributes['name'] = '\$dSlots'
         // TODO: _i0 import alias is hardcoded
@@ -74,7 +77,7 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
           documentation = parts.removeAt(0);
         }
         final varElem = Element.tag('d-template-var')
-          ..attributes['name'] = attr
+          ..attributes['name'] = _dartName(attr)
           ..attributes['library'] = library
           ..attributes['type'] = type;
         if (required) {
@@ -137,6 +140,21 @@ void _rewrite(Node node) {
       }
     }
 
+    // Short d-call
+    if(node.localName.contains('.') ||
+        (node.localName.contains('-') && !node.localName.startsWith('d-'))) {
+      // Translate to d-call
+      final dot = node.localName.lastIndexOf('.');
+      final method = node.localName.substring(dot + 1);
+      final namespace = dot >= 0 ? node.localName.substring(0, dot) : 'd';
+      final dcall = Element.tag('d-call')
+          ..attributes = node.attributes
+          ..attributes['d-method'] = _dartName(method)
+          ..attributes['d-namespace'] = namespace;
+      node.reparentChildren(dcall);
+      node.replaceWith(dcall);
+    }
+
     if (node.localName == 'd-call') {
       final expr = node.attributes.remove('*');
       if (expr != null) {
@@ -184,4 +202,8 @@ void _rewrite(Node node) {
 
     _rewriteAll(node.nodes);
   }
+}
+
+String _dartName(String htmlName) {
+  return htmlName.replaceAll('-', '_').toLowerCase();
 }

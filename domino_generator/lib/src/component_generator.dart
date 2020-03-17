@@ -44,7 +44,7 @@ class ComponentGenerator {
   void compileDirectory(String path, {bool recursive = true}) {
     _registry.registerDirectory(path, recursive: recursive);
     for(final file in Directory(path).listSync(recursive: recursive)) {
-      if(file is File && file.path.endsWith('.html')) {
+      if(file is File && file.path.endsWith('.html') && !file.path.endsWith('.g.html')) {
         final genPath = file.path.replaceAll('.html', '.g.dart');
         final htmlSource = file.readAsStringSync();
         _registry.basePath = file.parent.path;
@@ -105,8 +105,14 @@ class ComponentGenerator {
 
       _sb.writeln('}');
     }
-    return '${_renderImports()}\n$_sb';
-    return DartFormatter().format('${_renderImports()}\n$_sb');
+    String text = null;
+    try {
+      text = DartFormatter().format('${_renderImports()}\n$_sb');
+    } on FormatterException catch (e, st) {
+      print(e);
+      text = '${_renderImports()}\n$_sb';
+    }
+    return text;
   }
 
   void _render(Stack stack, List<Node> nodes) {
@@ -144,8 +150,12 @@ class ComponentGenerator {
           _renderElem(stack, node);
         }
       } else if (node is Text) {
-        if (node.text.trim().isEmpty) continue;
+        if (node.text
+            .trim()
+            .isEmpty) continue;
         _sb.writeln('    \$d.text(\'${_interpolateText(stack, node.text)}\');');
+      } else if (node is Comment){
+        _sb.writeln('/*${node.text}*/');
       } else {
         throw UnsupportedError('Node: ${node.runtimeType}');
       }
@@ -169,6 +179,10 @@ class ComponentGenerator {
   }
 
   void _renderCall(Stack stack, Element elem) {
+
+    // Load slot code before function call
+    _render(stack, elem.nodes);
+
     final library = elem.attributes.remove('d-library');
     final method = elem.attributes.remove('d-method') ?? '';
     final namespace = elem.attributes.remove('d-namespace') ?? '';
@@ -180,15 +194,12 @@ class ComponentGenerator {
     }
     final alias = _importAlias(
         library ??
-            _registry.resolveNamePath('$namespace:$method') ??
+            _registry.resolveNamePath('$namespace.$method') ??
             _registry.resolveNamePath(method),
         [method]);
     if (alias != null) {
       _sb.write(alias == null ? '' : '$alias.');
     }
-
-
-    _render(stack, elem.nodes);
 
     _sb.write('$method(\$d');
     _sb.write(params.join());
