@@ -19,7 +19,7 @@ void blue_box(
   $d.open('div');
   $d.attr('style', 'background-color: blue; width: 100px; height: 100px');
   $d.text('\n        BB\n        ');
-  $dSlots[''] = (_i0.DomContext $d) {};
+  if ($dSlots[''] != null) $dSlots['']($d);
   $d.text('\n        LO\n    ');
   $d.close();
 }

@@ -9,7 +9,10 @@ import 'template_registry.dart';
 class ComponentGenerator {
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
-  final _registry = TemplateRegistry();
+  final TemplateRegistry registry;
+  final String baseFile;
+
+  ComponentGenerator({this.registry, this.baseFile});
 
   void _reset() {
     _imports.clear();
@@ -41,22 +44,12 @@ class ComponentGenerator {
         .join();
   }
 
-  void compileDirectory(String path, {bool recursive = true}) {
-    _registry.registerDirectory(path, recursive: recursive);
-    for(final file in Directory(path).listSync(recursive: recursive)) {
-      if(file is File && file.path.endsWith('.html') && !file.path.endsWith('.g.html')) {
-        final genPath = file.path.replaceAll('.html', '.g.dart');
-        final htmlSource = file.readAsStringSync();
-        _registry.basePath = file.parent.path;
-        final dartSource = generateSource(htmlSource);
-        File(genPath).writeAsStringSync(dartSource);
-      }
-    }
+  String generateSource(String source) {
+    return generateParsedSource(parseToCanonical(source));
   }
 
-  String generateSource(String sourceHtml) {
+  String generateParsedSource(ParsedSource parsed) {
     _reset();
-    final parsed = parseToCanonical(sourceHtml);
     final idomcAlias = _importAlias(
         'package:domino/src/experimental/idom.dart', ['DomContext']);
 
@@ -105,10 +98,10 @@ class ComponentGenerator {
 
       _sb.writeln('}');
     }
-    String text = null;
+    String text;
     try {
       text = DartFormatter().format('${_renderImports()}\n$_sb');
-    } on FormatterException catch (e, st) {
+    } on FormatterException catch (e) {
       print(e);
       text = '${_renderImports()}\n$_sb';
     }
@@ -142,19 +135,17 @@ class ComponentGenerator {
           _sb.writeln('}');
         } else if (node.localName == 'd-call') {
           _renderCall(stack, node);
-        } else if (node.localName == 'd-call-slot') {
-          _renderCallSlot(stack, node);
         } else if (node.localName == 'd-slot') {
           _renderSlot(stack, node);
+        } else if (node.localName == 'd-insert-slot') {
+          _renderInsertSlot(stack, node);
         } else {
           _renderElem(stack, node);
         }
       } else if (node is Text) {
-        if (node.text
-            .trim()
-            .isEmpty) continue;
+        if (node.text.trim().isEmpty) continue;
         _sb.writeln('    \$d.text(\'${_interpolateText(stack, node.text)}\');');
-      } else if (node is Comment){
+      } else if (node is Comment) {
         _sb.writeln('/*${node.text}*/');
       } else {
         throw UnsupportedError('Node: ${node.runtimeType}');
@@ -179,7 +170,6 @@ class ComponentGenerator {
   }
 
   void _renderCall(Stack stack, Element elem) {
-
     // Load slot code before function call
     _render(stack, elem.nodes);
 
@@ -194,8 +184,9 @@ class ComponentGenerator {
     }
     final alias = _importAlias(
         library ??
-            _registry.resolveNamePath('$namespace.$method') ??
-            _registry.resolveNamePath(method),
+            registry?.resolveNamePath('$namespace.$method',
+                basePath: baseFile) ??
+            registry?.resolveNamePath(method, basePath: baseFile),
         [method]);
     if (alias != null) {
       _sb.write(alias == null ? '' : '$alias.');
@@ -239,14 +230,14 @@ class ComponentGenerator {
     return parts.join();
   }
 
-  void _renderCallSlot(Stack stack, Element elem) {
+  void _renderSlot(Stack stack, Element elem) {
     final method = elem.attributes.remove('d-method');
-    _sb.writeln('    if(\$dSlots[$method] != null) \$dSlots[$method](\$d);');
+    _sb.writeln('if(\$dSlots[\'$method\'] != null)\$dSlots[\'$method\'](\$d);');
   }
 
-  void _renderSlot(Stack stack, Element elem) {
+  void _renderInsertSlot(Stack stack, Element elem) {
     final aliasdc = _importAlias(
-      'package:domino/src/experimental/idom.dart', ['DomContext']);
+        'package:domino/src/experimental/idom.dart', ['DomContext']);
     _sb.writeln('\$dSlots[\'${elem.attributes['d-method']}\']=');
     _sb.writeln('    ($aliasdc.DomContext \$d){');
 
@@ -289,4 +280,28 @@ class _Import {
   final show = <String>{};
 
   _Import(this.url, this.alias);
+}
+
+compileDirectory(String path,
+    {bool recursive = true, bool debugParse = false}) {
+  final psList = <ParsedSource>[];
+  for (final file in Directory(path).listSync(recursive: recursive)) {
+    if (file.path.endsWith('.html') && !file.path.endsWith('.g.html')) {
+      final ps = parseFileToCanonical(file.path);
+      psList.add(ps);
+      if (debugParse) {
+        final genPath = ps.path.replaceAll('.html', '.g.html');
+        File(genPath).writeAsStringSync(
+            ps.templates.map((e) => e.outerHtml).join('\n\n'));
+      }
+    }
+  }
+  final reg = TemplateRegistry();
+  reg.registerAll(psList);
+  for (final ps in psList) {
+    final cg = ComponentGenerator(registry: reg, baseFile: ps.path);
+    final genSource = cg.generateParsedSource(ps);
+    final genPath = ps.path.replaceAll('.html', '.g.dart');
+    File(genPath).writeAsStringSync(genSource);
+  }
 }

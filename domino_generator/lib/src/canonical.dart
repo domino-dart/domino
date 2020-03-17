@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:html/parser.dart' as html_parser;
 import 'package:html/dom.dart';
+import 'package:path/path.dart' as p;
 
 class ParsedSource {
   final List<Element> templates;
@@ -8,19 +11,29 @@ class ParsedSource {
   ParsedSource(this.templates, [this.path]);
 }
 
-ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
+ParsedSource parseFileToCanonical(String path) {
+  // Direct parent directory's name
+  final defNs = p.basename(p.dirname(path));
+  final defaultTemplate = p.basenameWithoutExtension(path);
+  final htmlSource = File(path).readAsStringSync();
+  final templates = parseToCanonical(htmlSource, defTemp: defaultTemplate, defaultNamespace: defNs).templates;
+  return ParsedSource(templates, path);
+}
+
+ParsedSource parseToCanonical(String html,
+    {String defTemp, String defaultNamespace = 'd'}) {
   final templates = <Element>[];
 
   final root = html_parser.parseFragment(html);
 
-  // Short d-template
-  for(final element in root.children) {
+  // Short d-template, name ends with dot
+  for (final element in root.children) {
     final localName = element.localName;
-    if(element.localName.endsWith('.')) {
+    if (element.localName.endsWith('.')) {
       final parts = localName.split('.');
-      final methodName = parts[parts.length-2];
-      String namespace = parts.sublist(0, parts.length-2).join('.');
-      if(namespace == '') {
+      final methodName = parts[parts.length - 2];
+      String namespace = parts.sublist(0, parts.length - 2).join('.');
+      if (namespace == '') {
         namespace = defaultNamespace;
       }
       final template = Element.tag('d-template');
@@ -32,11 +45,13 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
     }
   }
 
-  templates.addAll(root.children.where((e)=>e.localName == 'd-template'));
+  templates.addAll(root.children.where((e) => e.localName == 'd-template'));
 
   if (templates.isEmpty) {
-    templates.add(Element.tag('d-template')..nodes.addAll(root.nodes)
-    ..attributes['*'] = 'render');
+    templates.add(Element.tag('d-template')
+      ..nodes.addAll(root.nodes)
+      ..attributes['*'] = defTemp ?? 'render'
+      ..attributes['d-namespace'] = defaultNamespace);
   }
 
   for (final templateElem in templates) {
@@ -48,6 +63,8 @@ ParsedSource parseToCanonical(String html, {String defaultNamespace = 'd'}) {
         //..attributes['library'] = 'package:domino/src/experimental/idom.dart'
         ..attributes['default'] = '{}';
     templateElem.append(varSlot);
+
+    templateElem.attributes['*'] = _dartName(templateElem.attributes['*']);
 
     for (final key in templateElem.attributes.keys.toList()) {
       final attr = key.toString();
@@ -141,16 +158,16 @@ void _rewrite(Node node) {
     }
 
     // Short d-call
-    if(node.localName.contains('.') ||
+    if (node.localName.contains('.') ||
         (node.localName.contains('-') && !node.localName.startsWith('d-'))) {
       // Translate to d-call
       final dot = node.localName.lastIndexOf('.');
       final method = node.localName.substring(dot + 1);
       final namespace = dot >= 0 ? node.localName.substring(0, dot) : 'd';
       final dcall = Element.tag('d-call')
-          ..attributes = node.attributes
-          ..attributes['d-method'] = _dartName(method)
-          ..attributes['d-namespace'] = namespace;
+        ..attributes = node.attributes
+        ..attributes['d-method'] = _dartName(method)
+        ..attributes['d-namespace'] = namespace;
       node.reparentChildren(dcall);
       node.replaceWith(dcall);
     }
@@ -174,17 +191,17 @@ void _rewrite(Node node) {
         node.attributes['d-library'] = libValue.replaceAll('.html', '.g.dart');
       }
 
-      if(!node.children.any((c) => c.localName == 'd-slot')) {
+      if (!node.children.any((c) => c.localName == 'd-insert-slot')) {
         // add default node if it does not have any
-        final dslot = Element.tag('d-slot')
+        final dslot = Element.tag('d-insert-slot')
           ..attributes['d-method'] = ''
           ..nodes.addAll(node.nodes);
         node.nodes.clear();
         node.append(dslot);
       } else {
         // remove every non-slot node
-        for(final cnode in node.nodes) {
-          if(cnode is Element && cnode.localName == 'd-slot') {
+        for (final cnode in node.nodes) {
+          if (cnode is Element && cnode.localName == 'd-insert-slot') {
             continue;
           } else {
             cnode.remove();
@@ -193,10 +210,10 @@ void _rewrite(Node node) {
       }
     }
 
-    if(node.localName == 'd-call-slot') {
+    if (node.localName == 'd-slot') {
       node.attributes['d-method'] ??= '';
     }
-    if(node.localName == 'd-slot') {
+    if (node.localName == 'd-insert-slot') {
       node.attributes['d-method'] ??= '';
     }
 
@@ -205,5 +222,5 @@ void _rewrite(Node node) {
 }
 
 String _dartName(String htmlName) {
-  return htmlName.replaceAll('-', '_').toLowerCase();
+  return htmlName.replaceAll('-', '_');
 }

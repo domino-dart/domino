@@ -6,8 +6,8 @@
   <ul>
     <d-for *="item in obj.items"><d-if *="item.visible"><li>{{item.label}} {{obj.name}}</li></d-if></d-for>
   </ul>
-  <d-if *="extra"><d-call obj="obj" extra="false" d-method="Ex1"><d-slot d-method=""></d-slot></d-call></d-if>
-  <d-call d-method="Ex2"><d-slot d-method=""></d-slot></d-call>
+  <d-if *="extra"><d-call obj="obj" extra="false" d-method="Ex1"><d-insert-slot d-method=""></d-insert-slot></d-call></d-if>
+  <d-call d-method="Ex2"><d-insert-slot d-method=""></d-insert-slot></d-call>
 <d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template><d-template *="Ex2">
   <div>X</div>
 <d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>
