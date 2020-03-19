@@ -1,6 +1,6 @@
 import 'package:domino/src/experimental/idom.dart' as _i0 show DomContext;
 
-void button(
+void renderButton(
   _i0.DomContext $d, {
   Map<String, void Function(_i0.DomContext)> $dSlots,
 }) {

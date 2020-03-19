@@ -1,19 +1,20 @@
-<d-template *="ex3" d-namespace="web-project"><button>
-    The best button
-</button>
-<d-call d-method="button" d-namespace="named-div"><d-insert-slot d-method=""></d-insert-slot></d-call>
-<d-call d-method="red_box" d-namespace="d"><d-insert-slot d-method="">
-    Here is an input field:
-    <input>
-    And a button component from somewhere
-    <!-- d. means it should look at any namespace -->
-    <d-call d-method="button" d-namespace="d"><d-insert-slot d-method=""></d-insert-slot></d-call>
-</d-insert-slot></d-call>
-<d-call d-method="blue_box" d-namespace="d"><d-insert-slot d-method="">
-    Here is an input field:
-    <input>
-    And a button component from somewhere
-    <!-- d. means it should look at any namespace -->
-    <d-call d-method="button" d-namespace="d"><d-insert-slot d-method=""></d-insert-slot></d-call>
-</d-insert-slot></d-call>
+<d-template *="renderEx3" d-namespace="web-project">
+    <button>
+        The best button
+    </button>
+    <d-call d-method="renderButton" d-namespace="named-div"><d-insert-slot d-method=""></d-insert-slot></d-call>
+    <d-call d-method="renderRedBox" d-namespace="d"><d-insert-slot d-method="">
+        Here is an input field:
+        <input>
+        And a button component from somewhere
+        <!-- d. means it should look at any namespace -->
+        <d-call d-method="renderButton" d-namespace="d"><d-insert-slot d-method=""></d-insert-slot></d-call>
+    </d-insert-slot></d-call>
+    <d-call d-method="renderBlueBox" d-namespace="d"><d-insert-slot d-method="">
+        Here is an input field:
+        <input>
+        And a button component from somewhere
+        <!-- d. means it should look at any namespace -->
+        <d-call d-method="renderButton" d-namespace="d"><d-insert-slot d-method=""></d-insert-slot></d-call>
+    </d-insert-slot></d-call>
 <d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>

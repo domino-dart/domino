@@ -16,7 +16,9 @@ ParsedSource parseFileToCanonical(String path) {
   final defNs = p.basename(p.dirname(path));
   final defaultTemplate = p.basenameWithoutExtension(path);
   final htmlSource = File(path).readAsStringSync();
-  final templates = parseToCanonical(htmlSource, defTemp: defaultTemplate, defaultNamespace: defNs).templates;
+  final templates = parseToCanonical(htmlSource,
+          defTemp: defaultTemplate, defaultNamespace: defNs)
+      .templates;
   return ParsedSource(templates, path);
 }
 
@@ -26,42 +28,34 @@ ParsedSource parseToCanonical(String html,
 
   final root = html_parser.parseFragment(html);
 
-  // Short d-template, name ends with dot
+  // Simple definition to d-template transformation
   for (final element in root.children) {
+    if (element.localName == 'd-template') continue;
     final localName = element.localName;
-    if (element.localName.endsWith('.')) {
-      final parts = localName.split('.');
-      final methodName = parts[parts.length - 2];
-      String namespace = parts.sublist(0, parts.length - 2).join('.');
-      if (namespace == '') {
-        namespace = defaultNamespace;
-      }
-      final template = Element.tag('d-template');
-      template.attributes.addAll(element.attributes);
-      template.nodes.addAll(element.nodes);
-      template.attributes['*'] = _dartName(methodName);
-      template.attributes['d-namespace'] = namespace;
-      templates.add(template);
+    final parts = localName.split('.');
+    final methodName = parts.last;
+    String namespace = parts.sublist(0, parts.length - 1).join('.');
+    if (namespace == '') {
+      namespace = defaultNamespace;
     }
+    final template = Element.tag('d-template');
+    template.attributes.addAll(element.attributes);
+    template.nodes.addAll(element.nodes);
+    template.attributes['*'] = methodName;
+    template.attributes['d-namespace'] = namespace;
+    templates.add(template);
   }
 
   templates.addAll(root.children.where((e) => e.localName == 'd-template'));
 
-  if (templates.isEmpty) {
-    templates.add(Element.tag('d-template')
-      ..nodes.addAll(root.nodes)
-      ..attributes['*'] = defTemp ?? 'render'
-      ..attributes['d-namespace'] = defaultNamespace);
-  }
-
   for (final templateElem in templates) {
     // Add slot variable
     final varSlot = Element.tag('d-template-var')
-        ..attributes['name'] = '\$dSlots'
-        // TODO: _i0 import alias is hardcoded
-        ..attributes['type'] = 'Map<String, void Function(_i0.DomContext)>'
-        //..attributes['library'] = 'package:domino/src/experimental/idom.dart'
-        ..attributes['default'] = '{}';
+      ..attributes['name'] = '\$dSlots'
+      // TODO: _i0 import alias is hardcoded
+      ..attributes['type'] = 'Map<String, void Function(_i0.DomContext)>'
+      //..attributes['library'] = 'package:domino/src/experimental/idom.dart'
+      ..attributes['default'] = '{}';
     templateElem.append(varSlot);
 
     templateElem.attributes['*'] = _dartName(templateElem.attributes['*']);
@@ -94,7 +88,7 @@ ParsedSource parseToCanonical(String html,
           documentation = parts.removeAt(0);
         }
         final varElem = Element.tag('d-template-var')
-          ..attributes['name'] = _dartName(attr)
+          ..attributes['name'] = _dartName(attr, prefix: 'var')
           ..attributes['library'] = library
           ..attributes['type'] = type;
         if (required) {
@@ -191,8 +185,9 @@ void _rewrite(Node node) {
         node.attributes['d-library'] = libValue.replaceAll('.html', '.g.dart');
       }
 
-      if (!node.children.any((c) => c.localName == 'd-insert-slot')) {
-        // add default node if it does not have any
+      if (!node.children.any((c) => c.localName == 'd-insert-slot') &&
+          !node.nodes.every((n) => (n is Text && n.text.trim() == ''))) {
+        // add default node if it does not have any, and has real node
         final dslot = Element.tag('d-insert-slot')
           ..attributes['d-method'] = ''
           ..nodes.addAll(node.nodes);
@@ -221,6 +216,12 @@ void _rewrite(Node node) {
   }
 }
 
-String _dartName(String htmlName) {
-  return htmlName.replaceAll('-', '_');
+String _dartName(String htmlName, {String prefix = 'render'}) {
+  // Rules:
+  return prefix +
+      htmlName
+          .toLowerCase()
+          .replaceAllMapped(
+              RegExp('(^|-)(\\S)'), (m) => m.group(2).toUpperCase())
+          .replaceAll(RegExp('(^|-)(-)'), '_');
 }
