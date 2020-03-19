@@ -23,7 +23,7 @@ void main() {
         ..label = 'Visible item 2',
     ];
 
-  Ex1(ctx, extra: true, obj: ex1);
+  renderEx1(ctx, extra: true, obj: ex1);
 
   ctx.writeHTML(out: File('example/ex1/ex1_indent.html').openWrite(),
       indent: '    ');

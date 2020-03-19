@@ -2,16 +2,14 @@ import 'package:domino/src/experimental/idom.dart' as _i0 show DomContext;
 import 'package:meta/meta.dart' as _i2 show required;
 import 'ex1_model.dart' as _i1 show Example;
 
-void Ex1(
+void renderEx1(
   _i0.DomContext $d, {
 
   /// Go recursive
   bool extra,
   @_i2.required _i1.Example obj,
-  Map<String, void Function(_i0.DomContext)> $dSlots,
 }) {
   extra ??= false;
-  $dSlots ??= {};
   $d.open('div', key: 'key1');
   $d.attr('title', 'Some help ${obj.name}.');
   $d.text('Some ${obj.text} and ${obj.number}.');
@@ -39,18 +37,20 @@ void Ex1(
   }
   $d.close();
   if (extra) {
-    $dSlots[''] = (_i0.DomContext $d) {};
-    Ex1($d, obj: obj, extra: false, $dSlots: $dSlots);
+    $d.open('d-call-var');
+    $d.attr('*', 'obj');
+    $d.attr('d-value', 'obj');
+    $d.close();
+    $d.open('d-call-var');
+    $d.attr('*', 'extra');
+    $d.attr('d-value', 'false');
+    $d.close();
+    renderEx1($d, obj: obj, extra: false);
   }
-  $dSlots[''] = (_i0.DomContext $d) {};
-  Ex2($d, $dSlots: $dSlots);
+  renderEx2($d);
 }
 
-void Ex2(
-  _i0.DomContext $d, {
-  Map<String, void Function(_i0.DomContext)> $dSlots,
-}) {
-  $dSlots ??= {};
+void renderEx2(_i0.DomContext $d) {
   $d.open('div');
   $d.text('X');
   $d.close();

@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 typedef LifecycleCallback<L> = Function(LifecycleEvent<L> element);
 typedef DomEventFn<V> = Function(DomEvent<V> event);
+typedef SlotFn = void Function(DomContext $d);
 
 abstract class DomContext<L, V> {
   L get element;
@@ -45,3 +46,4 @@ abstract class DomEvent<V> {
 
   void triggerUpdate();
 }
+

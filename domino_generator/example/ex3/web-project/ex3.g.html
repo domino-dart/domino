@@ -2,19 +2,20 @@
     <button>
         The best button
     </button>
-    <d-call d-method="renderButton" d-namespace="named-div"><d-insert-slot d-method=""></d-insert-slot></d-call>
-    <d-call d-method="renderRedBox" d-namespace="d"><d-insert-slot d-method="">
+    <d-call d-method="renderButton" d-namespace="named-div"></d-call>
+    <!-- Error if uncommented
         Here is an input field:
         <input>
         And a button component from somewhere
-        <!-- d. means it should look at any namespace -->
-        <d-call d-method="renderButton" d-namespace="d"><d-insert-slot d-method=""></d-insert-slot></d-call>
-    </d-insert-slot></d-call>
-    <d-call d-method="renderBlueBox" d-namespace="d"><d-insert-slot d-method="">
+        <d.button></d.button>
+        --><d-call d-method="renderRedBox" d-namespace="d">
+        
+    </d-call>
+    <!-- d. means it should look at any namespace --><d-call d-method="renderBlueBox" d-namespace="d">
+        
+    <d-call-slot *="slot">
         Here is an input field:
         <input>
         And a button component from somewhere
-        <!-- d. means it should look at any namespace -->
-        <d-call d-method="renderButton" d-namespace="d"><d-insert-slot d-method=""></d-insert-slot></d-call>
-    </d-insert-slot></d-call>
-<d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>
+        <d-call d-method="renderButton" d-namespace="d"></d-call></d-call-slot></d-call>
+</d-template>

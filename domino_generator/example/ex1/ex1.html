@@ -9,11 +9,11 @@
     <li *for="item in obj.items"
         *if="item.visible">{{item.label}} {{obj.name}}</li>
   </ul>
-  <d-call *="Ex1"
+  <d-call *="renderEx1"
           *if="extra"
           obj="obj"
           extra="false"></d-call>
-  <d-call *="Ex2"></d-call>
+  <d-call *="renderEx2"></d-call>
 </d-template>
 
 <d-template *="Ex2">

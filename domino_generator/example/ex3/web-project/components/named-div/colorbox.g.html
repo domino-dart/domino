@@ -2,12 +2,12 @@
     <div style="background-color: red; width: 100px; height: 100px">
         X
     </div>
-<d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>
+</d-template>
 
 <d-template *="renderBlueBox" d-namespace="named-div">
     <div style="background-color: blue; width: 100px; height: 100px">
         BB
-        <d-slot d-method=""></d-slot>
+        <d-slot *="slot"></d-slot>
         LO
     </div>
-<d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>
+<d-template-var name="slot" type="SlotFn" library="package:domino/src/experimental/idom.dart"></d-template-var></d-template>

@@ -137,8 +137,6 @@ class ComponentGenerator {
           _renderCall(stack, node);
         } else if (node.localName == 'd-slot') {
           _renderSlot(stack, node);
-        } else if (node.localName == 'd-insert-slot') {
-          _renderInsertSlot(stack, node);
         } else {
           _renderElem(stack, node);
         }
@@ -176,12 +174,6 @@ class ComponentGenerator {
     final library = elem.attributes.remove('d-library');
     final method = elem.attributes.remove('d-method') ?? '';
     final namespace = elem.attributes.remove('d-namespace') ?? '';
-    final params = <String>[];
-    for (final attrKey in elem.attributes.keys) {
-      final name = attrKey.toString();
-      final expr = elem.attributes[attrKey];
-      params.add(', $name: $expr');
-    }
     final alias = _importAlias(
         library ??
             registry?.resolveNamePath('$namespace.$method',
@@ -193,8 +185,20 @@ class ComponentGenerator {
     }
 
     _sb.write('$method(\$d');
-    _sb.write(params.join());
-    _sb.writeln(', \$dSlots: \$dSlots');
+
+    for (final ch in elem.children) {
+      if (ch.localName == 'd-call-var') {
+        _sb.write(', ${ch.attributes['*']}:${ch.attributes['d-value']}');
+      }
+      if (ch.localName == 'd-call-slot') {
+        final idomcAlias = _importAlias(
+            'package:domino/src/experimental/idom.dart', ['DomContext']);
+        _sb.writeln(', ${ch.attributes['*']}: ($idomcAlias.DomContext \$d){');
+        _render(stack, ch.nodes);
+        _sb.writeln('}');
+      }
+    }
+
     _sb.writeln(');');
   }
 
@@ -231,19 +235,8 @@ class ComponentGenerator {
   }
 
   void _renderSlot(Stack stack, Element elem) {
-    final method = elem.attributes.remove('d-method');
-    _sb.writeln('if(\$dSlots[\'$method\'] != null)\$dSlots[\'$method\'](\$d);');
-  }
-
-  void _renderInsertSlot(Stack stack, Element elem) {
-    final aliasdc = _importAlias(
-        'package:domino/src/experimental/idom.dart', ['DomContext']);
-    _sb.writeln('\$dSlots[\'${elem.attributes['d-method']}\']=');
-    _sb.writeln('    ($aliasdc.DomContext \$d){');
-
-    _render(stack, elem.nodes);
-
-    _sb.writeln('};');
+    final method = elem.attributes.remove('*');
+    _sb.writeln('$method(\$d);');
   }
 }
 

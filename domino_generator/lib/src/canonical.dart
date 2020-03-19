@@ -49,16 +49,18 @@ ParsedSource parseToCanonical(String html,
   templates.addAll(root.children.where((e) => e.localName == 'd-template'));
 
   for (final templateElem in templates) {
-    // Add slot variable
-    final varSlot = Element.tag('d-template-var')
-      ..attributes['name'] = '\$dSlots'
-      // TODO: _i0 import alias is hardcoded
-      ..attributes['type'] = 'Map<String, void Function(_i0.DomContext)>'
-      //..attributes['library'] = 'package:domino/src/experimental/idom.dart'
-      ..attributes['default'] = '{}';
-    templateElem.append(varSlot);
+    // Add slot variables
+    final slotNames = _collectSlots(templateElem);
+    for (final name in slotNames) {
+      final varSlot = Element.tag('d-template-var')
+        ..attributes['name'] = name
+        ..attributes['type'] = 'SlotFn'
+        ..attributes['library'] = 'package:domino/src/experimental/idom.dart';
+      templateElem.append(varSlot);
+    }
 
-    templateElem.attributes['*'] = _dartName(templateElem.attributes['*']);
+    templateElem.attributes['*'] =
+        _dartName(templateElem.attributes['*'], prefix: 'render');
 
     for (final key in templateElem.attributes.keys.toList()) {
       final attr = key.toString();
@@ -88,7 +90,7 @@ ParsedSource parseToCanonical(String html,
           documentation = parts.removeAt(0);
         }
         final varElem = Element.tag('d-template-var')
-          ..attributes['name'] = _dartName(attr, prefix: 'var')
+          ..attributes['name'] = _dartName(attr, prefix: '')
           ..attributes['library'] = library
           ..attributes['type'] = type;
         if (required) {
@@ -108,6 +110,19 @@ ParsedSource parseToCanonical(String html,
   }
 
   return ParsedSource(templates);
+}
+
+List<String> _collectSlots(Element elem) {
+  final slotNames = <String>[];
+  if (elem.localName == 'd-slot') {
+    final name = _dartName(elem.attributes['*'] ?? '', prefix: 'slot');
+    elem.attributes['*'] = name;
+    slotNames.add(name);
+  }
+  for (final child in elem.children) {
+    slotNames.addAll(_collectSlots(child));
+  }
+  return slotNames;
 }
 
 void _pullAttr(Element node, String tag, {Iterable<String> alternatives}) {
@@ -160,10 +175,11 @@ void _rewrite(Node node) {
       final namespace = dot >= 0 ? node.localName.substring(0, dot) : 'd';
       final dcall = Element.tag('d-call')
         ..attributes = node.attributes
-        ..attributes['d-method'] = _dartName(method)
+        ..attributes['d-method'] = _dartName(method, prefix: 'render')
         ..attributes['d-namespace'] = namespace;
       node.reparentChildren(dcall);
       node.replaceWith(dcall);
+      _rewrite(dcall);
     }
 
     if (node.localName == 'd-call') {
@@ -176,52 +192,69 @@ void _rewrite(Node node) {
         }
         if (parts.isNotEmpty) {
           final method = parts.removeAt(0);
-          final fullMethod = method.replaceAll('-', '_');
-          node.attributes['d-method'] ??= fullMethod;
+          node.attributes['d-method'] ??= method;
         }
       }
       final libValue = node.attributes['d-library'];
       if (libValue != null && libValue.endsWith('.html')) {
         node.attributes['d-library'] = libValue.replaceAll('.html', '.g.dart');
       }
-
-      if (!node.children.any((c) => c.localName == 'd-insert-slot') &&
-          !node.nodes.every((n) => (n is Text && n.text.trim() == ''))) {
+      final removeNodes = <Node>[];
+      final defSlotNodes = <Node>[];
+      for (final chd in node.nodes) {
+        if (chd is Element &&
+            !['d-call-slot', 'd-call-var'].contains(chd.localName)) {
+          defSlotNodes.add(chd);
+        } else if (chd is Text && chd.text.trim() != '') {
+          defSlotNodes.add(chd);
+        } else if (chd is Comment) {
+          removeNodes.add(chd);
+        }
+      }
+      removeNodes.forEach((nd) => node.parent.insertBefore(nd, node));
+      removeNodes.addAll(defSlotNodes);
+      node.nodes.removeWhere(removeNodes.contains);
+      if (defSlotNodes.isNotEmpty) {
         // add default node if it does not have any, and has real node
-        final dslot = Element.tag('d-insert-slot')
-          ..attributes['d-method'] = ''
-          ..nodes.addAll(node.nodes);
-        node.nodes.clear();
-        node.append(dslot);
-      } else {
-        // remove every non-slot node
-        for (final cnode in node.nodes) {
-          if (cnode is Element && cnode.localName == 'd-insert-slot') {
-            continue;
-          } else {
-            cnode.remove();
-          }
+        final defSlot = Element.tag('d-call-slot')
+          ..attributes['*'] = 'slot'
+          ..nodes.addAll(defSlotNodes);
+        node.append(defSlot);
+      }
+      for (final key in node.attributes.keys.toList()) {
+        final attr = key.toString();
+        if (!attr.contains('-') && !attr.contains('*')) {
+          final varname = attr;
+          final value = node.attributes[attr];
+          final dCallVar = Element.tag('d-call-var')
+            ..attributes['*'] = _dartName(varname)
+            ..attributes['d-value'] = value;
+          node.append(dCallVar);
+          node.attributes.remove(attr);
         }
       }
     }
 
     if (node.localName == 'd-slot') {
-      node.attributes['d-method'] ??= '';
+      node.attributes['*'] ??= 'slot';
     }
-    if (node.localName == 'd-insert-slot') {
-      node.attributes['d-method'] ??= '';
+    if (node.localName == 'd-call-slot') {
+      node.attributes['*'] ??= 'slot';
     }
 
     _rewriteAll(node.nodes);
   }
 }
 
-String _dartName(String htmlName, {String prefix = 'render'}) {
-  // Rules:
-  return prefix +
-      htmlName
-          .toLowerCase()
-          .replaceAllMapped(
-              RegExp('(^|-)(\\S)'), (m) => m.group(2).toUpperCase())
-          .replaceAll(RegExp('(^|-)(-)'), '_');
+String _dartName(String htmlName, {String prefix = ''}) {
+  return htmlName.startsWith('d:')
+      ? htmlName.substring(2)
+      : (prefix +
+              htmlName
+                  .toLowerCase()
+                  .replaceAllMapped(
+                      RegExp('(^|-)(\\S)'), (m) => m.group(2).toUpperCase())
+                  .replaceAll('-', '_'))
+          .replaceFirstMapped(
+              RegExp('.'), (firstCh) => firstCh.group(0).toLowerCase());
 }

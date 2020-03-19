@@ -1,4 +1,4 @@
-<d-template *="renderEx1"><d-template-var name="renderExtra" library="dart:core" type="bool" default="false" doc="Go recursive"></d-template-var><d-template-var name="renderObj" library="ex1_model.dart" type="Example" required="true"></d-template-var>
+<d-template *="renderEx1"><d-template-var name="extra" library="dart:core" type="bool" default="false" doc="Go recursive"></d-template-var><d-template-var name="obj" library="ex1_model.dart" type="Example" required="true"></d-template-var>
   <div title="Some help {{obj.name}}." d-key="'key1'">Some {{obj.text}} and {{obj.number}}.</div>
   <d-if *="obj.cond1"><span d-key="obj.number.toString()">cond1</span></d-if>
   <d-else-if *="obj.cond2 &amp;&amp; extra"><span>cond2</span></d-else-if>
@@ -6,8 +6,8 @@
   <ul>
     <d-for *="item in obj.items"><d-if *="item.visible"><li>{{item.label}} {{obj.name}}</li></d-if></d-for>
   </ul>
-  <d-if *="extra"><d-call obj="obj" extra="false" d-method="Ex1"><d-insert-slot d-method=""></d-insert-slot></d-call></d-if>
-  <d-call d-method="Ex2"><d-insert-slot d-method=""></d-insert-slot></d-call>
-<d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template><d-template *="renderEx2">
+  <d-if *="extra"><d-call d-method="renderEx1"><d-call-var *="obj" d-value="obj"></d-call-var><d-call-var *="extra" d-value="false"></d-call-var></d-call></d-if>
+  <d-call d-method="renderEx2"></d-call>
+</d-template><d-template *="renderEx2">
   <div>X</div>
-<d-template-var name="$dSlots" type="Map<String, void Function(_i0.DomContext)>" default="{}"></d-template-var></d-template>
+</d-template>
