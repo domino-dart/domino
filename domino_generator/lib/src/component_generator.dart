@@ -168,8 +168,6 @@ class ComponentGenerator {
   }
 
   void _renderCall(Stack stack, Element elem) {
-    // Load slot code before function call
-    _render(stack, elem.nodes);
 
     final library = elem.attributes.remove('d-library');
     final method = elem.attributes.remove('d-method') ?? '';

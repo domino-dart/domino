@@ -16,19 +16,11 @@ void renderEx3(_i0.DomContext $d) {
         */
   _i2.renderRedBox($d);
 /* d. means it should look at any namespace */
-  $d.open('d-call-slot');
-  $d.attr('*', 'slot');
-  $d.text('\n        Here is an input field:\n        ');
-  $d.open('input');
-  $d.close();
-  $d.text('\n        And a button component from somewhere\n        ');
-  _i1.renderButton($d);
-  $d.close();
   _i2.renderBlueBox($d, slot: (_i0.DomContext $d) {
     $d.text('\n        Here is an input field:\n        ');
     $d.open('input');
     $d.close();
     $d.text('\n        And a button component from somewhere\n        ');
-    ($d);
+    _i1.renderButton($d);
   });
 }
