@@ -1,0 +1,21 @@
+<d-template *="renderEx3" d-namespace="web-project">
+    <button>
+        The best button
+    </button>
+    <d-call d-method="renderButton" d-namespace="named-div"></d-call>
+    <!-- Error if uncommented
+        Here is an input field:
+        <input>
+        And a button component from somewhere
+        <d.button></d.button>
+        --><d-call d-method="renderRedBox" d-namespace="d">
+        
+    </d-call>
+    <!-- d. means it should look at any namespace --><d-call d-method="renderBlueBox" d-namespace="d">
+        
+    <d-call-slot *="slot">
+        Here is an input field:
+        <input>
+        And a button component from somewhere
+        <d-call d-method="renderButton" d-namespace="d"></d-call></d-call-slot></d-call>
+</d-template>
