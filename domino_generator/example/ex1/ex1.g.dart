@@ -37,14 +37,6 @@ void renderEx1(
   }
   $d.close();
   if (extra) {
-    $d.open('d-call-var');
-    $d.attr('*', 'obj');
-    $d.attr('d-value', 'obj');
-    $d.close();
-    $d.open('d-call-var');
-    $d.attr('*', 'extra');
-    $d.attr('d-value', 'false');
-    $d.close();
     renderEx1($d, obj: obj, extra: false);
   }
   renderEx2($d);
