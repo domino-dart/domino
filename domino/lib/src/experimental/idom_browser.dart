@@ -22,6 +22,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   void reset() {
     _lifecycleEvents.clear();
     _positions.clear();
+    assert(_hostElement.styleMap != null); // TODO: error, why null?
     _positions.add(_ElemPos(_hostElement));
     _removedNodes.clear();
   }
