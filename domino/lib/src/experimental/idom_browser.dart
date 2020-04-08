@@ -22,7 +22,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   void reset() {
     _lifecycleEvents.clear();
     _positions.clear();
-    assert(_hostElement.styleMap != null); // TODO: error, why null?
+    //assert(_hostElement.styleMap != null); // TODO: error, why null?
     _positions.add(_ElemPos(_hostElement));
     _removedNodes.clear();
   }
@@ -162,14 +162,13 @@ class BrowserDomContext implements DomContext<Element, Event> {
     final currentNode = pos.currentNode;
     if (currentNode is Text && currentNode.text == value) {
       pos.index++;
-      return;
-    }
-    if (currentNode is Text) {
+    } else if (currentNode is Text) {
       currentNode.text = value;
       pos.index++;
-      return;
+    } else {
+      pos.insert(Text(value));
+      pos.index++;
     }
-    pos.insert(Text(value));
   }
 
   @override
@@ -219,7 +218,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
       throw StateError('Closing tag: $tag != Element tag: ${pos.elem.tagName}');
     }
     pos._classesToRemove.forEach(pos.elem.classes.remove);
-    pos._stylesToRemove.forEach(pos.elem.styleMap.delete);
+    pos._stylesToRemove.forEach(pos.elem.styleMap?.delete ?? (x) {});
     pos._attrsToRemove.forEach(pos.elem.removeAttribute);
     if (pos.index < pos.elem.nodes.length) {
       pos.elem.nodes.skip(pos.index).toList().forEach((n) {
@@ -242,7 +241,7 @@ class _ElemPos {
 
   _ElemPos(this.elem)
       : _classesToRemove = elem.classes.toSet(),
-        _stylesToRemove = elem.styleMap.getProperties().toSet(),
+        _stylesToRemove = elem.styleMap?.getProperties()?.toSet() ?? {},
         _attrsToRemove = elem.attributes.keys.toSet() {
     _attrsToRemove.remove('class');
     _attrsToRemove.remove('style');

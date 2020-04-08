@@ -6,6 +6,8 @@ void renderMain(
 }) {
   $d.open('div');
   $d.open('button');
+  $d.attr('id', 'clickButton');
+  $d.attr('onclick', 'betterAlert(\'hello\');');
   $d.text('\n        ${clickName}\n    ');
   $d.close();
   $d.open('input');
