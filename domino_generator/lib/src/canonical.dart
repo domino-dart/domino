@@ -64,7 +64,7 @@ ParsedSource parseToCanonical(String html,
 
     for (final key in templateElem.attributes.keys.toList()) {
       final attr = key.toString();
-      if (!attr.contains('-') && !attr.contains('*')) {
+      if (!attr.contains('d-') && !attr.contains('*')) {
         final value = templateElem.attributes.remove(key);
         final parts = value.split('#').map((s) => s.trim()).toList();
         var library = 'dart:core';
