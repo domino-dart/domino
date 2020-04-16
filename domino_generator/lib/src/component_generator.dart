@@ -242,6 +242,21 @@ class ComponentGenerator {
     final method = elem.attributes.remove('*');
     _sb.writeln('$method(\$d);');
   }
+
+  String generateScss(ParsedSource parsedSource) {
+    final data = StringBuffer();
+    for(final template in parsedSource.templates) {
+      // copied from generateParsedSource
+      final name = template.attributes['*'].replaceAll('-', '_') ?? 'render';
+      final scssName =
+      ('${template.attributes['d-namespace']}_$name').replaceAll('.', '_');
+      final styles = template.getElementsByTagName('d-style');
+      for(final elem in styles ) {
+        data.writeln('.$scssName { ${elem.innerHtml} }');
+      }
+    }
+    return data.toString();
+  }
 }
 
 final _expr = RegExp('{{(.+?)}}');
@@ -308,5 +323,9 @@ compileDirectory(String path,
     final genSource = cg.generateParsedSource(ps);
     final genPath = ps.path.replaceAll('.html', '.g.dart');
     File(genPath).writeAsStringSync(genSource);
+
+    final genScss = cg.generateScss(ps);
+    final genScssPath = ps.path.replaceAll('.html', '.scss');
+    File(genScssPath).writeAsStringSync(genScss);
   }
 }
