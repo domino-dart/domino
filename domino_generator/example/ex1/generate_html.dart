@@ -4,7 +4,7 @@ import 'package:domino/src/experimental/idom_server.dart';
 import 'ex1.g.dart';
 import 'ex1_model.dart';
 
-void main() {
+void main() async {
   final ctx = ServerDomContext();
 
   final ex1 = Example()
@@ -25,10 +25,18 @@ void main() {
 
   renderEx1(ctx, extra: true, obj: ex1);
 
-  ctx.writeHTML(out: File('example/ex1/ex1_indent.html').openWrite(),
+  final ex1Indent = File('example/ex1/ex1_indent.html').openWrite();
+  ctx.writeHTML(out: ex1Indent,
       indent: '    ');
-  ctx.writeHTML(out: File('example/ex1/ex1_indentattr.html').openWrite(),
+  await ex1Indent.close();
+
+  final ex1IndentAttr = File('example/ex1/ex1_indent.html').openWrite();
+  ctx.writeHTML(out: ex1IndentAttr,
       indent: '    ', indentAttr: true);
-  ctx.writeHTML(out: File('example/ex1/ex1_noindent.html').openWrite(),
+  await ex1IndentAttr.close();
+
+  final ex1NoIndent = File('example/ex1/ex1_noindent.html').openWrite();
+  ctx.writeHTML(out: ex1NoIndent,
       indent: null);
+  await ex1NoIndent.close();
 }
