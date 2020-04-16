@@ -94,7 +94,12 @@ class ComponentGenerator {
       defaultInits.forEach(_sb.writeln);
       topLevelObjects.add('\$d');
 
-      _render(Stack(objects: topLevelObjects), template.nodes);
+      // SCSS class name
+      final scssName =
+          ('${template.attributes['d-namespace']}_$name').replaceAll('.', '_');
+
+      _render(
+          Stack(objects: topLevelObjects, clazzName: scssName), template.nodes);
 
       _sb.writeln('}');
     }
@@ -163,12 +168,13 @@ class ComponentGenerator {
       _sb.writeln(
           '    \$d.attr(\'$attr\', \'${_interpolateText(stack, elem.attributes[attr])}\');');
     }
+    // write clazz
+    _sb.writeln('    \$d.clazz(\'${stack.clazzName}\');\n');
     _render(stack, elem.nodes);
     _sb.writeln('    \$d.close();');
   }
 
   void _renderCall(Stack stack, Element elem) {
-
     final library = elem.attributes.remove('d-library');
     final method = elem.attributes.remove('d-method') ?? '';
     final namespace = elem.attributes.remove('d-namespace') ?? '';
@@ -244,14 +250,22 @@ class Stack {
   final Stack _parent;
   final Set<String> _objects;
   final bool _emitWhitespaces;
+  final String _clazzName;
 
-  Stack({Stack parent, bool emitWhitespaces, Iterable<String> objects})
+  Stack(
+      {Stack parent,
+      bool emitWhitespaces,
+      Iterable<String> objects,
+      String clazzName})
       : _parent = parent,
         _objects = objects?.toSet() ?? <String>{},
-        _emitWhitespaces = emitWhitespaces;
+        _emitWhitespaces = emitWhitespaces,
+        _clazzName = clazzName;
 
   bool get emitWhitespaces =>
       _emitWhitespaces ?? _parent?.emitWhitespaces ?? false;
+
+  String get clazzName => _clazzName ?? _parent?.clazzName ?? '';
 
   String canonicalize(String expr) {
     var s = this;
