@@ -95,8 +95,8 @@ class ComponentGenerator {
       topLevelObjects.add('\$d');
 
       // SCSS class name
-      final scssName =
-          ('${template.attributes['d-namespace']}_$name').replaceAll('.', '_');
+      // TODO: style name based on the hash of the style
+      final scssName = _scssName(template);
 
       _render(
           Stack(objects: topLevelObjects, clazzName: scssName), template.nodes);
@@ -112,6 +112,10 @@ class ComponentGenerator {
     }
     return text;
   }
+
+  String _scssName(Element template) =>
+      '${template.attributes['d-namespace']}_${template.attributes['*']}'
+          .replaceAll('.', '_');
 
   void _render(Stack stack, List<Node> nodes) {
     for (final node in nodes) {
@@ -245,13 +249,10 @@ class ComponentGenerator {
 
   String generateScss(ParsedSource parsedSource) {
     final data = StringBuffer();
-    for(final template in parsedSource.templates) {
-      // copied from generateParsedSource
-      final name = template.attributes['*'].replaceAll('-', '_') ?? 'render';
-      final scssName =
-      ('${template.attributes['d-namespace']}_$name').replaceAll('.', '_');
+    for (final template in parsedSource.templates) {
+      final scssName = _scssName(template);
       final styles = template.getElementsByTagName('d-style');
-      for(final elem in styles ) {
+      for (final elem in styles) {
         data.writeln('.$scssName { ${elem.innerHtml} }');
       }
     }
@@ -325,7 +326,7 @@ compileDirectory(String path,
     File(genPath).writeAsStringSync(genSource);
 
     final genScss = cg.generateScss(ps);
-    final genScssPath = ps.path.replaceAll('.html', '.scss');
+    final genScssPath = ps.path.replaceAll('.html', '.g.scss');
     File(genScssPath).writeAsStringSync(genScss);
   }
 }

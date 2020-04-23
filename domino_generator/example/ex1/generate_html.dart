@@ -4,7 +4,7 @@ import 'package:domino/src/experimental/idom_server.dart';
 import 'ex1.g.dart';
 import 'ex1_model.dart';
 
-void main() async {
+Future<void> main() async {
   final ctx = ServerDomContext();
 
   final ex1 = Example()
