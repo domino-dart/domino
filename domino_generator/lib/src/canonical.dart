@@ -61,6 +61,7 @@ ParsedSource parseToCanonical(String html,
 
     templateElem.attributes['*'] =
         _dartName(templateElem.attributes['*'], prefix: 'render');
+    templateElem.attributes['d-namespace'] ??= defaultNamespace;
 
     for (final key in templateElem.attributes.keys.toList()) {
       final attr = key.toString();

@@ -4,6 +4,8 @@ import 'components/named-div/colorbox.g.dart' as _i2 show renderRedBox;
 
 void renderEx2(_i0.DomContext $d) {
   $d.open('button');
+  $d.clazz('web-project_renderEx2');
+
   $d.text('\n        The best button\n    ');
   $d.close();
   _i1.renderButton($d);

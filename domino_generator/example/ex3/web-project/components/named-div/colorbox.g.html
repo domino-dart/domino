@@ -1,11 +1,21 @@
 <d-template *="renderRedBox" d-namespace="named-div">
-    <div style="background-color: red; width: 100px; height: 100px">
+    <d-style>
+        background-color: red;
+        width: 100px;
+        height: 100px;
+    </d-style>
+    <div>
         X
     </div>
 </d-template>
 
 <d-template *="renderBlueBox" d-namespace="named-div">
-    <div style="background-color: blue; width: 100px; height: 100px">
+    <d-style>
+        background-color: blue;
+        width: 100px;
+        height: 100px;
+    </d-style>
+    <div>
         BB
         <d-slot *="slot"></d-slot>
         LO

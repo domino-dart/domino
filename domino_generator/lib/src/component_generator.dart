@@ -94,7 +94,12 @@ class ComponentGenerator {
       defaultInits.forEach(_sb.writeln);
       topLevelObjects.add('\$d');
 
-      _render(Stack(objects: topLevelObjects), template.nodes);
+      // SCSS class name
+      // TODO: style name based on the hash of the style
+      final scssName = _scssName(template);
+
+      _render(
+          Stack(objects: topLevelObjects, clazzName: scssName), template.nodes);
 
       _sb.writeln('}');
     }
@@ -107,6 +112,10 @@ class ComponentGenerator {
     }
     return text;
   }
+
+  String _scssName(Element template) =>
+      '${template.attributes['d-namespace']}_${template.attributes['*']}'
+          .replaceAll('.', '_');
 
   void _render(Stack stack, List<Node> nodes) {
     for (final node in nodes) {
@@ -163,12 +172,13 @@ class ComponentGenerator {
       _sb.writeln(
           '    \$d.attr(\'$attr\', \'${_interpolateText(stack, elem.attributes[attr])}\');');
     }
+    // write clazz
+    _sb.writeln('    \$d.clazz(\'${stack.clazzName}\');\n');
     _render(stack, elem.nodes);
     _sb.writeln('    \$d.close();');
   }
 
   void _renderCall(Stack stack, Element elem) {
-
     final library = elem.attributes.remove('d-library');
     final method = elem.attributes.remove('d-method') ?? '';
     final namespace = elem.attributes.remove('d-namespace') ?? '';
@@ -236,6 +246,18 @@ class ComponentGenerator {
     final method = elem.attributes.remove('*');
     _sb.writeln('$method(\$d);');
   }
+
+  String generateScss(ParsedSource parsedSource) {
+    final data = StringBuffer();
+    for (final template in parsedSource.templates) {
+      final scssName = _scssName(template);
+      final styles = template.getElementsByTagName('d-style');
+      for (final elem in styles) {
+        data.writeln('.$scssName { ${elem.innerHtml} }');
+      }
+    }
+    return data.toString();
+  }
 }
 
 final _expr = RegExp('{{(.+?)}}');
@@ -244,14 +266,22 @@ class Stack {
   final Stack _parent;
   final Set<String> _objects;
   final bool _emitWhitespaces;
+  final String _clazzName;
 
-  Stack({Stack parent, bool emitWhitespaces, Iterable<String> objects})
+  Stack(
+      {Stack parent,
+      bool emitWhitespaces,
+      Iterable<String> objects,
+      String clazzName})
       : _parent = parent,
         _objects = objects?.toSet() ?? <String>{},
-        _emitWhitespaces = emitWhitespaces;
+        _emitWhitespaces = emitWhitespaces,
+        _clazzName = clazzName;
 
   bool get emitWhitespaces =>
       _emitWhitespaces ?? _parent?.emitWhitespaces ?? false;
+
+  String get clazzName => _clazzName ?? _parent?.clazzName ?? '';
 
   String canonicalize(String expr) {
     var s = this;
@@ -294,5 +324,9 @@ compileDirectory(String path,
     final genSource = cg.generateParsedSource(ps);
     final genPath = ps.path.replaceAll('.html', '.g.dart');
     File(genPath).writeAsStringSync(genSource);
+
+    final genScss = cg.generateScss(ps);
+    final genScssPath = ps.path.replaceAll('.html', '.g.scss');
+    File(genScssPath).writeAsStringSync(genScss);
   }
 }
