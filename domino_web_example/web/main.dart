@@ -1,5 +1,6 @@
 import 'dart:html';
 import 'templates/mainElem.g.dart';
+import 'package:domino/src/experimental/idom.dart' as idom;
 import 'package:domino/src/experimental/idom_browser.dart' as ib;
 
 void main() {
@@ -11,9 +12,9 @@ void main() {
     ctx.text('value $i\n');
   }
   ctx.close();
-  renderMain(ctx, clickName: 'Click me!');
-}
-
-void betterAlert(String text){
-  window.alert('BETTER $text');
+  renderMain(ctx, clickName: 'Click me!', clickFun: (idom.DomEvent e) {
+    ctx.open('div');
+    ctx.text('Enter the new division');
+    ctx.close();
+  });
 }

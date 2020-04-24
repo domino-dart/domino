@@ -1,6 +1,6 @@
-<d-template *="renderMain"><d-template-var name="clickName" library="dart:core" type="String"></d-template-var>
+<d-template *="renderMain" d-namespace="templates"><d-template-var name="clickFun" library="dart:core" type=""></d-template-var><d-template-var name="clickName" library="dart:core" type="String"></d-template-var>
     <div>
-    <button id="clickButton" onclick="betterAlert('hello');">
+    <button id="clickButton" d-event:onclick="clickFun">
         {{clickName}}
     </button>
     <input>

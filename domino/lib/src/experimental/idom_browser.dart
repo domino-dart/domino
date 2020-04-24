@@ -100,13 +100,11 @@ class BrowserDomContext implements DomContext<Element, Event> {
 
     // fallback: create new Element
     final newElem = Element.tag(tag);
-    if (key != null || onCreate != null || onRemove != null) {
-      _elemExpando[newElem] = _ElemExtra()
-        ..key = key
-        ..onCreate = onCreate
-        ..onRemove = onRemove;
-      // TODO: set cascade remove on parents
-    }
+    _elemExpando[newElem] = _ElemExtra()
+      ..key = key
+      ..onCreate = onCreate
+      ..onRemove = onRemove;
+    // TODO: set cascade remove on parents
     pos.insert(newElem);
     _positions.add(_ElemPos(newElem));
     if (onCreate != null) {
@@ -213,7 +211,6 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void close({String tag}) {
     final pos = _positions.removeLast();
-    print(['close', pos.elem.outerHtml, pos.index]);
     if (tag != null && pos.elem.tagName != tag) {
       throw StateError('Closing tag: $tag != Element tag: ${pos.elem.tagName}');
     }
