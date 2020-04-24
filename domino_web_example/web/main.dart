@@ -13,8 +13,11 @@ void main() {
   }
   ctx.close();
   renderMain(ctx, clickName: 'Click me!', clickFun: (idom.DomEvent e) {
-    ctx.open('div');
-    ctx.text('Enter the new division');
-    ctx.close();
+    window.alert('Hello from here');
   });
+
+  querySelector('#clickButton').on['onClick'].listen((e) {
+    window.alert('Hello from there');
+  });
+   //*/
 }

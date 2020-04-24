@@ -10,7 +10,7 @@ void renderMain(
 
   $d.open('button');
   $d.attr('id', 'clickButton');
-  $d.event('onclick', fn: clickFun);
+  $d.event('click', fn: clickFun);
   $d.clazz('templates_renderMain');
 
   $d.text('\n        ${clickName}\n    ');

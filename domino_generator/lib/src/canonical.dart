@@ -165,6 +165,9 @@ void _rewrite(Node node) {
         node.attributes.remove(key);
         node.attributes['d-key'] = '\'${key.substring(1)}\'';
       }
+      if(key is String && key.startsWith('d-event:on')) {
+        node.attributes[key.replaceFirst(':on', ':')] = node.attributes.remove(key);
+      }
     }
 
     // Short d-call
