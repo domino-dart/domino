@@ -179,7 +179,7 @@ class ComponentGenerator {
         .where((attr) => attr is String && attr.startsWith('d-'))) {
       final attr = dattr as String;
       // Single d-event:onclick=dartFunction
-      if(attr.startsWith('d-event')) {
+      if(attr.startsWith('d-event:')) {
         final parts = attr.split(':');
         final eventName = parts[1];
         _sb.writeln(
