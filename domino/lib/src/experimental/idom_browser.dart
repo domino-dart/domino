@@ -100,11 +100,13 @@ class BrowserDomContext implements DomContext<Element, Event> {
 
     // fallback: create new Element
     final newElem = Element.tag(tag);
-    _elemExpando[newElem] = _ElemExtra()
-      ..key = key
-      ..onCreate = onCreate
-      ..onRemove = onRemove;
-    // TODO: set cascade remove on parents
+    if (key != null || onCreate != null || onRemove != null) {
+      _elemExpando[newElem] = _ElemExtra()
+        ..key = key
+        ..onCreate = onCreate
+        ..onRemove = onRemove;
+      // TODO: set cascade remove on parents
+    }
     pos.insert(newElem);
     _positions.add(_ElemPos(newElem));
     if (onCreate != null) {
@@ -180,6 +182,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   void event(String name,
       {DomEventFn<Event> fn, String key, bool tracked = true}) {
     final elem = element;
+    _elemExpando[elem] ??= _ElemExtra();
     final extra = _elemExpando[elem];
     final ekey = '$name[$key]';
     extra.eventSubscriptions ??= <String, StreamSubscription>{};
