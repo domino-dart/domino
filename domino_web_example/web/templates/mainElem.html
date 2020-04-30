@@ -1,8 +1,11 @@
-<d-template *="main" click-name="String">
+<main click-name="String" click-fun>
     <div>
-    <button id="clickButton">
-        {{clickName}}
-    </button>
-    <input>
+        <button id="clickButton" d-event:onclick="clickFun">
+            {{clickName}}
+        </button>
+        <input>
+        <best-button bold-text="'Boldy texty'" d-event:onclick="clickFun">
+            <b>Slot text</b>
+        </best-button>
     </div>
-</d-template>
+</main>

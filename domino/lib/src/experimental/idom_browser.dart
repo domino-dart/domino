@@ -182,6 +182,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   void event(String name,
       {DomEventFn<Event> fn, String key, bool tracked = true}) {
     final elem = element;
+    _elemExpando[elem] ??= _ElemExtra();
     final extra = _elemExpando[elem];
     final ekey = '$name[$key]';
     extra.eventSubscriptions ??= <String, StreamSubscription>{};
@@ -213,7 +214,6 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void close({String tag}) {
     final pos = _positions.removeLast();
-    print(['close', pos.elem.outerHtml, pos.index]);
     if (tag != null && pos.elem.tagName != tag) {
       throw StateError('Closing tag: $tag != Element tag: ${pos.elem.tagName}');
     }

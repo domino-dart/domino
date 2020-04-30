@@ -169,9 +169,32 @@ class ComponentGenerator {
 
     _sb.writeln('    \$d.open(\'${elem.localName}\' ${openParams.join()});');
     for (final attr in elem.attributes.keys) {
+      if (attr is String && attr.startsWith('d-')) continue;
       _sb.writeln(
           '    \$d.attr(\'$attr\', \'${_interpolateText(stack, elem.attributes[attr])}\');');
     }
+
+    // 'd-' attributes
+    for (final dattr in elem.attributes.keys
+        .where((attr) => attr is String && attr.startsWith('d-'))) {
+      final attr = dattr as String;
+      // Single d-event:onclick=dartFunction
+      if(attr.startsWith('d-event:')) {
+        final parts = attr.split(':');
+        final eventName = parts[1];
+        _sb.writeln(
+          '    \$d.event(\'$eventName\', fn: ${_interpolateText(stack, elem.attributes[dattr])});'
+        );
+      }
+      if(attr.startsWith('d-event-list')) {
+        _sb.writeln('''
+        for(final key in ${_interpolateText(stack, elem.attributes[dattr])}.keys) {
+            \$d.event(key, fn: ${_interpolateText(stack, elem.attributes[dattr])}[key]);
+        }
+        ''');
+      }
+    }
+
     // write clazz
     _sb.writeln('    \$d.clazz(\'${stack.clazzName}\');\n');
     _render(stack, elem.nodes);

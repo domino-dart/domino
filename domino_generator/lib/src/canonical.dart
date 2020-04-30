@@ -65,7 +65,7 @@ ParsedSource parseToCanonical(String html,
 
     for (final key in templateElem.attributes.keys.toList()) {
       final attr = key.toString();
-      if (!attr.contains('d-') && !attr.contains('*')) {
+      if (!attr.startsWith('d-') && !attr.contains('*')) {
         final value = templateElem.attributes.remove(key);
         final parts = value.split('#').map((s) => s.trim()).toList();
         var library = 'dart:core';
@@ -165,6 +165,10 @@ void _rewrite(Node node) {
         node.attributes.remove(key);
         node.attributes['d-key'] = '\'${key.substring(1)}\'';
       }
+      if (key is String && key.startsWith('d-event:on')) {
+        node.attributes[key.replaceFirst(':on', ':')] =
+            node.attributes.remove(key);
+      }
     }
 
     // Short d-call
@@ -224,15 +228,37 @@ void _rewrite(Node node) {
       }
       for (final key in node.attributes.keys.toList()) {
         final attr = key.toString();
-        if (!attr.contains('-') && !attr.contains('*')) {
-          final varname = attr;
+        if (!attr.startsWith('d-') && !attr.contains('*')) {
+          final varname = _dartName(attr);
           final value = node.attributes[attr];
           final dCallVar = Element.tag('d-call-var')
-            ..attributes['*'] = _dartName(varname)
+            ..attributes['*'] = varname
             ..attributes['d-value'] = value;
           node.append(dCallVar);
           node.attributes.remove(attr);
         }
+      }
+
+      // Collect events
+      final events = <String, String>{}; // name -> action map
+      for (final key in node.attributes.keys.toList()) {
+        final attr = key.toString();
+        if (attr.startsWith('d-event:')) {
+          final eventName = attr.split(':')[1];
+          final value = node.attributes[attr];
+          events[eventName] = value;
+          node.attributes.remove(attr);
+        }
+      }
+      if(events.isNotEmpty) {
+        final eventCallTag = Element.tag('d-call-var')
+          ..attributes['*'] = 'events'
+          ..attributes['d-value'] = '{' +
+              events.entries
+                  .map((e) => '\'${e.key}\': ${e.value}')
+                  .join(',') +
+              '}';
+        node.append(eventCallTag);
       }
     }
 

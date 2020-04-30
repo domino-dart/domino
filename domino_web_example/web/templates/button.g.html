@@ -1,0 +1,6 @@
+<d-template *="renderBestButton" d-namespace="templates"><d-template-var name="events" library="dart:core" type=""></d-template-var><d-template-var name="boldText" library="dart:core" type="String"></d-template-var>
+    <div d-event-list="events">
+        The mighty click area with <b>{{boldText}}</b>:
+        <d-slot *="slot"></d-slot>
+    </div>
+<d-template-var name="slot" type="SlotFn" library="package:domino/src/experimental/idom.dart"></d-template-var></d-template>
