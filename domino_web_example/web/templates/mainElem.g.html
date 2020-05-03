@@ -3,7 +3,8 @@
         <button id="clickButton" d-event:click="clickFun">
             {{clickName}}
         </button>
-        <input>
+        <input d-var:in1val="" d-bind-value="in1val">
+        <input d-bind-value="in1val" d-bind:type="in1val">
         <d-call d-method="renderBestButton" d-namespace="d">
             
         <d-call-slot *="slot"><b>Slot text</b></d-call-slot><d-call-var *="boldText" d-value="'Boldy texty'"></d-call-var><d-call-var *="events" d-value="{'click': clickFun}"></d-call-var></d-call>

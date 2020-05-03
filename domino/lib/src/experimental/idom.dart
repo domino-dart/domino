@@ -64,11 +64,17 @@ class BindedVar<T> {
       _controller.add(val);
     }
   }
-  
+
+  T _lastVar;
   void triggerUpdate() {
     final val = _getValue();
-    _setValue(val);
-    _controller.add(_getValue());
+    if(val != _lastVar) {
+      _lastVar = val;
+      _controller.add(_getValue());
+    }
+  }
+  void triggerListenOn(Stream stream) {
+    stream.listen((data) {triggerUpdate();});
   }
 
   void listenOn(Stream<T> stream) {
