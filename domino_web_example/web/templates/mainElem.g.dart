@@ -21,14 +21,15 @@ void renderMain(
 
   var in1val;
   {
-    final atrBind = _i0.BindedVar<String>(() => $d.element.value, (String val) {
-      $d.element.value = val;
+    final elem = $d.element;
+    final atrBind = _i0.BindedVar<String>(() => elem.value, (String val) {
+      elem.value = val;
     });
     final varBind = _i0.BindedVar<String>(() => in1val, (val) {
       in1val = val;
     });
-    atrBind.triggerListenOn($d.element.onInput);
-    atrBind.triggerListenOn($d.element.onChange);
+    atrBind.triggerListenOn(elem.onInput);
+    atrBind.triggerListenOn(elem.onChange);
     atrBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
     varBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
     atrBind.bind(varBind);
@@ -38,22 +39,24 @@ void renderMain(
   $d.close();
   $d.open('input');
   {
-    final atrBind = _i0.BindedVar<String>(() => $d.element.value, (String val) {
-      $d.element.value = val;
+    final elem = $d.element;
+    final atrBind = _i0.BindedVar<String>(() => elem.value, (String val) {
+      elem.value = val;
     });
     final varBind = _i0.BindedVar<String>(() => in1val, (val) {
       in1val = val;
     });
-    atrBind.triggerListenOn($d.element.onInput);
-    atrBind.triggerListenOn($d.element.onChange);
+    atrBind.triggerListenOn(elem.onInput);
+    atrBind.triggerListenOn(elem.onChange);
     atrBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
     varBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
     atrBind.bind(varBind);
   }
   {
-    final atrBind = _i0.BindedVar<String>(() => $d.element.attributes['type'],
-        (String val) {
-      $d.element.attributes['type'] = val;
+    final elem = $d.element;
+    final atrBind =
+        _i0.BindedVar<String>(() => elem.attributes['type'], (String val) {
+      elem.attributes['type'] = val;
     });
     atrBind.listenOn(
         Stream.periodic(Duration(milliseconds: 50), (tick) => in1val));

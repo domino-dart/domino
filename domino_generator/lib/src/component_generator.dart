@@ -209,8 +209,9 @@ class ComponentGenerator {
         final ba = attr.split(':').sublist(1).join(':');
         final ex = elem.attributes[attr];
         _sb.writeln('''{ 
-          final atrBind = $idomcAlias.BindedVar<String>(() => \$d.element.attributes[\'$ba\'],
-            (String val) {\$d.element.attributes[\'$ba\'] = val;});
+          final elem = \$d.element;
+          final atrBind = $idomcAlias.BindedVar<String>(() => elem.attributes[\'$ba\'],
+            (String val) {elem.attributes[\'$ba\'] = val;});
           atrBind.listenOn(Stream.periodic(Duration(milliseconds: 50), 
             (tick) => $ex));
         }''');
@@ -221,13 +222,14 @@ class ComponentGenerator {
         final ba = attr.split(':').sublist(1).join(':');
         final ex = elem.attributes[attr];
         _sb.writeln('''{ 
-          final atrBind = $idomcAlias.BindedVar<String>(() => \$d.element.attributes[\'$ba\'],
-            (String val) {\$d.element.attributes[\'$ba\'] = val;});
+          final elem = \$d.element;
+          final atrBind = $idomcAlias.BindedVar<String>(() => elem.attributes[\'$ba\'],
+            (String val) {elem.attributes[\'$ba\'] = val;});
           final varBind = $idomcAlias.BindedVar<String>(() => $ex, (val) { $ex = val });
           varBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
           if(MutationObserver.supported) {
              MutationObserver((mut, obs) { atrBind.triggerUpdate(); })
-              .observe(\$d.element, attributes: true, attributeFilter: [\'$ba\']);
+              .observe(elem, attributes: true, attributeFilter: [\'$ba\']);
           } else {
            atrBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
           }
@@ -239,11 +241,12 @@ class ComponentGenerator {
             'package:domino/src/experimental/idom.dart', ['BindedVar']);
         final ex = elem.attributes[attr];
         _sb.writeln('''{ 
-          final atrBind = $idomcAlias.BindedVar<String>(() => \$d.element.value,
-            (String val) {\$d.element.value = val;});
+          final elem = \$d.element;
+          final atrBind = $idomcAlias.BindedVar<String>(() => elem.value,
+            (String val) {elem.value = val;});
           final varBind = $idomcAlias.BindedVar<String>(() => $ex, (val) { $ex = val; });
-          atrBind.triggerListenOn(\$d.element.onInput);
-          atrBind.triggerListenOn(\$d.element.onChange);
+          atrBind.triggerListenOn(elem.onInput);
+          atrBind.triggerListenOn(elem.onChange);
           atrBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
           varBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
           atrBind.bind(varBind);
