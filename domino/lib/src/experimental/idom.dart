@@ -57,28 +57,21 @@ class BindedVar<T> {
   final _controller = StreamController<T>.broadcast();
   Stream<T> get valueStream => _controller.stream;
 
-  T get value => _getValue();
-  set value(T val) {
-    if(_getValue() != val) {
+  T _lastVal;
+  void triggerUpdate([T val]) {
+    if(val != null) {
       _setValue(val);
+    } else {
+      val = _getValue();
+    }
+    if (val != _lastVal) {
+      _lastVal = val;
       _controller.add(val);
     }
   }
 
-  T _lastVar;
-  void triggerUpdate() {
-    final val = _getValue();
-    if(val != _lastVar) {
-      _lastVar = val;
-      _controller.add(_getValue());
-    }
-  }
-  void triggerListenOn(Stream stream) {
-    stream.listen((data) {triggerUpdate();});
-  }
-
   void listenOn(Stream<T> stream) {
-    stream.listen((data) => value = data);
+    stream.listen(triggerUpdate);
   }
   void bind(BindedVar<T> bindedVar) {
     bindedVar.listenOn(valueStream);

@@ -203,54 +203,19 @@ class ComponentGenerator {
         ''');
       }
 
-      if(attr.startsWith('d-bind:')) {
-        final idomcAlias = _importAlias(
-            'package:domino/src/experimental/idom.dart', ['BindedVar']);
-        final ba = attr.split(':').sublist(1).join(':');
-        final ex = elem.attributes[attr];
-        _sb.writeln('''{ 
+      if(attr.startsWith('d-bind-input:')) {
+        final ba = attr.split(':').sublist(1).join(':'); // binded attribute
+        final ex = elem.attributes[attr]; // expression
+        _sb.writeln('''{
           final elem = \$d.element;
-          final atrBind = $idomcAlias.BindedVar<String>(() => elem.attributes[\'$ba\'],
-            (String val) {elem.attributes[\'$ba\'] = val;});
-          atrBind.listenOn(Stream.periodic(Duration(milliseconds: 50), 
-            (tick) => $ex));
-        }''');
-      }
-      if(attr.startsWith('d-bind-to:')) {
-        final idomcAlias = _importAlias(
-            'package:domino/src/experimental/idom.dart', ['BindedVar']);
-        final ba = attr.split(':').sublist(1).join(':');
-        final ex = elem.attributes[attr];
-        _sb.writeln('''{ 
-          final elem = \$d.element;
-          final atrBind = $idomcAlias.BindedVar<String>(() => elem.attributes[\'$ba\'],
-            (String val) {elem.attributes[\'$ba\'] = val;});
-          final varBind = $idomcAlias.BindedVar<String>(() => $ex, (val) { $ex = val });
-          varBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
-          if(MutationObserver.supported) {
-             MutationObserver((mut, obs) { atrBind.triggerUpdate(); })
-              .observe(elem, attributes: true, attributeFilter: [\'$ba\']);
-          } else {
-           atrBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
-          }
-          atrBind.bind(varBind);
-        }''');
-      }
-      if(attr.startsWith('d-bind-value')) {
-        final idomcAlias = _importAlias(
-            'package:domino/src/experimental/idom.dart', ['BindedVar']);
-        final ex = elem.attributes[attr];
-        _sb.writeln('''{ 
-          final elem = \$d.element;
-          final atrBind = $idomcAlias.BindedVar<String>(() => elem.value,
-            (String val) {elem.value = val;});
-          final varBind = $idomcAlias.BindedVar<String>(() => $ex, (val) { $ex = val; });
-          atrBind.triggerListenOn(elem.onInput);
-          atrBind.triggerListenOn(elem.onChange);
-          atrBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
-          varBind.triggerListenOn(Stream.periodic(Duration(milliseconds: 50)));
-          atrBind.bind(varBind);
-        }''');
+          elem.$ba = $ex;
+          \$d.event('input', fn: (event) {
+             $ex = elem.$ba;
+          });
+          \$d.event('change', fn: (event) {
+             $ex = elem.$ba;
+          });
+        }'''); // TODO: add some way to clean up reference
       }
     }
 
