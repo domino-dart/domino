@@ -22,6 +22,7 @@ void main() {
     man.location = 'Moon';
     final ctx = ib.BrowserDomContext(querySelector('#output'));
     renderMain(ctx, human: man, clickName: 'Click', clickFun: clickFun);
+    ctx.close();
   };
   renderMain(ctx, human: man, clickName: 'Click!', clickFun: clickFun);
 
