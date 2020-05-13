@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:meta/meta.dart';
 
 typedef LifecycleCallback<L> = Function(LifecycleEvent<L> element);
@@ -47,3 +49,34 @@ abstract class DomEvent<V> {
   void triggerUpdate();
 }
 
+
+class BindedVar<T> {
+  final T Function() _getValue;
+  final Function (T) _setValue;
+  
+  final _controller = StreamController<T>.broadcast();
+  Stream<T> get valueStream => _controller.stream;
+
+  T _lastVal;
+  void triggerUpdate([T val]) {
+    if(val != null) {
+      _setValue(val);
+    } else {
+      val = _getValue();
+    }
+    if (val != _lastVal) {
+      _lastVal = val;
+      _controller.add(val);
+    }
+  }
+
+  void listenOn(Stream<T> stream) {
+    stream.listen(triggerUpdate);
+  }
+  void bind(BindedVar<T> bindedVar) {
+    bindedVar.listenOn(valueStream);
+    listenOn(bindedVar.valueStream);
+  }
+
+  BindedVar(this._getValue, this._setValue);
+}

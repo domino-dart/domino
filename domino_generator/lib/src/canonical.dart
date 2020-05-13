@@ -60,7 +60,7 @@ ParsedSource parseToCanonical(String html,
     }
 
     templateElem.attributes['*'] =
-        _dartName(templateElem.attributes['*'], prefix: 'render');
+        dartName(templateElem.attributes['*'], prefix: 'render');
     templateElem.attributes['d-namespace'] ??= defaultNamespace;
 
     for (final key in templateElem.attributes.keys.toList()) {
@@ -91,7 +91,7 @@ ParsedSource parseToCanonical(String html,
           documentation = parts.removeAt(0);
         }
         final varElem = Element.tag('d-template-var')
-          ..attributes['name'] = _dartName(attr, prefix: '')
+          ..attributes['name'] = dartName(attr, prefix: '')
           ..attributes['library'] = library
           ..attributes['type'] = type;
         if (required) {
@@ -116,7 +116,7 @@ ParsedSource parseToCanonical(String html,
 List<String> _collectSlots(Element elem) {
   final slotNames = <String>[];
   if (elem.localName == 'd-slot') {
-    final name = _dartName(elem.attributes['*'] ?? '', prefix: 'slot');
+    final name = dartName(elem.attributes['*'] ?? '', prefix: 'slot');
     elem.attributes['*'] = name;
     slotNames.add(name);
   }
@@ -180,7 +180,7 @@ void _rewrite(Node node) {
       final namespace = dot >= 0 ? node.localName.substring(0, dot) : 'd';
       final dcall = Element.tag('d-call')
         ..attributes = node.attributes
-        ..attributes['d-method'] = _dartName(method, prefix: 'render')
+        ..attributes['d-method'] = dartName(method, prefix: 'render')
         ..attributes['d-namespace'] = namespace;
       node.reparentChildren(dcall);
       node.replaceWith(dcall);
@@ -229,7 +229,7 @@ void _rewrite(Node node) {
       for (final key in node.attributes.keys.toList()) {
         final attr = key.toString();
         if (!attr.startsWith('d-') && !attr.contains('*')) {
-          final varname = _dartName(attr);
+          final varname = dartName(attr);
           final value = node.attributes[attr];
           final dCallVar = Element.tag('d-call-var')
             ..attributes['*'] = varname
@@ -273,7 +273,7 @@ void _rewrite(Node node) {
   }
 }
 
-String _dartName(String htmlName, {String prefix = ''}) {
+String dartName(String htmlName, {String prefix = ''}) {
   return htmlName.startsWith('d:')
       ? htmlName.substring(2)
       : (prefix +

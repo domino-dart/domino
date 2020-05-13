@@ -174,6 +174,15 @@ class ComponentGenerator {
           '    \$d.attr(\'$attr\', \'${_interpolateText(stack, elem.attributes[attr])}\');');
     }
 
+    // d-var attrributes
+    for (final dattr in elem.attributes.keys
+        .where((attr) => attr is String && attr.startsWith('d-'))) {
+      final attr = dattr as String;
+      if(attr.startsWith('d-var:')) {
+        final valname = dartName(attr.split(':')[1]);
+        _sb.writeln('\n    var $valname;');
+      }
+    }
     // 'd-' attributes
     for (final dattr in elem.attributes.keys
         .where((attr) => attr is String && attr.startsWith('d-'))) {
@@ -192,6 +201,21 @@ class ComponentGenerator {
             \$d.event(key, fn: ${_interpolateText(stack, elem.attributes[dattr])}[key]);
         }
         ''');
+      }
+
+      if(attr.startsWith('d-bind-input:')) {
+        final ba = attr.split(':').sublist(1).join(':'); // binded attribute
+        final ex = elem.attributes[attr]; // expression
+        _sb.writeln('''{
+          final elem = \$d.element;
+          elem.$ba = $ex;
+          \$d.event('input', fn: (event) {
+             $ex = elem.$ba;
+          });
+          \$d.event('change', fn: (event) {
+             $ex = elem.$ba;
+          });
+        }'''); // TODO: add some way to clean up reference
       }
     }
 

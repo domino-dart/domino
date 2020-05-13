@@ -1,9 +1,11 @@
-<main click-name="String" click-fun>
+<main click-name="String" click-fun human="human.dart # Human">
     <div>
         <button id="clickButton" d-event:onclick="clickFun">
             {{clickName}}
         </button>
-        <input>
+        <input width="{{human.age}}" type="{{human.name}}">
+        <input d-bind-input:value="human.name">
+        <input d-bind-input:value="human.location">
         <best-button bold-text="'Boldy texty'" d-event:onclick="clickFun">
             <b>Slot text</b>
         </best-button>
