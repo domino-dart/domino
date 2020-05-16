@@ -3,7 +3,7 @@ import 'dart:html';
 
 import 'idom.dart';
 
-void patch(Element host, Function (DomContext ctx) fn) {
+void patch(Element host, Function(DomContext ctx) fn) {
   final ctx = BrowserDomContext(host);
   fn(ctx);
   ctx.cleanup();

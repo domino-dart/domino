@@ -8,8 +8,9 @@ void main() {
   final sourceContent = File('example/ex1/ex1.html').readAsStringSync();
   final y = parseToCanonical(sourceContent);
   File('example/ex1/ex1.g.html').writeAsStringSync('');
-  for(final template in y.templates) {
-    File('example/ex1/ex1.g.html').writeAsStringSync(template.outerHtml, mode: FileMode.append);
+  for (final template in y.templates) {
+    File('example/ex1/ex1.g.html')
+        .writeAsStringSync(template.outerHtml, mode: FileMode.append);
   }
   final x = gen.generateSource(sourceContent);
   File('example/ex1/ex1.g.dart').writeAsStringSync(x);

@@ -49,17 +49,16 @@ abstract class DomEvent<V> {
   void triggerUpdate();
 }
 
-
 class BindedVar<T> {
   final T Function() _getValue;
-  final Function (T) _setValue;
-  
+  final Function(T) _setValue;
+
   final _controller = StreamController<T>.broadcast();
   Stream<T> get valueStream => _controller.stream;
 
   T _lastVal;
   void triggerUpdate([T val]) {
-    if(val != null) {
+    if (val != null) {
       _setValue(val);
     } else {
       val = _getValue();
@@ -73,6 +72,7 @@ class BindedVar<T> {
   void listenOn(Stream<T> stream) {
     stream.listen(triggerUpdate);
   }
+
   void bind(BindedVar<T> bindedVar) {
     bindedVar.listenOn(valueStream);
     listenOn(bindedVar.valueStream);

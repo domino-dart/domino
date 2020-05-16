@@ -29,12 +29,12 @@ class TemplateRegistry {
     if (!localName.contains('-') && !localName.contains('.')) {
       return null;
     }
-    if(localName.startsWith('d.')) {
+    if (localName.startsWith('d.')) {
       localName = localName.substring(2);
-    } else if(localName.startsWith('.')) {
+    } else if (localName.startsWith('.')) {
       localName = localName.substring(1);
     }
-    if(basePath.endsWith('.html') || basePath.endsWith('.dart')) {
+    if (basePath.endsWith('.html') || basePath.endsWith('.dart')) {
       basePath = p.dirname(basePath);
     }
     return _location[localName] != null
