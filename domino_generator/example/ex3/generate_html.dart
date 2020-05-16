@@ -8,10 +8,6 @@ Future<void> main() async {
   final sdc = ServerDomContext();
   renderEx3(sdc);
   final ex3File = File('example/ex3/hope-it-works.html').openWrite();
-  sdc.writeHTML(
-      out: ex3File,
-      indent: ' ',
-      indentAttr: true,
-      lineEnd: '\n');
+  sdc.writeHTML(out: ex3File, indent: ' ', indentAttr: true, lineEnd: '\n');
   await ex3File.close();
 }

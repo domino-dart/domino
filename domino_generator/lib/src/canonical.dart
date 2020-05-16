@@ -250,14 +250,11 @@ void _rewrite(Node node) {
           node.attributes.remove(attr);
         }
       }
-      if(events.isNotEmpty) {
+      if (events.isNotEmpty) {
         final eventCallTag = Element.tag('d-call-var')
           ..attributes['*'] = 'events'
-          ..attributes['d-value'] = '{' +
-              events.entries
-                  .map((e) => '\'${e.key}\': ${e.value}')
-                  .join(',') +
-              '}';
+          ..attributes['d-value'] =
+              '{${events.entries.map((e) => '\'${e.key}\': ${e.value}').join(',')}}';
         node.append(eventCallTag);
       }
     }

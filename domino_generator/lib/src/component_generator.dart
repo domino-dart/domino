@@ -178,7 +178,7 @@ class ComponentGenerator {
     for (final dattr in elem.attributes.keys
         .where((attr) => attr is String && attr.startsWith('d-'))) {
       final attr = dattr as String;
-      if(attr.startsWith('d-var:')) {
+      if (attr.startsWith('d-var:')) {
         final valname = dartName(attr.split(':')[1]);
         _sb.writeln('\n    var $valname;');
       }
@@ -188,14 +188,13 @@ class ComponentGenerator {
         .where((attr) => attr is String && attr.startsWith('d-'))) {
       final attr = dattr as String;
       // Single d-event:onclick=dartFunction
-      if(attr.startsWith('d-event:')) {
+      if (attr.startsWith('d-event:')) {
         final parts = attr.split(':');
         final eventName = parts[1];
         _sb.writeln(
-          '    \$d.event(\'$eventName\', fn: ${_interpolateText(stack, elem.attributes[dattr])});'
-        );
+            '    \$d.event(\'$eventName\', fn: ${_interpolateText(stack, elem.attributes[dattr])});');
       }
-      if(attr.startsWith('d-event-list')) {
+      if (attr.startsWith('d-event-list')) {
         _sb.writeln('''
         for(final key in ${_interpolateText(stack, elem.attributes[dattr])}.keys) {
             \$d.event(key, fn: ${_interpolateText(stack, elem.attributes[dattr])}[key]);
@@ -203,7 +202,7 @@ class ComponentGenerator {
         ''');
       }
 
-      if(attr.startsWith('d-bind-input:')) {
+      if (attr.startsWith('d-bind-input:')) {
         final ba = attr.split(':').sublist(1).join(':'); // binded attribute
         final ex = elem.attributes[attr]; // expression
         _sb.writeln('''{

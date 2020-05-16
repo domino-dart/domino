@@ -26,17 +26,14 @@ Future<void> main() async {
   renderEx1(ctx, extra: true, obj: ex1);
 
   final ex1Indent = File('example/ex1/ex1_indent.html').openWrite();
-  ctx.writeHTML(out: ex1Indent,
-      indent: '    ');
+  ctx.writeHTML(out: ex1Indent, indent: '    ');
   await ex1Indent.close();
 
   final ex1IndentAttr = File('example/ex1/ex1_indent.html').openWrite();
-  ctx.writeHTML(out: ex1IndentAttr,
-      indent: '    ', indentAttr: true);
+  ctx.writeHTML(out: ex1IndentAttr, indent: '    ', indentAttr: true);
   await ex1IndentAttr.close();
 
   final ex1NoIndent = File('example/ex1/ex1_noindent.html').openWrite();
-  ctx.writeHTML(out: ex1NoIndent,
-      indent: null);
+  ctx.writeHTML(out: ex1NoIndent, indent: null);
   await ex1NoIndent.close();
 }
