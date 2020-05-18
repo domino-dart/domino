@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
 import 'package:html/dom.dart';
 
@@ -94,12 +96,7 @@ class ComponentGenerator {
       defaultInits.forEach(_sb.writeln);
       topLevelObjects.add('\$d');
 
-      // SCSS class name
-      // TODO: style name based on the hash of the style
-      final scssName = _scssName(template);
-
-      _render(
-          Stack(objects: topLevelObjects, clazzName: scssName), template.nodes);
+      _render(Stack(objects: topLevelObjects), template.nodes);
 
       _sb.writeln('}');
     }
@@ -113,9 +110,28 @@ class ComponentGenerator {
     return text;
   }
 
-  String _scssName(Element template) =>
-      '${template.attributes['d-namespace']}_${template.attributes['*']}'
-          .replaceAll('.', '_');
+  String _scssName(Element style) {
+    // identify template's namespace
+    String ns;
+    var parent = style.parent;
+    while (parent != null) {
+      if (parent.localName == 'd-template') {
+        ns = parent.attributes['d-namespace'];
+        break;
+      }
+      parent = parent.parent;
+    }
+    // hash of the content
+    final hash = sha256
+        .convert(utf8.encode(style.innerHtml))
+        .toString()
+        .substring(0, 20);
+    return [
+      'ds',
+      if (ns != null && ns.isNotEmpty) ns,
+      hash,
+    ].join('_');
+  }
 
   void _render(Stack stack, List<Node> nodes) {
     for (final node in nodes) {
@@ -146,6 +162,8 @@ class ComponentGenerator {
           _renderCall(stack, node);
         } else if (node.localName == 'd-slot') {
           _renderSlot(stack, node);
+        } else if (node.localName == 'd-style') {
+          _renderStyle(stack, node);
         } else {
           _renderElem(stack, node);
         }
@@ -221,8 +239,6 @@ class ComponentGenerator {
       }
     }
 
-    // write clazz
-    _sb.writeln('    \$d.clazz(\'${stack.clazzName}\');\n');
     _render(stack, elem.nodes);
     _sb.writeln('    \$d.close();');
   }
@@ -296,13 +312,17 @@ class ComponentGenerator {
     _sb.writeln('$method(\$d);');
   }
 
+  void _renderStyle(Stack stack, Element elem) {
+    final cn = _scssName(elem);
+    _sb.writeln('    \$d.clazz(\'$cn\');\n');
+  }
+
   String generateScss(ParsedSource parsedSource) {
     final data = StringBuffer();
     for (final template in parsedSource.templates) {
-      final scssName = _scssName(template);
       final styles = template.getElementsByTagName('d-style');
       for (final elem in styles) {
-        data.writeln('.$scssName { ${elem.innerHtml} }');
+        data.writeln('.${_scssName(elem)} { ${elem.innerHtml} }');
       }
     }
     return data.toString();
@@ -315,22 +335,17 @@ class Stack {
   final Stack _parent;
   final Set<String> _objects;
   final bool _emitWhitespaces;
-  final String _clazzName;
 
-  Stack(
-      {Stack parent,
-      bool emitWhitespaces,
-      Iterable<String> objects,
-      String clazzName})
-      : _parent = parent,
+  Stack({
+    Stack parent,
+    bool emitWhitespaces,
+    Iterable<String> objects,
+  })  : _parent = parent,
         _objects = objects?.toSet() ?? <String>{},
-        _emitWhitespaces = emitWhitespaces,
-        _clazzName = clazzName;
+        _emitWhitespaces = emitWhitespaces;
 
   bool get emitWhitespaces =>
       _emitWhitespaces ?? _parent?.emitWhitespaces ?? false;
-
-  String get clazzName => _clazzName ?? _parent?.clazzName ?? '';
 
   String canonicalize(String expr) {
     var s = this;
