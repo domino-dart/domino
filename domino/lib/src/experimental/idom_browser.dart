@@ -62,7 +62,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
     final currentElem = currentNode is Element ? currentNode : null;
     final currentExtra = currentElem == null ? null : _elemExpando[currentElem];
     final matchesCurrentElem =
-        currentElem?.tagName == tag && currentExtra?.key == key;
+        currentElem?.tagName?.toLowerCase() == tag.toLowerCase() && currentExtra?.key == key;
     if (matchesCurrentElem) {
       _positions.add(_ElemPos(currentElem));
       return;
@@ -72,7 +72,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
       // match tag + key after the current position
       final matchedElem = pos.elem.children.skip(pos.index).firstWhere(
           (n) =>
-              n is Element && n.tagName == tag && _elemExpando[n]?.key == key,
+              n is Element && n.tagName.toLowerCase() == tag.toLowerCase() && _elemExpando[n]?.key == key,
           orElse: () => null);
       if (matchedElem != null) {
         if (pos.elem.nodes.indexOf(matchedElem) != pos.index) {
@@ -83,11 +83,13 @@ class BrowserDomContext implements DomContext<Element, Event> {
         return;
       }
     } else {
+
       // otherwise match tag of an element (without any key)
       final matchedElem = pos.elem.children.skip(pos.index).firstWhere(
           (n) =>
-              n is Element && n.tagName == tag && _elemExpando[n]?.key == null,
+              n is Element && n.tagName.toLowerCase() == tag.toLowerCase() && _elemExpando[n]?.key == null,
           orElse: () => null);
+
       if (matchedElem != null) {
         if (pos.elem.nodes.indexOf(matchedElem) != pos.index) {
           matchedElem.remove();
@@ -214,8 +216,8 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void close({String tag}) {
     final pos = _positions.removeLast();
-    if (tag != null && pos.elem.tagName != tag) {
-      throw StateError('Closing tag: $tag != Element tag: ${pos.elem.tagName}');
+    if (tag != null && pos.elem.tagName.toLowerCase() != tag.toLowerCase()) {
+      throw StateError('Closing tag: $tag != Element tag: ${pos.elem.tagName.toLowerCase()}');
     }
     pos._classesToRemove.forEach(pos.elem.classes.remove);
     pos._stylesToRemove.forEach(pos.elem.styleMap?.delete ?? (x) {});
