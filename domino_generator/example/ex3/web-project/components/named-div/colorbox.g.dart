@@ -17,7 +17,9 @@ void renderBlueBox(
 
   $d.open('div');
   $d.text('\n        BB\n        ');
-  slot($d);
+  if (slot != null) {
+    slot($d);
+  }
   $d.text('\n        LO\n    ');
   $d.close();
 }
