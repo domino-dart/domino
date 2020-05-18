@@ -116,7 +116,7 @@ ParsedSource parseToCanonical(String html,
 List<String> _collectSlots(Element elem) {
   final slotNames = <String>[];
   if (elem.localName == 'd-slot') {
-    final name = dartName(elem.attributes['*'] ?? '', prefix: 'slot');
+    final name = dartName(elem.attributes['*'] ?? 'slot');
     elem.attributes['*'] = name;
     slotNames.add(name);
   }

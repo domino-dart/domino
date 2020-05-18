@@ -309,7 +309,7 @@ class ComponentGenerator {
 
   void _renderSlot(Stack stack, Element elem) {
     final method = elem.attributes.remove('*');
-    _sb.writeln('$method(\$d);');
+    _sb.writeln('if ($method != null) {$method(\$d);}');
   }
 
   void _renderStyle(Stack stack, Element elem) {
