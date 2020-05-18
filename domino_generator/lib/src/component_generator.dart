@@ -161,20 +161,23 @@ class ComponentGenerator {
   }
 
   void _renderElem(Stack stack, Element elem) {
+    final tag = elem.localName == 'd-element'
+        ? elem.attributes['d-tag']
+        : elem.localName;
     final key = elem.attributes.remove('d-key');
     final openParams = <String>[];
     if (key != null) {
       openParams.add(', key: $key');
     }
 
-    _sb.writeln('    \$d.open(\'${elem.localName}\' ${openParams.join()});');
+    _sb.writeln('    \$d.open(\'$tag\' ${openParams.join()});');
     for (final attr in elem.attributes.keys) {
       if (attr is String && attr.startsWith('d-')) continue;
       _sb.writeln(
           '    \$d.attr(\'$attr\', \'${_interpolateText(stack, elem.attributes[attr])}\');');
     }
 
-    // d-var attrributes
+    // d-var attributes
     for (final dattr in elem.attributes.keys
         .where((attr) => attr is String && attr.startsWith('d-'))) {
       final attr = dattr as String;
