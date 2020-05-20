@@ -270,15 +270,27 @@ void _rewrite(Node node) {
   }
 }
 
+// recognizes patters in the following order:
+// - phrase with lowercase letters + numbers
+// - phrase starting with a single uppercase letter continued by lowercase + numbers
+// - phrase with uppercase letters + numbers
+final _caseRegExp = RegExp(r'([a-z0-9]+)|([A-Z][a-z0-9]+)|([A-Z0-9]+)');
+
+/// Returns the name of the Dart method or parameter to be used.
 String dartName(String htmlName, {String prefix = ''}) {
-  return htmlName.startsWith('d:')
-      ? htmlName.substring(2)
-      : (prefix +
-              htmlName
-                  .toLowerCase()
-                  .replaceAllMapped(
-                      RegExp('(^|-)(\\S)'), (m) => m.group(2).toUpperCase())
-                  .replaceAll('-', '_'))
-          .replaceFirstMapped(
-              RegExp('.'), (firstCh) => firstCh.group(0).toLowerCase());
+  // escape for direct name setter
+  if (htmlName.startsWith('d:')) {
+    return htmlName.substring(2).trim();
+  }
+
+  final parts =
+      _caseRegExp.allMatches(htmlName).map((e) => e.group(0)).toList();
+  if (prefix != null && prefix.isNotEmpty && !parts.first.startsWith(prefix)) {
+    parts.insert(0, prefix);
+  }
+  final cased = parts
+      .map((s) => s.toLowerCase())
+      .map((s) => s.substring(0, 1).toUpperCase() + s.substring(1))
+      .join();
+  return cased.substring(0, 1).toLowerCase() + cased.substring(1);
 }
