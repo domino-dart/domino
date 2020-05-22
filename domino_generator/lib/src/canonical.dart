@@ -26,7 +26,11 @@ ParsedSource parseToCanonical(String html,
     {String defTemp, String defaultNamespace = 'd'}) {
   final templates = <Element>[];
 
-  final root = html_parser.parseFragment(html);
+  final root = html_parser.HtmlParser(
+    html,
+    lowercaseElementName: false,
+    lowercaseAttrName: false,
+  ).parseFragment();
 
   // Simple definition to d-template transformation
   for (final element in root.children) {
