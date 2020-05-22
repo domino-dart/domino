@@ -322,7 +322,21 @@ class ComponentGenerator {
     for (final template in parsedSource.templates) {
       final styles = template.getElementsByTagName('d-style');
       for (final elem in styles) {
-        data.writeln('.${_scssName(elem)} { ${elem.innerHtml} }');
+        data.writeln('.${_scssName(elem)} {');
+        final lines = elem.text.split('\n');
+        var indent = 1;
+        for (final line in lines) {
+          final lt = line.trim();
+          if (lt.isEmpty) continue;
+          if (lt == '}') {
+            data.write('  ' * (indent - 1));
+          } else {
+            data.write('  ' * indent);
+          }
+          data.writeln(lt);
+          indent += line.split('{').length - line.split('}').length;
+        }
+        data.writeln('}');
       }
     }
     return data.toString();
