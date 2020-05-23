@@ -1,23 +1,14 @@
-<d-template *="renderRedBox" d-namespace="named-div">
-    <d-style>
-        background-color: red;
-        width: 100px;
-        height: 100px;
-    </d-style>
-    <div>
-        X
-    </div>
-</d-template>
+<d:template d:name="red-box" d:method-name="renderRedBox">
+  <d:style>background-color: red; width: 100px; height: 100px;</d:style>
+  <div>X</div>
+</d:template>
 
-<d-template *="renderBlueBox" d-namespace="named-div">
-    <d-style>
-        background-color: blue;
-        width: 100px;
-        height: 100px;
-    </d-style>
-    <div>
-        BB
-        <d-slot *="slot"></d-slot>
-        LO
-    </div>
-<d-template-var name="slot" type="SlotFn" library="package:domino/src/experimental/idom.dart"></d-template-var></d-template>
+<d:template d:name="blue-box" d:method-name="renderBlueBox">
+  <d:style>background-color: blue; width: 100px; height: 100px;</d:style>
+  <div>
+    BB
+    <d:slot d:name="slot"></d:slot>
+    LO
+  </div>
+  <d:template-var d:name="slot" d:type="SlotFn" d:library="package:domino/src/experimental/idom.dart"/>
+</d:template>

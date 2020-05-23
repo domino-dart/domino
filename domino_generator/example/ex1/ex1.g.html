@@ -1,13 +1,30 @@
-<d-template *="renderEx1" d-namespace="d"><d-template-var name="extra" library="dart:core" type="bool" default="false" doc="Go recursive"></d-template-var><d-template-var name="obj" library="ex1_model.dart" type="Example" required="true"></d-template-var>
-  <div title="Some help {{obj.name}}." d-key="'key1'">Some {{obj.text}} and {{obj.number}}.</div>
-  <d-if *="obj.cond1"><span d-key="obj.number.toString()">cond1</span></d-if>
-  <d-else-if *="obj.cond2 &amp;&amp; extra"><span>cond2</span></d-else-if>
-  <d-else><span>cond3</span></d-else>
+<d:template d:name="Ex1" d:method-name="renderEx1">
+  <div d:key="'key1'" title="Some help {{obj.name}}.">Some {{obj.text}} and {{obj.number}}.</div>
+  <d:if d:expr="obj.cond1">
+    <span d:key="obj.number.toString()">cond1</span>
+  </d:if>
+  <d:else-if d:expr="obj.cond2 &amp;&amp; extra">
+    <span>cond2</span>
+  </d:else-if>
+  <d:else>
+    <span>cond3</span>
+  </d:else>
   <ul>
-    <d-for *="item in obj.items"><d-if *="item.visible"><li>{{item.label}} {{obj.name}}</li></d-if></d-for>
+    <d:for d:expr="item in obj.items">
+      <d:if d:expr="item.visible">
+        <li>{{item.label}} {{obj.name}}</li>
+      </d:if>
+    </d:for>
   </ul>
-  <d-if *="extra"><d-call d-method="renderEx1"><d-call-var *="obj" d-value="obj"></d-call-var><d-call-var *="extra" d-value="false"></d-call-var></d-call></d-if>
-  <d-call d-method="renderEx2"></d-call>
-</d-template><d-template *="renderEx2" d-namespace="d">
+  <d:if d:expr="extra">
+    <d:call d:method="renderEx1">
+      <d:call-var d:name="obj" d:value="obj"/>
+      <d:call-var d:name="extra" d:value="false"/>
+    </d:call>
+  </d:if>
+  <d:call d:method="renderEx2"></d:call>
+  <d:template-var d:name="obj" d:library="ex1_model.dart" d:type="Example" d:required="true"/>
+  <d:template-var d:name="extra" d:library="dart:core" d:type="bool" d:default="false" d:doc="Go recursive"/>
+</d:template><d:template d:name="Ex2" d:method-name="renderEx2">
   <div>X</div>
-</d-template>
+</d:template>

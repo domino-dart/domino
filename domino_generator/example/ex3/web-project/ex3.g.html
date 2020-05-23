@@ -1,21 +1,13 @@
-<d-template *="renderEx3" d-namespace="web-project">
-    <button>
-        The best button
-    </button>
-    <d-call d-method="renderButton" d-namespace="named-div"></d-call>
-    <!-- Error if uncommented
-        Here is an input field:
-        <input>
-        And a button component from somewhere
-        <d.button></d.button>
-        --><d-call d-method="renderRedBox" d-namespace="d">
-        
-    </d-call>
-    <!-- d. means it should look at any namespace --><d-call d-method="renderBlueBox" d-namespace="d">
-        
-    <d-call-slot *="slot">
-        Here is an input field:
-        <input>
-        And a button component from somewhere
-        <d-call d-method="renderButton" d-namespace="d"></d-call></d-call-slot></d-call>
-</d-template>
+<d:template d:name="ex3" xmlns:named-div="./components/named-div/button.html" xmlns:colorbox="./components/named-div/library.dart" d:method-name="renderEx3">
+  <button>The best button</button>
+  <d:call d:library="./components/named-div/button.g.dart" d:method="renderButton"/>
+  <d:call d:library="./components/named-div/library.dart" d:method="renderRedBox"></d:call>
+  <d:call d:library="./components/named-div/library.dart" d:method="renderBlueBox">
+    <d:call-slot d:name="slot">
+      Here is an input field:
+      <input/>
+      And a button component from somewhere
+      <d.button></d.button>
+    </d:call-slot>
+  </d:call>
+</d:template>

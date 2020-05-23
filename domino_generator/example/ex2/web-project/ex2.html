@@ -1,7 +1,7 @@
-<d-template *="ex2">
+<d:template d:name="ex2">
     <button>
         The best button
     </button>
-    <d-call *="renderButton" d-namespace="named-div"></d-call>
-    <d-call *="renderRedBox"></d-call>
-</d-template>
+    <d:call d:method="renderButton" d:library="components/named-div/button.g.dart"></d:call>
+    <d:call d:method="renderRedBox" d:library="components/named-div/colorbox.g.dart"></d:call>
+</d:template>

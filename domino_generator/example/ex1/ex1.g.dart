@@ -4,10 +4,10 @@ import 'ex1_model.dart' as _i1 show Example;
 
 void renderEx1(
   _i0.DomContext $d, {
+  @_i2.required _i1.Example obj,
 
   /// Go recursive
   bool extra,
-  @_i2.required _i1.Example obj,
 }) {
   extra ??= false;
   $d.open('div', key: 'key1');

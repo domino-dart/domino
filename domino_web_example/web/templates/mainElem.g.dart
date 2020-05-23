@@ -4,25 +4,19 @@ import 'human.dart' as _i1 show Human;
 
 void renderMain(
   _i0.DomContext $d, {
-  _i1.Human human,
-  clickFun,
   String clickName,
+  Function clickFun,
+  _i1.Human human,
 }) {
   $d.open('div');
-  $d.clazz('templates_renderMain');
-
   $d.open('button');
   $d.attr('id', 'clickButton');
   $d.event('click', fn: clickFun);
-  $d.clazz('templates_renderMain');
-
   $d.text('\n            ${clickName}\n        ');
   $d.close();
   $d.open('input');
   $d.attr('width', '${human.age}');
   $d.attr('type', '${human.name}');
-  $d.clazz('templates_renderMain');
-
   $d.close();
   $d.open('input');
   {
@@ -35,8 +29,6 @@ void renderMain(
       human.name = elem.value;
     });
   }
-  $d.clazz('templates_renderMain');
-
   $d.close();
   $d.open('input');
   {
@@ -49,13 +41,9 @@ void renderMain(
       human.location = elem.value;
     });
   }
-  $d.clazz('templates_renderMain');
-
   $d.close();
   _i2.renderBestButton($d, slot: (_i0.DomContext $d) {
     $d.open('b');
-    $d.clazz('templates_renderMain');
-
     $d.text('Slot text');
     $d.close();
   }, boldText: 'Boldy texty', events: {'click': clickFun});

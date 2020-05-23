@@ -1,155 +1,152 @@
 import 'dart:io';
 
-import 'package:html/parser.dart' as html_parser;
-import 'package:html/dom.dart';
 import 'package:path/path.dart' as p;
+import 'package:xml/xml.dart';
+
+final dominoNs = 'domino';
 
 class ParsedSource {
-  final List<Element> templates;
+  final List<XmlElement> templates;
   final String path;
 
   ParsedSource(this.templates, [this.path]);
 }
 
 ParsedSource parseFileToCanonical(String path) {
-  // Direct parent directory's name
-  final defNs = p.basename(p.dirname(path));
   final defaultTemplate = p.basenameWithoutExtension(path);
   final htmlSource = File(path).readAsStringSync();
-  final templates = parseToCanonical(htmlSource,
-          defTemp: defaultTemplate, defaultNamespace: defNs)
-      .templates;
-  return ParsedSource(templates, path);
+  final parsed = parseToCanonical(htmlSource, defTemp: defaultTemplate);
+  return ParsedSource(parsed.templates, path);
 }
 
-ParsedSource parseToCanonical(String html,
-    {String defTemp, String defaultNamespace = 'd'}) {
-  final templates = <Element>[];
+ParsedSource parseToCanonical(String html, {String defTemp}) {
+  final templates = <XmlElement>[];
 
-  final root = html_parser.HtmlParser(
-    html,
-    lowercaseElementName: false,
-    lowercaseAttrName: false,
-  ).parseFragment();
+  final source = '<d:root xmlns:d="$dominoNs">\n$html\n</d:root>';
+  final doc = parse(source);
+  final root = doc.rootElement;
 
   // Simple definition to d-template transformation
-  for (final element in root.children) {
-    if (element.localName == 'd-template') continue;
-    final localName = element.localName;
+  for (final element in root.elements.toList()) {
+    if (element.name.namespaceUri == dominoNs) continue;
+    final localName = element.name.local;
     final parts = localName.split('.');
     final methodName = parts.last;
-    String namespace = parts.sublist(0, parts.length - 1).join('.');
-    if (namespace == '') {
-      namespace = defaultNamespace;
-    }
-    final template = Element.tag('d-template');
-    template.attributes.addAll(element.attributes);
-    template.nodes.addAll(element.nodes);
-    template.attributes['*'] = methodName;
-    template.attributes['d-namespace'] = namespace;
-    templates.add(template);
+    final template = XmlElement(XmlName('template', 'd'));
+    element.replaceWith(template, moveChildren: true);
+    template.setAttribute('name', methodName, namespace: dominoNs);
+    template.attributes
+        .addAll(element.attributes.map((a) => a.copy() as XmlAttribute));
   }
 
-  templates.addAll(root.children.where((e) => e.localName == 'd-template'));
+  templates.addAll(root.elements.where(
+      (e) => e.name.local == 'template' && e.name.namespaceUri == dominoNs));
 
   for (final templateElem in templates) {
     // Add slot variables
     final slotNames = _collectSlots(templateElem);
     for (final name in slotNames) {
-      final varSlot = Element.tag('d-template-var')
-        ..attributes['name'] = name
-        ..attributes['type'] = 'SlotFn'
-        ..attributes['library'] = 'package:domino/src/experimental/idom.dart';
+      final varSlot = XmlElement(XmlName('template-var', 'd'));
       templateElem.append(varSlot);
+      varSlot
+        ..setAttribute('name', name, namespace: dominoNs)
+        ..setAttribute('type', 'SlotFn', namespace: dominoNs)
+        ..setAttribute(
+          'library',
+          'package:domino/src/experimental/idom.dart',
+          namespace: dominoNs,
+        );
     }
 
-    templateElem.attributes['*'] =
-        dartName(templateElem.attributes['*'], prefix: 'render');
-    templateElem.attributes['d-namespace'] ??= defaultNamespace;
+    templateElem.setAttribute(
+      'method-name',
+      dartName(templateElem.getDominoAttr('name'), prefix: 'render'),
+      namespace: dominoNs,
+    );
 
-    for (final key in templateElem.attributes.keys.toList()) {
-      final attr = key.toString();
-      if (!attr.startsWith('d-') && !attr.contains('*')) {
-        final value = templateElem.attributes.remove(key);
-        final parts = value.split('#').map((s) => s.trim()).toList();
-        var library = 'dart:core';
-        if (parts.length > 1 &&
-            (parts[0].contains(':') || parts[0].endsWith('.dart'))) {
-          library = parts.removeAt(0);
-        }
-        final type = parts.removeAt(0);
-        bool required = false;
-        if (parts.contains('required')) {
-          parts.remove('required');
-          required = true;
-        }
-        String defaultValue;
-        final defaultAttr = parts.firstWhere((p) => p.startsWith('default:'),
-            orElse: () => null);
-        if (defaultAttr != null) {
-          parts.remove(defaultAttr);
-          defaultValue = defaultAttr.substring(8).trim();
-        }
-        String documentation;
-        if (parts.isNotEmpty) {
-          documentation = parts.removeAt(0);
-        }
-        final varElem = Element.tag('d-template-var')
-          ..attributes['name'] = dartName(attr, prefix: '')
-          ..attributes['library'] = library
-          ..attributes['type'] = type;
-        if (required) {
-          varElem.attributes['required'] = 'true';
-        }
-        if (defaultValue != null) {
-          varElem.attributes['default'] = defaultValue;
-        }
-        if (documentation != null) {
-          varElem.attributes['doc'] = documentation;
-        }
-        templateElem.nodes.insert(0, varElem);
+    for (final attr in templateElem.attributes.toList()) {
+      if (attr.name.namespaceUri == dominoNs) continue;
+      if (attr.name.prefix == 'xmlns') continue;
+      templateElem.removeAttribute(attr.name.local,
+          namespace: attr.name.namespaceUri);
+      final parts = attr.value.split('#').map((s) => s.trim()).toList();
+      var library = 'dart:core';
+      if (parts.length > 1 &&
+          (parts[0].contains(':') || parts[0].endsWith('.dart'))) {
+        library = parts.removeAt(0);
+      }
+      final type = parts.removeAt(0);
+      bool required = false;
+      if (parts.contains('required')) {
+        parts.remove('required');
+        required = true;
+      }
+      String defaultValue;
+      final defaultAttr =
+          parts.firstWhere((p) => p.startsWith('default:'), orElse: () => null);
+      if (defaultAttr != null) {
+        parts.remove(defaultAttr);
+        defaultValue = defaultAttr.substring(8).trim();
+      }
+      String documentation;
+      if (parts.isNotEmpty) {
+        documentation = parts.removeAt(0);
+      }
+      final varElem = XmlElement(XmlName('template-var', 'd'));
+      templateElem.append(varElem);
+      varElem
+        ..setAttribute('name', dartName(attr.name.local, prefix: ''),
+            namespace: dominoNs)
+        ..setAttribute('library', library, namespace: dominoNs)
+        ..setAttribute('type', type, namespace: dominoNs);
+      if (required) {
+        varElem.setAttribute('required', 'true', namespace: dominoNs);
+      }
+      if (defaultValue != null) {
+        varElem.setAttribute('default', defaultValue, namespace: dominoNs);
+      }
+      if (documentation != null) {
+        varElem.setAttribute('doc', documentation, namespace: dominoNs);
       }
     }
 
-    _rewriteAll(templateElem.nodes);
+    _rewriteAll(templateElem.children);
   }
 
   return ParsedSource(templates);
 }
 
-List<String> _collectSlots(Element elem) {
-  final slotNames = <String>[];
-  if (elem.localName == 'd-slot') {
-    final name = dartName(elem.attributes['*'] ?? 'slot');
-    elem.attributes['*'] = name;
-    slotNames.add(name);
-  }
-  for (final child in elem.children) {
-    slotNames.addAll(_collectSlots(child));
-  }
-  return slotNames;
+Iterable<String> _collectSlots(XmlElement elem) {
+  return elem
+      .findAllElements('slot', namespace: dominoNs)
+      .map((e) => e.getDominoAttr('name') ?? 'slot')
+      .toList();
 }
 
-void _pullAttr(Element node, String tag, {Iterable<String> alternatives}) {
+void _pullAttr(XmlElement node, String tag, {Iterable<String> alternatives}) {
   final attrs = [tag, if (alternatives != null) ...alternatives]
       .where((s) => s != null)
       .toList();
-  final first = attrs.firstWhere((a) => node.attributes.containsKey(a),
-      orElse: () => null);
-  if (first != null) {
-    final v = node.attributes.remove(first);
-    final elem = Element.tag(tag);
-    if (v.isNotEmpty) {
-      elem.attributes['*'] = v;
+  for (final attr in attrs) {
+    final first = node.attributes.firstWhere(
+      (a) => a.name.local == attr && a.name.namespaceUri == dominoNs,
+      orElse: () => null,
+    );
+    if (first != null) {
+      node.attributes.remove(first);
+      final elem = XmlElement(XmlName(tag, 'd'));
+      node.injectInTree(elem);
+      if (first.value.trim().isNotEmpty) {
+        elem.setAttribute('expr', first.value, namespace: dominoNs);
+      }
+      return;
     }
-    node.replaceWith(elem);
-    elem.append(node);
   }
 }
 
-void _rewriteAll(NodeList list) {
+void _rewriteAll(List<XmlNode> list) {
   for (int i = 0; i < list.length; i++) {
-    Node old;
+    XmlNode old;
     while (old != list[i]) {
       old = list[i];
       _rewrite(old);
@@ -157,120 +154,121 @@ void _rewriteAll(NodeList list) {
   }
 }
 
-void _rewrite(Node node) {
-  if (node is Element) {
-    _pullAttr(node, 'd-for', alternatives: ['*for']);
-    _pullAttr(node, 'd-if', alternatives: ['*if']);
-    _pullAttr(node, 'd-else-if', alternatives: ['*else-if', '*elseif']);
-    _pullAttr(node, 'd-else', alternatives: ['*else']);
+void _rewrite(XmlNode node) {
+  if (node is XmlElement) {
+    _pullAttr(node, 'for');
+    _pullAttr(node, 'if');
+    _pullAttr(node, 'else-if', alternatives: ['elseif']);
+    _pullAttr(node, 'else');
 
-    for (final key in node.attributes.keys.toList()) {
-      if (key is String && key.startsWith('#')) {
-        node.attributes.remove(key);
-        node.attributes['d-key'] = '\'${key.substring(1)}\'';
-      }
-      if (key is String && key.startsWith('d-event:on')) {
-        node.attributes[key.replaceFirst(':on', ':')] =
-            node.attributes.remove(key);
-      }
-    }
+    // TODO: check if key shortcut can be re-added somehow
 
     // Short d-call
-    if (node.localName.contains('.') ||
-        (node.localName.contains('-') && !node.localName.startsWith('d-'))) {
+    if ((node.name.prefix == 'local') ||
+        (node.name.namespaceUri != null &&
+            node.name.namespaceUri != dominoNs)) {
       // Translate to d-call
-      final dot = node.localName.lastIndexOf('.');
-      final method = node.localName.substring(dot + 1);
-      final namespace = dot >= 0 ? node.localName.substring(0, dot) : 'd';
-      final dcall = Element.tag('d-call')
-        ..attributes = node.attributes
-        ..attributes['d-method'] = dartName(method, prefix: 'render')
-        ..attributes['d-namespace'] = namespace;
-      node.reparentChildren(dcall);
-      node.replaceWith(dcall);
+      final namespace =
+          node.name.prefix == 'local' ? null : node.name.namespaceUri;
+      final import = namespace == null
+          ? null
+          : namespace.endsWith('.html')
+              ? namespace.replaceFirst('.html', '.g.dart')
+              : namespace;
+
+      final dcall = XmlElement(XmlName('call', 'd'));
+      node.replaceWith(dcall, moveChildren: true, moveAttributes: true);
+      if (import != null) {
+        dcall.setAttribute('library', import, namespace: dominoNs);
+      }
+      dcall.setAttribute('method', dartName(node.name.local, prefix: 'render'),
+          namespace: dominoNs);
       _rewrite(dcall);
     }
 
-    if (node.localName == 'd-call') {
-      final expr = node.attributes.remove('*');
+    if (node.name.local == 'call' && node.name.namespaceUri == dominoNs) {
+      final expr = node.getDominoAttr('expr');
       if (expr != null) {
+        node.removeAttribute('expr', namespace: dominoNs);
         final parts = expr.split('#').map((p) => p.trim()).toList();
 
         if (parts.first.endsWith('.dart') || parts.first.endsWith('.html')) {
-          node.attributes['d-library'] ??= parts.removeAt(0);
+          node.setAttribute('library', parts.removeAt(0), namespace: dominoNs);
         }
         if (parts.isNotEmpty) {
-          final method = parts.removeAt(0);
-          node.attributes['d-method'] ??= method;
+          final method = dartName(parts.removeAt(0), prefix: 'render');
+          node.setAttribute('method', method, namespace: dominoNs);
         }
       }
-      final libValue = node.attributes['d-library'];
+      final libValue = node.getDominoAttr('library');
       if (libValue != null && libValue.endsWith('.html')) {
-        node.attributes['d-library'] = libValue.replaceAll('.html', '.g.dart');
+        node.setAttribute('library', libValue.replaceAll('.html', '.g.dart'),
+            namespace: dominoNs);
       }
-      final removeNodes = <Node>[];
-      final defSlotNodes = <Node>[];
+      final removeNodes = <XmlNode>[];
+      final defSlotNodes = <XmlNode>[];
       for (final chd in node.nodes) {
-        if (chd is Element &&
-            !['d-call-slot', 'd-call-var'].contains(chd.localName)) {
+        if (chd is XmlElement &&
+            !['call-slot', 'call-var'].contains(chd.name.local)) {
           defSlotNodes.add(chd);
-        } else if (chd is Text && chd.text.trim() != '') {
+        } else if (chd is XmlText && chd.text.trim() != '') {
           defSlotNodes.add(chd);
-        } else if (chd is Comment) {
+        } else if (chd is XmlComment) {
           removeNodes.add(chd);
         }
       }
-      removeNodes.forEach((nd) => node.parent.insertBefore(nd, node));
       removeNodes.addAll(defSlotNodes);
-      node.nodes.removeWhere(removeNodes.contains);
+      node.children.removeWhere(removeNodes.contains);
       if (defSlotNodes.isNotEmpty) {
         // add default node if it does not have any, and has real node
-        final defSlot = Element.tag('d-call-slot')
-          ..attributes['*'] = 'slot'
-          ..nodes.addAll(defSlotNodes);
+        final defSlot = XmlElement(XmlName('call-slot', 'd'));
         node.append(defSlot);
+        defSlot.setAttribute('name', 'slot', namespace: dominoNs);
+        defSlot.children.addAll(defSlotNodes.map((e) => e.copy()));
       }
-      for (final key in node.attributes.keys.toList()) {
-        final attr = key.toString();
-        if (!attr.startsWith('d-') && !attr.contains('*')) {
-          final varname = dartName(attr);
-          final value = node.attributes[attr];
-          final dCallVar = Element.tag('d-call-var')
-            ..attributes['*'] = varname
-            ..attributes['d-value'] = value;
-          node.append(dCallVar);
-          node.attributes.remove(attr);
-        }
+
+      for (final attr in node.attributes.toList()) {
+        if (attr.name.namespaceUri != null) continue;
+        final varname = dartName(attr.name.local);
+        final value = attr.value;
+        final dCallVar = XmlElement(XmlName('call-var', 'd'));
+        node.append(dCallVar);
+        dCallVar
+          ..setAttribute('name', varname, namespace: dominoNs)
+          ..setAttribute('value', value, namespace: dominoNs);
+        node.attributes.remove(attr);
       }
 
       // Collect events
       final events = <String, String>{}; // name -> action map
-      for (final key in node.attributes.keys.toList()) {
-        final attr = key.toString();
-        if (attr.startsWith('d-event:')) {
-          final eventName = attr.split(':')[1];
-          final value = node.attributes[attr];
-          events[eventName] = value;
+      for (final attr in node.attributes.toList()) {
+        if (attr.name.local.startsWith('event-on')) {
+          final eventName = attr.name.local.split('-')[1].substring(2);
+          events[eventName] = attr.value;
           node.attributes.remove(attr);
         }
       }
       if (events.isNotEmpty) {
-        final eventCallTag = Element.tag('d-call-var')
-          ..attributes['*'] = 'events'
-          ..attributes['d-value'] =
-              '{${events.entries.map((e) => '\'${e.key}\': ${e.value}').join(',')}}';
+        final eventCallTag = XmlElement(XmlName('call-var', 'd'));
         node.append(eventCallTag);
+        eventCallTag
+          ..setAttribute('name', 'events', namespace: dominoNs)
+          ..setAttribute('value',
+              '{${events.entries.map((e) => '\'${e.key}\': ${e.value}').join(',')}}',
+              namespace: dominoNs);
       }
     }
 
-    if (node.localName == 'd-slot') {
-      node.attributes['*'] ??= 'slot';
+    if (node.name.local == 'slot' && node.name.namespaceUri == dominoNs) {
+      final name = node.getDominoAttr('name');
+      node.setAttribute('name', name ?? 'slot', namespace: dominoNs);
     }
-    if (node.localName == 'd-call-slot') {
-      node.attributes['*'] ??= 'slot';
+    if (node.name.local == 'call-slot' && node.name.namespaceUri == dominoNs) {
+      final name = node.getDominoAttr('name');
+      node.setAttribute('name', name ?? 'slot', namespace: dominoNs);
     }
 
-    _rewriteAll(node.nodes);
+    _rewriteAll(node.children);
   }
 }
 
@@ -297,4 +295,51 @@ String dartName(String htmlName, {String prefix = ''}) {
       .map((s) => s.substring(0, 1).toUpperCase() + s.substring(1))
       .join();
   return cased.substring(0, 1).toLowerCase() + cased.substring(1);
+}
+
+extension XmlElementExt on XmlElement {
+  Iterable<XmlElement> get elements => children.whereType<XmlElement>();
+
+  void replaceWith(
+    XmlElement other, {
+    bool moveAttributes = false,
+    bool moveChildren = false,
+  }) {
+    final index = parent.children.indexOf(this);
+    parent.children.replaceRange(index, index + 1, [other]);
+    if (moveAttributes) {
+      other.attributes.addAll(attributes.map((a) => a.copy() as XmlAttribute));
+    }
+    if (moveChildren) {
+      other.children.addAll(children.map((c) => c.copy()));
+    }
+  }
+
+  void injectInTree(XmlElement other) {
+    final index = parent.children.indexOf(this);
+    parent.children.replaceRange(index, index + 1, [other]);
+    other.append(copy());
+  }
+
+  void insertBefore(XmlNode node, XmlNode refNode) {
+    final index = children.indexOf(refNode);
+    children.insert(index, node);
+  }
+
+  void append(XmlNode node) {
+    children.add(node);
+    if (!node.hasParent) {
+      node.attachParent(this);
+    }
+  }
+
+  String getDominoAttr(String name) {
+    return getAttribute(name, namespace: dominoNs);
+  }
+
+  String removeDominoAttr(String name) {
+    final v = getDominoAttr(name);
+    removeAttribute(name, namespace: dominoNs);
+    return v;
+  }
 }
