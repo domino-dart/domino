@@ -33,12 +33,16 @@ void main() {
     querySelector('#clickButton').on['onClick'].listen((e) {
       window.alert('Hello from there');
     });
-  };
+  }
+
+  ;
 
   var canUpdate = false;
-  Timer.periodic(Duration(milliseconds: 50), (t) {canUpdate = true;});
+  Timer.periodic(Duration(milliseconds: 50), (t) {
+    canUpdate = true;
+  });
   tracker.addListener(() {
-    if(canUpdate) {
+    if (canUpdate) {
       canUpdate = false;
       tracker.run(renderAll);
     }

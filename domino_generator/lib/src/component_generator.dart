@@ -3,18 +3,13 @@ import 'dart:io';
 
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
-import 'package:html/dom.dart';
+import 'package:xml/xml.dart';
 
 import 'canonical.dart';
-import 'template_registry.dart';
 
 class ComponentGenerator {
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
-  final TemplateRegistry registry;
-  final String baseFile;
-
-  ComponentGenerator({this.registry, this.baseFile});
 
   void _reset() {
     _imports.clear();
@@ -56,20 +51,22 @@ class ComponentGenerator {
         'package:domino/src/experimental/idom.dart', ['DomContext']);
 
     for (final template in parsed.templates) {
-      final name = template.attributes['*'].replaceAll('-', '_') ?? 'render';
+      final name = template.getAttribute('method-name', namespace: dominoNs);
 
       final topLevelObjects = <String>[];
 
       _sb.writeln('void $name($idomcAlias.DomContext \$d');
       final defaultInits = <String>[];
-      for (final ve in template.querySelectorAll('d-template-var').toList()) {
-        ve.remove();
-        final library = ve.attributes['library'];
-        final type = ve.attributes['type'];
-        final name = ve.attributes['name'];
-        final defaultValue = ve.attributes['default'];
-        final documentation = ve.attributes['doc'];
-        final required = ve.attributes['required'] == 'true';
+      for (final ve in template
+          .findElements('template-var', namespace: dominoNs)
+          .toList()) {
+        final library = ve.getDominoAttr('library');
+        final type = ve.getDominoAttr('type');
+        final name = ve.getDominoAttr('name');
+        final defaultValue = ve.getDominoAttr('default');
+        final documentation = ve.getDominoAttr('doc');
+        final required = ve.getDominoAttr('required') == 'true';
+        ve.parent.children.remove(ve);
         final alias = _importAlias(library, [type]);
         final aliasedType = alias == null ? type : '$alias.$type';
         if (topLevelObjects.isEmpty) {
@@ -110,122 +107,115 @@ class ComponentGenerator {
     return text;
   }
 
-  String _scssName(Element style) {
-    // identify template's namespace
-    String ns;
-    var parent = style.parent;
-    while (parent != null) {
-      if (parent.localName == 'd-template') {
-        ns = parent.attributes['d-namespace'];
-        break;
-      }
-      parent = parent.parent;
-    }
+  String _scssName(XmlElement style) {
     // hash of the content
-    final hash = sha256
-        .convert(utf8.encode(style.innerHtml))
-        .toString()
-        .substring(0, 20);
-    return [
-      'ds',
-      if (ns != null && ns.isNotEmpty) ns,
-      hash,
-    ].join('_');
+    final hash =
+        sha256.convert(utf8.encode(style.text)).toString().substring(0, 20);
+    // TODO: include template name as part of the name
+    // TODO: include parent element tag as part of the name
+    return ['ds', hash].join('_');
   }
 
-  void _render(Stack stack, List<Node> nodes) {
+  void _render(Stack stack, Iterable<XmlNode> nodes) {
     for (final node in nodes) {
-      if (node is Element) {
-        if (node.localName == 'd-for') {
-          final expr = node.attributes['*'].split(' in ');
+      if (node is XmlElement) {
+        if (node.name.namespaceUri == dominoNs && node.name.local == 'for') {
+          final expr = node.getDominoAttr('expr').split(' in ');
           final object = expr[0].trim();
           final ns = Stack(parent: stack, objects: [object]);
           _sb.writeln(
               'for (final $object in ${stack.canonicalize(expr[1].trim())}) {');
           _render(ns, node.nodes);
           _sb.writeln('}');
-        } else if ((node.localName == 'd-if')) {
-          final cond = node.attributes['*'];
+        } else if (node.name.namespaceUri == dominoNs &&
+            node.name.local == 'if') {
+          final cond = node.getDominoAttr('expr');
           _sb.writeln('if (${stack.canonicalize(cond)}) {');
           _render(stack, node.nodes);
           _sb.writeln('}');
-        } else if (node.localName == 'd-else-if') {
-          final cond = node.attributes['*'];
+        } else if (node.name.namespaceUri == dominoNs &&
+            node.name.local == 'else-if') {
+          final cond = node.getDominoAttr('expr');
           _sb.writeln('else if (${stack.canonicalize(cond)}) {');
           _render(stack, node.nodes);
           _sb.writeln('}');
-        } else if (node.localName == 'd-else') {
+        } else if (node.name.namespaceUri == dominoNs &&
+            node.name.local == 'else') {
           _sb.writeln('else {');
           _render(stack, node.nodes);
           _sb.writeln('}');
-        } else if (node.localName == 'd-call') {
+        } else if (node.name.namespaceUri == dominoNs &&
+            node.name.local == 'call') {
           _renderCall(stack, node);
-        } else if (node.localName == 'd-slot') {
+        } else if (node.name.namespaceUri == dominoNs &&
+            node.name.local == 'slot') {
           _renderSlot(stack, node);
-        } else if (node.localName == 'd-style') {
+        } else if (node.name.namespaceUri == dominoNs &&
+            node.name.local == 'style') {
           _renderStyle(stack, node);
         } else {
           _renderElem(stack, node);
         }
-      } else if (node is Text) {
+      } else if (node is XmlText) {
         if (node.text.trim().isEmpty) continue;
         _sb.writeln('    \$d.text(\'${_interpolateText(stack, node.text)}\');');
-      } else if (node is Comment) {
+      } else if (node is XmlComment) {
         _sb.writeln('/*${node.text}*/');
+      } else if (node is XmlAttribute) {
+        //
       } else {
         throw UnsupportedError('Node: ${node.runtimeType}');
       }
     }
   }
 
-  void _renderElem(Stack stack, Element elem) {
-    final tag = elem.localName == 'd-element'
-        ? elem.attributes['d-tag']
-        : elem.localName;
-    final key = elem.attributes.remove('d-key');
+  void _renderElem(Stack stack, XmlElement elem) {
+    final tag = elem.name.local == 'element'
+        ? elem.getDominoAttr('tag')
+        : elem.name.local;
+    final key = elem.removeDominoAttr('key');
     final openParams = <String>[];
     if (key != null) {
       openParams.add(', key: $key');
     }
 
     _sb.writeln('    \$d.open(\'$tag\' ${openParams.join()});');
-    for (final attr in elem.attributes.keys) {
-      if (attr is String && attr.startsWith('d-')) continue;
+    for (final attr in elem.attributes) {
+      if (attr.name.namespaceUri != null) continue;
       _sb.writeln(
-          '    \$d.attr(\'$attr\', \'${_interpolateText(stack, elem.attributes[attr])}\');');
+          '    \$d.attr(\'${attr.name.local}\', \'${_interpolateText(stack, attr.value)}\');');
     }
 
     // d-var attributes
-    for (final dattr in elem.attributes.keys
-        .where((attr) => attr is String && attr.startsWith('d-'))) {
-      final attr = dattr as String;
-      if (attr.startsWith('d-var:')) {
-        final valname = dartName(attr.split(':')[1]);
+    for (final dattr
+        in elem.attributes.where((attr) => attr.name.namespaceUri == null)) {
+      if (dattr.name.local.startsWith('var-')) {
+        final valname = dartName(dattr.name.local.split('-')[1]);
         _sb.writeln('\n    var $valname;');
       }
     }
     // 'd-' attributes
-    for (final dattr in elem.attributes.keys
-        .where((attr) => attr is String && attr.startsWith('d-'))) {
-      final attr = dattr as String;
-      // Single d-event:onclick=dartFunction
-      if (attr.startsWith('d-event:')) {
-        final parts = attr.split(':');
-        final eventName = parts[1];
+    for (final dattr in elem.attributes
+        .where((attr) => attr.name.namespaceUri == dominoNs)) {
+      final attr = dattr.name.local;
+      // Single d:event-onclick=dartFunction
+      if (attr.startsWith('event-on')) {
+        final parts = attr.split('-');
+        final eventName = parts[1].substring(2);
         _sb.writeln(
-            '    \$d.event(\'$eventName\', fn: ${_interpolateText(stack, elem.attributes[dattr])});');
+            '    \$d.event(\'$eventName\', fn: ${_interpolateText(stack, dattr.value)});');
       }
-      if (attr.startsWith('d-event-list')) {
+      if (attr.startsWith('event-list-')) {
         _sb.writeln('''
-        for(final key in ${_interpolateText(stack, elem.attributes[dattr])}.keys) {
-            \$d.event(key, fn: ${_interpolateText(stack, elem.attributes[dattr])}[key]);
+        for(final key in ${_interpolateText(stack, dattr.value)}.keys) {
+            \$d.event(key, fn: ${_interpolateText(stack, dattr.value)}[key]);
         }
         ''');
       }
 
-      if (attr.startsWith('d-bind-input:')) {
-        final ba = attr.split(':').sublist(1).join(':'); // binded attribute
-        final ex = elem.attributes[attr]; // expression
+      if (attr.startsWith('bind-input-')) {
+        final ba = attr.split('-').sublist(2).join('-'); // binded attribute
+        final ex = dattr.value; // expression
         _sb.writeln('''{
           final elem = \$d.element;
           elem.$ba = $ex;
@@ -243,30 +233,25 @@ class ComponentGenerator {
     _sb.writeln('    \$d.close();');
   }
 
-  void _renderCall(Stack stack, Element elem) {
-    final library = elem.attributes.remove('d-library');
-    final method = elem.attributes.remove('d-method') ?? '';
-    final namespace = elem.attributes.remove('d-namespace') ?? '';
-    final alias = _importAlias(
-        library ??
-            registry?.resolveNamePath('$namespace.$method',
-                basePath: baseFile) ??
-            registry?.resolveNamePath(method, basePath: baseFile),
-        [method]);
+  void _renderCall(Stack stack, XmlElement elem) {
+    final library = elem.removeDominoAttr('library');
+    final method = elem.removeDominoAttr('method') ?? '';
+    final alias = _importAlias(library, [method]);
     if (alias != null) {
       _sb.write(alias == null ? '' : '$alias.');
     }
 
     _sb.write('$method(\$d');
 
-    for (final ch in elem.children) {
-      if (ch.localName == 'd-call-var') {
-        _sb.write(', ${ch.attributes['*']}:${ch.attributes['d-value']}');
+    for (final ch in elem.elements) {
+      if (ch.name.local == 'call-var') {
+        _sb.write(', ${ch.getDominoAttr('name')}:${ch.getDominoAttr('value')}');
       }
-      if (ch.localName == 'd-call-slot') {
+      if (ch.name.local == 'call-slot') {
         final idomcAlias = _importAlias(
             'package:domino/src/experimental/idom.dart', ['DomContext']);
-        _sb.writeln(', ${ch.attributes['*']}: ($idomcAlias.DomContext \$d){');
+        _sb.writeln(
+            ', ${ch.getDominoAttr('name')}: ($idomcAlias.DomContext \$d) {');
         _render(stack, ch.nodes);
         _sb.writeln('}');
       }
@@ -307,12 +292,12 @@ class ComponentGenerator {
     return parts.join();
   }
 
-  void _renderSlot(Stack stack, Element elem) {
-    final method = elem.attributes.remove('*');
+  void _renderSlot(Stack stack, XmlElement elem) {
+    final method = elem.removeDominoAttr('name');
     _sb.writeln('if ($method != null) {$method(\$d);}');
   }
 
-  void _renderStyle(Stack stack, Element elem) {
+  void _renderStyle(Stack stack, XmlElement elem) {
     final cn = _scssName(elem);
     _sb.writeln('    \$d.clazz(\'$cn\');\n');
   }
@@ -320,7 +305,7 @@ class ComponentGenerator {
   String generateScss(ParsedSource parsedSource) {
     final data = StringBuffer();
     for (final template in parsedSource.templates) {
-      final styles = template.getElementsByTagName('d-style');
+      final styles = template.findAllElements('style', namespace: dominoNs);
       for (final elem in styles) {
         data.writeln('.${_scssName(elem)} {');
         final lines = elem.text.split('\n');
@@ -391,14 +376,12 @@ compileDirectory(String path,
       if (debugParse) {
         final genPath = ps.path.replaceAll('.html', '.g.html');
         File(genPath).writeAsStringSync(
-            ps.templates.map((e) => e.outerHtml).join('\n\n'));
+            ps.templates.map((e) => e.toXmlString(pretty: true)).join('\n\n'));
       }
     }
   }
-  final reg = TemplateRegistry();
-  reg.registerAll(psList);
   for (final ps in psList) {
-    final cg = ComponentGenerator(registry: reg, baseFile: ps.path);
+    final cg = ComponentGenerator();
     final genSource = cg.generateParsedSource(ps);
     final genPath = ps.path.replaceAll('.html', '.g.dart');
     File(genPath).writeAsStringSync(genSource);
