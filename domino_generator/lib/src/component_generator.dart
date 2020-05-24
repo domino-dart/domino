@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
@@ -364,30 +363,4 @@ class _Import {
   final show = <String>{};
 
   _Import(this.url, this.alias);
-}
-
-compileDirectory(String path,
-    {bool recursive = true, bool debugParse = false}) {
-  final psList = <ParsedSource>[];
-  for (final file in Directory(path).listSync(recursive: recursive)) {
-    if (file.path.endsWith('.html') && !file.path.endsWith('.g.html')) {
-      final ps = parseFileToCanonical(file.path);
-      psList.add(ps);
-      if (debugParse) {
-        final genPath = ps.path.replaceAll('.html', '.g.html');
-        File(genPath).writeAsStringSync(
-            ps.templates.map((e) => e.toXmlString(pretty: true)).join('\n\n'));
-      }
-    }
-  }
-  for (final ps in psList) {
-    final cg = ComponentGenerator();
-    final genSource = cg.generateParsedSource(ps);
-    final genPath = ps.path.replaceAll('.html', '.g.dart');
-    File(genPath).writeAsStringSync(genSource);
-
-    final genScss = cg.generateScss(ps);
-    final genScssPath = ps.path.replaceAll('.html', '.g.scss');
-    File(genScssPath).writeAsStringSync(genScss);
-  }
 }
