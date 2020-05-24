@@ -1,5 +1,5 @@
-import 'package:domino_generator/src/component_generator.dart';
+import 'package:domino_generator/domino_generator.dart';
 
-void main() {
-  compileDirectory('example/ex2/web-project');
+Future<void> main() async {
+  await compileDirectory('example/ex2/web-project');
 }

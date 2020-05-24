@@ -1,5 +1,5 @@
-import 'package:domino_generator/src/component_generator.dart' as cg;
+import 'package:domino_generator/domino_generator.dart' as cg;
 
-void main() {
-  cg.compileDirectory('web/templates', debugParse: true);
+Future<void> main() async {
+  await cg.compileDirectory('web/templates', debugParse: true);
 }
