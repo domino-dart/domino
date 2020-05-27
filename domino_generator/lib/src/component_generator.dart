@@ -118,7 +118,7 @@ class ComponentGenerator {
   void _render(Stack stack, Iterable<XmlNode> nodes) {
     for (final node in nodes) {
       if (node is XmlElement) {
-        if (node.name.namespaceUri == dominoNs && node.name.local == 'for') {
+        if (_isDominoElem(node, 'for')) {
           final expr = node.getDominoAttr('expr').split(' in ');
           final object = expr[0].trim();
           final ns = Stack(parent: stack, objects: [object]);
@@ -126,31 +126,29 @@ class ComponentGenerator {
               'for (final $object in ${stack.canonicalize(expr[1].trim())}) {');
           _render(ns, node.nodes);
           _sb.writeln('}');
-        } else if (node.name.namespaceUri == dominoNs &&
-            node.name.local == 'if') {
+        } else if (_isDominoElem(node, 'if')) {
           final cond = node.getDominoAttr('expr');
           _sb.writeln('if (${stack.canonicalize(cond)}) {');
           _render(stack, node.nodes);
           _sb.writeln('}');
-        } else if (node.name.namespaceUri == dominoNs &&
-            node.name.local == 'else-if') {
+        } else if (_isDominoElem(node, 'else-if')) {
           final cond = node.getDominoAttr('expr');
           _sb.writeln('else if (${stack.canonicalize(cond)}) {');
           _render(stack, node.nodes);
           _sb.writeln('}');
-        } else if (node.name.namespaceUri == dominoNs &&
-            node.name.local == 'else') {
+        } else if (_isDominoElem(node, 'else')) {
           _sb.writeln('else {');
           _render(stack, node.nodes);
           _sb.writeln('}');
-        } else if (node.name.namespaceUri == dominoNs &&
-            node.name.local == 'call') {
+        } else if (_isDominoElem(node, 'call')) {
           _renderCall(stack, node);
-        } else if (node.name.namespaceUri == dominoNs &&
-            node.name.local == 'slot') {
+        } else if (_isDominoElem(node, 'attr')) {
+          _renderAttr(stack, node);
+        } else if (_isDominoElem(node, 'class')) {
+          _renderClass(stack, node);
+        } else if (_isDominoElem(node, 'slot')) {
           _renderSlot(stack, node);
-        } else if (node.name.namespaceUri == dominoNs &&
-            node.name.local == 'style') {
+        } else if (_isDominoElem(node, 'style')) {
           _renderStyle(stack, node);
         } else {
           _renderElem(stack, node);
@@ -291,6 +289,21 @@ class ComponentGenerator {
     return parts.join();
   }
 
+  void _renderAttr(Stack stack, XmlElement elem) {
+    final name = elem.getDominoAttr('name');
+    final value = _interpolateText(stack, elem.getDominoAttr('value'));
+    _sb.writeln('\$d.attr(\'$name\', $value);');
+  }
+
+  void _renderClass(Stack stack, XmlElement elem) {
+    final nameAttr = elem.getDominoAttr('name');
+    final name = _interpolateText(stack, nameAttr);
+    final presentAttr = elem.getDominoAttr('present');
+    final present =
+        presentAttr == null ? '' : ', ${_interpolateText(stack, presentAttr)}';
+    _sb.writeln('\$d.clazz(\'$name\'$present);');
+  }
+
   void _renderSlot(Stack stack, XmlElement elem) {
     final method = elem.removeDominoAttr('name');
     _sb.writeln('if ($method != null) {$method(\$d);}');
@@ -364,3 +377,6 @@ class _Import {
 
   _Import(this.url, this.alias);
 }
+
+bool _isDominoElem(XmlElement elem, String tag) =>
+    elem.name.namespaceUri == dominoNs && elem.name.local == tag;

@@ -34,7 +34,7 @@ ParsedSource parseToCanonical(String html, {String defTemp}) {
     final methodName = parts.last;
     final template = XmlElement(XmlName('template', 'd'));
     element.replaceWith(template, moveChildren: true);
-    template.setAttribute('name', methodName, namespace: dominoNs);
+    template.setDominoAttr('name', methodName);
     template.attributes
         .addAll(element.attributes.map((a) => a.copy() as XmlAttribute));
   }
@@ -49,19 +49,14 @@ ParsedSource parseToCanonical(String html, {String defTemp}) {
       final varSlot = XmlElement(XmlName('template-var', 'd'));
       templateElem.append(varSlot);
       varSlot
-        ..setAttribute('name', name, namespace: dominoNs)
-        ..setAttribute('type', 'SlotFn', namespace: dominoNs)
-        ..setAttribute(
-          'library',
-          'package:domino/src/experimental/idom.dart',
-          namespace: dominoNs,
-        );
+        ..setDominoAttr('name', name)
+        ..setDominoAttr('type', 'SlotFn')
+        ..setDominoAttr('library', 'package:domino/src/experimental/idom.dart');
     }
 
-    templateElem.setAttribute(
+    templateElem.setDominoAttr(
       'method-name',
       dartName(templateElem.getDominoAttr('name'), prefix: 'render'),
-      namespace: dominoNs,
     );
 
     for (final attr in templateElem.attributes.toList()) {
@@ -95,18 +90,17 @@ ParsedSource parseToCanonical(String html, {String defTemp}) {
       final varElem = XmlElement(XmlName('template-var', 'd'));
       templateElem.append(varElem);
       varElem
-        ..setAttribute('name', dartName(attr.name.local, prefix: ''),
-            namespace: dominoNs)
-        ..setAttribute('library', library, namespace: dominoNs)
-        ..setAttribute('type', type, namespace: dominoNs);
+        ..setDominoAttr('name', dartName(attr.name.local, prefix: ''))
+        ..setDominoAttr('library', library)
+        ..setDominoAttr('type', type);
       if (required) {
-        varElem.setAttribute('required', 'true', namespace: dominoNs);
+        varElem.setDominoAttr('required', 'true');
       }
       if (defaultValue != null) {
-        varElem.setAttribute('default', defaultValue, namespace: dominoNs);
+        varElem.setDominoAttr('default', defaultValue);
       }
       if (documentation != null) {
-        varElem.setAttribute('doc', documentation, namespace: dominoNs);
+        varElem.setDominoAttr('doc', documentation);
       }
     }
 
@@ -137,7 +131,7 @@ void _pullAttr(XmlElement node, String tag, {Iterable<String> alternatives}) {
       final elem = XmlElement(XmlName(tag, 'd'));
       node.injectInTree(elem);
       if (first.value.trim().isNotEmpty) {
-        elem.setAttribute('expr', first.value, namespace: dominoNs);
+        elem.setDominoAttr('expr', first.value);
       }
       return;
     }
@@ -179,10 +173,10 @@ void _rewrite(XmlNode node) {
       final dcall = XmlElement(XmlName('call', 'd'));
       node.replaceWith(dcall, moveChildren: true, moveAttributes: true);
       if (import != null) {
-        dcall.setAttribute('library', import, namespace: dominoNs);
+        dcall.setDominoAttr('library', import);
       }
-      dcall.setAttribute('method', dartName(node.name.local, prefix: 'render'),
-          namespace: dominoNs);
+      dcall.setDominoAttr(
+          'method', dartName(node.name.local, prefix: 'render'));
       _rewrite(dcall);
     }
 
@@ -193,17 +187,16 @@ void _rewrite(XmlNode node) {
         final parts = expr.split('#').map((p) => p.trim()).toList();
 
         if (parts.first.endsWith('.dart') || parts.first.endsWith('.html')) {
-          node.setAttribute('library', parts.removeAt(0), namespace: dominoNs);
+          node.setDominoAttr('library', parts.removeAt(0));
         }
         if (parts.isNotEmpty) {
           final method = dartName(parts.removeAt(0), prefix: 'render');
-          node.setAttribute('method', method, namespace: dominoNs);
+          node.setDominoAttr('method', method);
         }
       }
       final libValue = node.getDominoAttr('library');
       if (libValue != null && libValue.endsWith('.html')) {
-        node.setAttribute('library', libValue.replaceAll('.html', '.g.dart'),
-            namespace: dominoNs);
+        node.setDominoAttr('library', libValue.replaceAll('.html', '.g.dart'));
       }
       final removeNodes = <XmlNode>[];
       final defSlotNodes = <XmlNode>[];
@@ -223,7 +216,7 @@ void _rewrite(XmlNode node) {
         // add default node if it does not have any, and has real node
         final defSlot = XmlElement(XmlName('call-slot', 'd'));
         node.append(defSlot);
-        defSlot.setAttribute('name', 'slot', namespace: dominoNs);
+        defSlot.setDominoAttr('name', 'slot');
         defSlot.children.addAll(defSlotNodes.map((e) => e.copy()));
       }
 
@@ -233,9 +226,7 @@ void _rewrite(XmlNode node) {
         final value = attr.value;
         final dCallVar = XmlElement(XmlName('call-var', 'd'));
         node.append(dCallVar);
-        dCallVar
-          ..setAttribute('name', varname, namespace: dominoNs)
-          ..setAttribute('value', value, namespace: dominoNs);
+        dCallVar..setDominoAttr('name', varname)..setDominoAttr('value', value);
         node.attributes.remove(attr);
       }
 
@@ -252,20 +243,36 @@ void _rewrite(XmlNode node) {
         final eventCallTag = XmlElement(XmlName('call-var', 'd'));
         node.append(eventCallTag);
         eventCallTag
-          ..setAttribute('name', 'events', namespace: dominoNs)
-          ..setAttribute('value',
-              '{${events.entries.map((e) => '\'${e.key}\': ${e.value}').join(',')}}',
-              namespace: dominoNs);
+          ..setDominoAttr('name', 'events')
+          ..setDominoAttr(
+            'value',
+            '{${events.entries.map((e) => '\'${e.key}\': ${e.value}').join(',')}}',
+          );
       }
     }
 
     if (node.name.local == 'slot' && node.name.namespaceUri == dominoNs) {
       final name = node.getDominoAttr('name');
-      node.setAttribute('name', name ?? 'slot', namespace: dominoNs);
+      node.setDominoAttr('name', name ?? 'slot');
     }
     if (node.name.local == 'call-slot' && node.name.namespaceUri == dominoNs) {
       final name = node.getDominoAttr('name');
-      node.setAttribute('name', name ?? 'slot', namespace: dominoNs);
+      node.setDominoAttr('name', name ?? 'slot');
+    }
+
+    final classAttr = node.getAttribute('class');
+    if (node.name.namespaceUri == null && classAttr != null) {
+      var index = 0;
+      classAttr
+          .split(' ')
+          .map((c) => c.trim())
+          .where((c) => c.isNotEmpty)
+          .forEach((c) {
+        final elem = XmlElement(XmlName('class', 'd'));
+        node.children.insert(index++, elem);
+        elem.setDominoAttr('name', c);
+      });
+      node.removeAttribute('class');
     }
 
     _rewriteAll(node.children);
@@ -335,6 +342,10 @@ extension XmlElementExt on XmlElement {
 
   String getDominoAttr(String name) {
     return getAttribute(name, namespace: dominoNs);
+  }
+
+  void setDominoAttr(String name, String value) {
+    setAttribute(name, value, namespace: dominoNs);
   }
 
   String removeDominoAttr(String name) {

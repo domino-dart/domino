@@ -172,7 +172,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
       out.write('$curInd<${elem.tag}');
       var simple = true;
       if (elem.style.isNotEmpty) {
-        out.write('${ml}style="$mml');
+        out.write('${ml}style="${indentAttr ? mml : ''}');
         out.write(elem.style.entries
             .map((stl) => '${stl.key}: ${stl.value};')
             .join(mml));
@@ -180,7 +180,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
         simple = false;
       }
       if (elem.clazz.isNotEmpty) {
-        out.write('${ml}class="$mml');
+        out.write('${ml}class="${indentAttr ? mml : ''}');
         out.write(_attrEscaper.convert(elem.clazz?.join(mml)));
         out.write('"');
         simple = false;
