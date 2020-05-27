@@ -31,6 +31,8 @@ void renderEx1(
   for (final item in obj.items) {
     if (item.visible) {
       $d.open('li');
+      $d.clazz('a');
+      $d.clazz('x-${item.clazz}');
       $d.text('${item.label} ${obj.name}');
       $d.close();
     }

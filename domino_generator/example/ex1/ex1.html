@@ -7,7 +7,8 @@
   <span d:else="">cond3</span>
   <ul>
     <li d:for="item in obj.items"
-        d:if="item.visible">{{item.label}} {{obj.name}}</li>
+        d:if="item.visible"
+        class="a x-{{item.clazz}}">{{item.label}} {{obj.name}}</li>
   </ul>
   <d:call d:method="renderEx1"
           d:if="extra"

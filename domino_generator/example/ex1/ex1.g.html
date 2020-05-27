@@ -12,7 +12,11 @@
   <ul>
     <d:for d:expr="item in obj.items">
       <d:if d:expr="item.visible">
-        <li>{{item.label}} {{obj.name}}</li>
+        <li>
+          <d:class d:name="a"/>
+          <d:class d:name="x-{{item.clazz}}"/>
+          {{item.label}} {{obj.name}}
+        </li>
       </d:if>
     </d:for>
   </ul>

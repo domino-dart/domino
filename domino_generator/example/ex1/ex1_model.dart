@@ -10,4 +10,5 @@ class Example {
 class Item {
   bool visible;
   String label;
+  String clazz = 'default';
 }

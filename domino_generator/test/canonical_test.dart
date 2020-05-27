@@ -27,6 +27,21 @@ void main() {
         '<d:template d:name="div" d:method-name="renderDiv">X</d:template>');
   });
 
+  test('single class attribute', () {
+    expect(c('<div class="a">X</div>'), '<div><d:class d:name="a"/>X</div>');
+  });
+
+  test('multiple class attributes', () {
+    expect(
+        c('<div class="a b {{c}}">X</div>'),
+        '<div>'
+        '<d:class d:name="a"/>'
+        '<d:class d:name="b"/>'
+        '<d:class d:name="{{c}}"/>'
+        'X'
+        '</div>');
+  });
+
   test('d:for', () {
     expect(c('<div d:for="param in params">X</div>'),
         '<d:for d:expr="param in params"><div>X</div></d:for>');
