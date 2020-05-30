@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
@@ -155,7 +156,7 @@ class ComponentGenerator {
         }
       } else if (node is XmlText) {
         if (node.text.trim().isEmpty) continue;
-        _sb.writeln('    \$d.text(\'${_interpolateText(stack, node.text)}\');');
+        _renderText(stack, node);
       } else if (node is XmlComment) {
         _sb.writeln('/*${node.text}*/');
       } else if (node is XmlAttribute) {
@@ -164,6 +165,37 @@ class ComponentGenerator {
         throw UnsupportedError('Node: ${node.runtimeType}');
       }
     }
+  }
+
+  void _renderText(Stack stack, XmlText node) {
+    final intlAlias = _importAlias('package:intl/intl.dart', ['Intl']);
+    // TODO: deterministic name without causing conflicts
+    final fn_name = 'text_' + Random().nextInt(99999).toString();
+    final parts = _interpolateTextParts(stack, node.text);
+    var cnt = 0;
+    final args = <String> [];
+    final msg_text = StringBuffer();
+    for(final part in parts) {
+      if(part.startsWith('\$')) {
+        args.add(part);
+        msg_text.write('\$arg$cnt');
+        cnt++;
+      } else {
+        msg_text.write(part);
+      }
+    }
+    final argNames = List<int>.generate(cnt, (i) => i).map((e) => 'arg$e').join(',');
+    // generate two lines
+    // first is function generation for Intl.message with indexed arguments
+    _sb.writeln('    String $fn_name($argNames) => $intlAlias.'
+        'Intl.message(\'${msg_text.toString()}\','
+        ' name: \'$fn_name\', args: [$argNames],'
+        ' desc: \'${args.map((e) => e.replaceAll('\$', '\\\$')
+          .replaceAll('\'', '\\\'')).join('\\n')}\');');
+    // second is a call to the function wtih the real parameters
+    _sb.writeln('    \$d.text($fn_name(${
+        args.map((e) => '\'$e\'').join(',')
+      }));');
   }
 
   void _renderElem(Stack stack, XmlElement elem) {
@@ -257,7 +289,7 @@ class ComponentGenerator {
     _sb.writeln(');');
   }
 
-  String _interpolateText(Stack stack, String value) {
+  List<String> _interpolateTextParts(Stack stack, String value) {
     final parts = <String>[];
 
     void addText(String v) {
@@ -286,7 +318,11 @@ class ComponentGenerator {
     if (pos < value.length) {
       addText(value.substring(pos));
     }
-    return parts.join();
+    return parts;
+  }
+
+  String _interpolateText(Stack stack, String value) {
+    return _interpolateTextParts(stack, value).join();
   }
 
   void _renderAttr(Stack stack, XmlElement elem) {

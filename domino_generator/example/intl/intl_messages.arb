@@ -1,0 +1,123 @@
+{
+  "@@last_modified": "2020-05-30T20:24:31.695898",
+  "text_34430": "Some {arg0} and {arg1}.",
+  "@text_34430": {
+    "description": "${obj.text}\n${obj.number}",
+    "type": "text",
+    "placeholders": {
+      "arg0": {},
+      "arg1": {}
+    }
+  },
+  "text_20917": "cond1",
+  "@text_20917": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_44084": "cond2",
+  "@text_44084": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_43298": "cond3",
+  "@text_43298": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_84148": "{arg0} {arg1}",
+  "@text_84148": {
+    "description": "${item.label}\n${obj.name}",
+    "type": "text",
+    "placeholders": {
+      "arg0": {},
+      "arg1": {}
+    }
+  },
+  "text_88810": "X",
+  "@text_88810": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_73072": "\n    Named\n    ",
+  "@text_73072": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_7356": "Button",
+  "@text_7356": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_67739": "\n        X\n    ",
+  "@text_67739": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_52428": "\n        O\n    ",
+  "@text_52428": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_10490": "\n        The best button\n    ",
+  "@text_10490": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_48218": "\n    Named\n    ",
+  "@text_48218": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_75029": "Button",
+  "@text_75029": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_70031": "\n        X\n    ",
+  "@text_70031": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_61938": "\n        BB\n        ",
+  "@text_61938": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_38245": "\n        LO\n    ",
+  "@text_38245": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_26932": "\n        The best button\n    ",
+  "@text_26932": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_33384": "\n        Here is an input field:\n        ",
+  "@text_33384": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  },
+  "text_9650": "\n        And a button component from somewhere\n        ",
+  "@text_9650": {
+    "description": "",
+    "type": "text",
+    "placeholders": {}
+  }
+}
