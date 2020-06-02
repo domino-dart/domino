@@ -1,7 +1,7 @@
 {
-  "@@last_modified": "2020-05-30T20:24:31.695898",
-  "text_34430": "Some {arg0} and {arg1}.",
-  "@text_34430": {
+  "@@last_modified": "2020-06-02T23:50:38.777094",
+  "text_Some_obj_text_35278f15": "Some {arg0} and {arg1}.",
+  "@text_Some_obj_text_35278f15": {
     "description": "${obj.text}\n${obj.number}",
     "type": "text",
     "placeholders": {
@@ -9,26 +9,26 @@
       "arg1": {}
     }
   },
-  "text_20917": "cond1",
-  "@text_20917": {
+  "text_cond1_65176508": "cond1",
+  "@text_cond1_65176508": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_44084": "cond2",
-  "@text_44084": {
+  "text_cond2_915c343c": "cond2",
+  "@text_cond2_915c343c": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_43298": "cond3",
-  "@text_43298": {
+  "text_cond3_abfec480": "cond3",
+  "@text_cond3_abfec480": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_84148": "{arg0} {arg1}",
-  "@text_84148": {
+  "text_item_label_obj_b0177529": "{arg0} {arg1}",
+  "@text_item_label_obj_b0177529": {
     "description": "${item.label}\n${obj.name}",
     "type": "text",
     "placeholders": {
@@ -36,86 +36,56 @@
       "arg1": {}
     }
   },
-  "text_88810": "X",
-  "@text_88810": {
+  "text_X_4b68ab38": "X",
+  "@text_X_4b68ab38": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_73072": "\n    Named\n    ",
-  "@text_73072": {
+  "text_Named_8605605a": "Named",
+  "@text_Named_8605605a": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_7356": "Button",
-  "@text_7356": {
+  "text_Button_707eab0c": "Button",
+  "@text_Button_707eab0c": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_67739": "\n        X\n    ",
-  "@text_67739": {
+  "text_O_c4694f2e": "O",
+  "@text_O_c4694f2e": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_52428": "\n        O\n    ",
-  "@text_52428": {
+  "text_The_best_button_c49a9a67": "The best button",
+  "@text_The_best_button_c49a9a67": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_10490": "\n        The best button\n    ",
-  "@text_10490": {
+  "text_BB_fc686c31": "BB",
+  "@text_BB_fc686c31": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_48218": "\n    Named\n    ",
-  "@text_48218": {
+  "text_LO_ec0bade9": "LO",
+  "@text_LO_ec0bade9": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_75029": "Button",
-  "@text_75029": {
+  "text_Here_is_an_20be9e0a": "Here is an input field:",
+  "@text_Here_is_an_20be9e0a": {
     "description": "",
     "type": "text",
     "placeholders": {}
   },
-  "text_70031": "\n        X\n    ",
-  "@text_70031": {
-    "description": "",
-    "type": "text",
-    "placeholders": {}
-  },
-  "text_61938": "\n        BB\n        ",
-  "@text_61938": {
-    "description": "",
-    "type": "text",
-    "placeholders": {}
-  },
-  "text_38245": "\n        LO\n    ",
-  "@text_38245": {
-    "description": "",
-    "type": "text",
-    "placeholders": {}
-  },
-  "text_26932": "\n        The best button\n    ",
-  "@text_26932": {
-    "description": "",
-    "type": "text",
-    "placeholders": {}
-  },
-  "text_33384": "\n        Here is an input field:\n        ",
-  "@text_33384": {
-    "description": "",
-    "type": "text",
-    "placeholders": {}
-  },
-  "text_9650": "\n        And a button component from somewhere\n        ",
-  "@text_9650": {
+  "text_And_a_button_846efa2d": "And a button component from somewhere",
+  "@text_And_a_button_846efa2d": {
     "description": "",
     "type": "text",
     "placeholders": {}

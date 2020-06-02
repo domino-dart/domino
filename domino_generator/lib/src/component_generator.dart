@@ -167,35 +167,40 @@ class ComponentGenerator {
     }
   }
 
+  static final _whitespace = RegExp(r'\s+');
+  static final _word = RegExp(r'\w+');
   void _renderText(Stack stack, XmlText node) {
     final intlAlias = _importAlias('package:intl/intl.dart', ['Intl']);
-    // TODO: deterministic name without causing conflicts
-    final fn_name = 'text_' + Random().nextInt(99999).toString();
-    final parts = _interpolateTextParts(stack, node.text);
+    final text = node.text.trim().replaceAll(_whitespace, ' ');
+    if (text == '') return; // empty line
+    final fnName = 'text_' +
+        _word.allMatches(text).take(3).map((e) => e.group(0)).join('_') +
+        '_' +
+        sha256.convert(utf8.encode(text)).toString().substring(0, 8);
+    final parts = _interpolateTextParts(stack, text);
     var cnt = 0;
-    final args = <String> [];
-    final msg_text = StringBuffer();
-    for(final part in parts) {
-      if(part.startsWith('\$')) {
+    final args = <String>[];
+    final msgText = StringBuffer();
+    for (final part in parts) {
+      if (part.startsWith('\$')) {
         args.add(part);
-        msg_text.write('\$arg$cnt');
+        msgText.write('\$arg$cnt');
         cnt++;
       } else {
-        msg_text.write(part);
+        msgText.write(part);
       }
     }
-    final argNames = List<int>.generate(cnt, (i) => i).map((e) => 'arg$e').join(',');
-    // generate two lines
+    final argNames =
+        List<int>.generate(cnt, (i) => i).map((e) => 'arg$e').join(',');
+    // generate two lines because intl arb generation needs function definition
     // first is function generation for Intl.message with indexed arguments
-    _sb.writeln('    String $fn_name($argNames) => $intlAlias.'
-        'Intl.message(\'${msg_text.toString()}\','
-        ' name: \'$fn_name\', args: [$argNames],'
-        ' desc: \'${args.map((e) => e.replaceAll('\$', '\\\$')
-          .replaceAll('\'', '\\\'')).join('\\n')}\');');
+    _sb.writeln('{    String $fnName($argNames) => $intlAlias.'
+        'Intl.message(\'${msgText.toString()}\','
+        ' name: \'$fnName\', args: [$argNames],'
+        ' desc: \'${args.map((e) => e.replaceAll('\$', '\\\$').replaceAll('\'', '\\\'')).join('\\n')}\');');
     // second is a call to the function wtih the real parameters
-    _sb.writeln('    \$d.text($fn_name(${
-        args.map((e) => '\'$e\'').join(',')
-      }));');
+    _sb.writeln(
+        '    \$d.text($fnName(${args.map((e) => '\'$e\'').join(',')}));}');
   }
 
   void _renderElem(Stack stack, XmlElement elem) {
