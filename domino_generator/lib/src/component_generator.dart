@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
@@ -10,6 +9,7 @@ import 'canonical.dart';
 class ComponentGenerator {
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
+  final _texts = <_TextElem>[];
 
   void _reset() {
     _imports.clear();
@@ -97,6 +97,25 @@ class ComponentGenerator {
 
       _sb.writeln('}');
     }
+
+    _sb.writeln('const \$strings = {');
+    final snames = <String>{};
+    for(final te in _texts) {
+      snames.add(te.name);
+    }
+    for(final sn in snames) {
+      _sb.writeln('\'$sn\': {');
+      final usedLangs = <String>{};
+      for(final te in _texts.where((te) => te.name == sn)) {
+        if(usedLangs.contains(te.lang)) continue;
+        usedLangs.add(te.lang);
+        _sb.writeln('\'_params${te.lang}\': r\'${te.params}\',');
+        _sb.writeln('\'${te.lang}\': r\'${te.text}\',');
+      }
+      _sb.writeln('},');
+    }
+    _sb.writeln('};');
+      
     String text;
     try {
       text = DartFormatter().format('${_renderImports()}\n$_sb');
@@ -170,37 +189,48 @@ class ComponentGenerator {
   static final _whitespace = RegExp(r'\s+');
   static final _word = RegExp(r'\w+');
   void _renderText(Stack stack, XmlText node) {
-    final intlAlias = _importAlias('package:intl/intl.dart', ['Intl']);
     final text = node.text.trim().replaceAll(_whitespace, ' ');
     if (text == '') return; // empty line
     final fnName = 'text_' +
         _word.allMatches(text).take(3).map((e) => e.group(0)).join('_') +
         '_' +
         sha256.convert(utf8.encode(text)).toString().substring(0, 8);
+
     final parts = _interpolateTextParts(stack, text);
     var cnt = 0;
-    final args = <String>[];
-    final msgText = StringBuffer();
+    final argNames = StringBuffer();
+    final newText = StringBuffer();
+    final params = <String, String>{};
     for (final part in parts) {
       if (part.startsWith('\$')) {
-        args.add(part);
-        msgText.write('\$arg$cnt');
+        params['\$arg$cnt'] = part.substring(2, part.length-1);
+        newText.write('\$arg$cnt');
+
+        if(cnt > 0) argNames.write(',');
+        argNames.write('\$arg$cnt');
         cnt++;
       } else {
-        msgText.write(part);
+        newText.write(part);
       }
     }
-    final argNames =
-        List<int>.generate(cnt, (i) => i).map((e) => 'arg$e').join(',');
-    // generate two lines because intl arb generation needs function definition
-    // first is function generation for Intl.message with indexed arguments
-    _sb.writeln('{    String $fnName($argNames) => $intlAlias.'
-        'Intl.message(\'${msgText.toString()}\','
-        ' name: \'$fnName\', args: [$argNames],'
-        ' desc: \'${args.map((e) => e.replaceAll('\$', '\\\$').replaceAll('\'', '\\\'')).join('\\n')}\');');
-    // second is a call to the function wtih the real parameters
+    final textelem = _TextElem(fnName, newText.toString(), params: params);
+    _texts.add(textelem);
+
+    // Functions need to be used for interpolation.
+    _sb.writeln('{    String $fnName($argNames) => '
+        '(\$strings[r\'$fnName\'].containsKey(\$d.globals[\'locale\'])'
+        '? \$strings[r\'$fnName\'][\$d.globals[\'locale\']]'
+        ': \$strings[r\'$fnName\'][\'\'])'
+    );
+    _sb.writeln('.toString()');
+    params.forEach((key, value) {
+      _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
+    });
+    _sb.writeln(';');
+
+    // second is a call to the function with the real parameters
     _sb.writeln(
-        '    \$d.text($fnName(${args.map((e) => '\'$e\'').join(',')}));}');
+        '    \$d.text($fnName(${textelem.params.values.join(',')}));}');
   }
 
   void _renderElem(Stack stack, XmlElement elem) {
@@ -294,6 +324,8 @@ class ComponentGenerator {
     _sb.writeln(');');
   }
 
+  // Returns a list where each element is either text
+  // or a string for interpolation
   List<String> _interpolateTextParts(Stack stack, String value) {
     final parts = <String>[];
 
@@ -381,6 +413,7 @@ class ComponentGenerator {
   }
 }
 
+// Matches strings for interpolation
 final _expr = RegExp('{{(.+?)}}');
 
 class Stack {
@@ -421,3 +454,15 @@ class _Import {
 
 bool _isDominoElem(XmlElement elem, String tag) =>
     elem.name.namespaceUri == dominoNs && elem.name.local == tag;
+
+class _TextElem {
+  final String name;
+  final Map<String, String> params;
+  final String text;
+  final String lang;
+  _TextElem._(this.name, this.text, this.lang, this.params);
+  factory _TextElem(String name, String text,
+      {String lang, Map<String, String> params}) {
+    return _TextElem._(name, text, lang ?? '', params ?? {});
+  }
+}

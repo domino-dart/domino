@@ -10,6 +10,8 @@ abstract class DomContext<L, V> {
   L get element;
   dynamic get pointer;
 
+  final globals = {};
+
   void open(
     String tag, {
     String key,

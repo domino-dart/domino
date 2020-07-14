@@ -10,6 +10,7 @@ void patch(Element host, Function(DomContext ctx) fn) {
 }
 
 class BrowserDomContext implements DomContext<Element, Event> {
+  final globals = {};
   final Element _hostElement;
   final _lifecycleEvents = <_LifecycleEventData>[];
   final _positions = <_ElemPos>[];
