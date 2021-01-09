@@ -108,7 +108,7 @@ class ComponentGenerator {
         snames.add(te.name);
       }
       for (final sn in snames) {
-        _sb.writeln('\'$sn\': {');
+        _sb.writeln('r\'$sn\': {');
         final usedLangs = <String>{};
         for (final te in _texts.where((te) => te.name == sn)) {
           if (usedLangs.contains(te.lang)) continue;
@@ -196,11 +196,7 @@ class ComponentGenerator {
   void _renderText(Stack stack, XmlText node) {
     final text = node.text.trim().replaceAll(_whitespace, ' ');
     if (text == '') return; // empty line
-    final wordId =
-        _word.allMatches(text).take(3).map((e) => e.group(0)).join('_');
-    final textHash =
-        sha256.convert(utf8.encode(text)).toString().substring(0, 8);
-    final fnName = 'text_${wordId}_$textHash';
+    final fnName = _textFn(text);
 
     final parts = _interpolateTextParts(stack, text);
     var cnt = 0;
@@ -240,6 +236,26 @@ class ComponentGenerator {
     } else {
       _sb.writeln('    \$d.text(\'${parts.join()}\');');
     }
+  }
+
+  String _textFn(String text) {
+    final wordParts = _word
+        .allMatches(text)
+        .map((e) => e.group(0).toLowerCase())
+        .map((v) => v.length <= 1
+            ? v.toUpperCase()
+            : v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase())
+        .take(5)
+        .toList();
+    final wordId = StringBuffer();
+    for (var i = 0; i < wordParts.length; i++) {
+      wordId.write(wordParts[i]);
+      if (i >= 2 && wordId.length > 20) break;
+    }
+
+    final textHash =
+        sha256.convert(utf8.encode(text)).toString().substring(0, 8);
+    return 't$textHash\$$wordId';
   }
 
   void _renderElem(Stack stack, XmlElement elem) {

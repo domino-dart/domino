@@ -2,31 +2,31 @@ import 'package:domino/src/experimental/idom.dart' as _i0 show DomContext;
 
 void renderButton(_i0.DomContext $d) {
   {
-    String text_Named_8605605a() =>
-        (_$strings[r'text_Named_8605605a'].containsKey($d.globals.locale)
-                ? _$strings[r'text_Named_8605605a'][$d.globals.locale]
-                : _$strings[r'text_Named_8605605a'][''])
+    String t8605605a$Named() =>
+        (_$strings[r't8605605a$Named'].containsKey($d.globals.locale)
+                ? _$strings[r't8605605a$Named'][$d.globals.locale]
+                : _$strings[r't8605605a$Named'][''])
             .toString();
-    $d.text(text_Named_8605605a());
+    $d.text(t8605605a$Named());
   }
   $d.open('b');
   {
-    String text_Button_707eab0c() =>
-        (_$strings[r'text_Button_707eab0c'].containsKey($d.globals.locale)
-                ? _$strings[r'text_Button_707eab0c'][$d.globals.locale]
-                : _$strings[r'text_Button_707eab0c'][''])
+    String t707eab0c$Button() =>
+        (_$strings[r't707eab0c$Button'].containsKey($d.globals.locale)
+                ? _$strings[r't707eab0c$Button'][$d.globals.locale]
+                : _$strings[r't707eab0c$Button'][''])
             .toString();
-    $d.text(text_Button_707eab0c());
+    $d.text(t707eab0c$Button());
   }
   $d.close();
 }
 
 const _$strings = {
-  'text_Named_8605605a': {
+  r't8605605a$Named': {
     '_params': r'{}',
     '': r'Named',
   },
-  'text_Button_707eab0c': {
+  r't707eab0c$Button': {
     '_params': r'{}',
     '': r'Button',
   },

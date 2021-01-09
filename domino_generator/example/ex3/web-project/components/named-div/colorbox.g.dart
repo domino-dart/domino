@@ -6,12 +6,12 @@ void renderRedBox(_i0.DomContext $d) {
 
   $d.open('div');
   {
-    String text_X_4b68ab38() =>
-        (_$strings[r'text_X_4b68ab38'].containsKey($d.globals.locale)
-                ? _$strings[r'text_X_4b68ab38'][$d.globals.locale]
-                : _$strings[r'text_X_4b68ab38'][''])
+    String t4b68ab38$X() =>
+        (_$strings[r't4b68ab38$X'].containsKey($d.globals.locale)
+                ? _$strings[r't4b68ab38$X'][$d.globals.locale]
+                : _$strings[r't4b68ab38$X'][''])
             .toString();
-    $d.text(text_X_4b68ab38());
+    $d.text(t4b68ab38$X());
   }
   $d.close();
 }
@@ -24,37 +24,37 @@ void renderBlueBox(
 
   $d.open('div');
   {
-    String text_BB_fc686c31() =>
-        (_$strings[r'text_BB_fc686c31'].containsKey($d.globals.locale)
-                ? _$strings[r'text_BB_fc686c31'][$d.globals.locale]
-                : _$strings[r'text_BB_fc686c31'][''])
+    String tfc686c31$Bb() =>
+        (_$strings[r'tfc686c31$Bb'].containsKey($d.globals.locale)
+                ? _$strings[r'tfc686c31$Bb'][$d.globals.locale]
+                : _$strings[r'tfc686c31$Bb'][''])
             .toString();
-    $d.text(text_BB_fc686c31());
+    $d.text(tfc686c31$Bb());
   }
   if (slot != null) {
     slot($d);
   }
   {
-    String text_LO_ec0bade9() =>
-        (_$strings[r'text_LO_ec0bade9'].containsKey($d.globals.locale)
-                ? _$strings[r'text_LO_ec0bade9'][$d.globals.locale]
-                : _$strings[r'text_LO_ec0bade9'][''])
+    String tec0bade9$Lo() =>
+        (_$strings[r'tec0bade9$Lo'].containsKey($d.globals.locale)
+                ? _$strings[r'tec0bade9$Lo'][$d.globals.locale]
+                : _$strings[r'tec0bade9$Lo'][''])
             .toString();
-    $d.text(text_LO_ec0bade9());
+    $d.text(tec0bade9$Lo());
   }
   $d.close();
 }
 
 const _$strings = {
-  'text_X_4b68ab38': {
+  r't4b68ab38$X': {
     '_params': r'{}',
     '': r'X',
   },
-  'text_BB_fc686c31': {
+  r'tfc686c31$Bb': {
     '_params': r'{}',
     '': r'BB',
   },
-  'text_LO_ec0bade9': {
+  r'tec0bade9$Lo': {
     '_params': r'{}',
     '': r'LO',
   },

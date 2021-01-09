@@ -6,36 +6,38 @@ import './components/named-div/library.dart' as _i2
 void renderEx3(_i0.DomContext $d) {
   $d.open('button');
   {
-    String text_The_best_button_c49a9a67() =>
-        (_$strings[r'text_The_best_button_c49a9a67']
-                    .containsKey($d.globals.locale)
-                ? _$strings[r'text_The_best_button_c49a9a67'][$d.globals.locale]
-                : _$strings[r'text_The_best_button_c49a9a67'][''])
+    String tc49a9a67$TheBestButton() =>
+        (_$strings[r'tc49a9a67$TheBestButton'].containsKey($d.globals.locale)
+                ? _$strings[r'tc49a9a67$TheBestButton'][$d.globals.locale]
+                : _$strings[r'tc49a9a67$TheBestButton'][''])
             .toString();
-    $d.text(text_The_best_button_c49a9a67());
+    $d.text(tc49a9a67$TheBestButton());
   }
   $d.close();
   _i1.renderButton($d);
   _i2.renderRedBox($d);
   _i2.renderBlueBox($d, slot: (_i0.DomContext $d) {
     {
-      String text_Here_is_an_20be9e0a() =>
-          (_$strings[r'text_Here_is_an_20be9e0a'].containsKey($d.globals.locale)
-                  ? _$strings[r'text_Here_is_an_20be9e0a'][$d.globals.locale]
-                  : _$strings[r'text_Here_is_an_20be9e0a'][''])
+      String t20be9e0a$HereIsAnInputField() =>
+          (_$strings[r't20be9e0a$HereIsAnInputField']
+                      .containsKey($d.globals.locale)
+                  ? _$strings[r't20be9e0a$HereIsAnInputField']
+                      [$d.globals.locale]
+                  : _$strings[r't20be9e0a$HereIsAnInputField'][''])
               .toString();
-      $d.text(text_Here_is_an_20be9e0a());
+      $d.text(t20be9e0a$HereIsAnInputField());
     }
     $d.open('input');
     $d.close();
     {
-      String text_And_a_button_846efa2d() =>
-          (_$strings[r'text_And_a_button_846efa2d']
+      String t846efa2d$AndAButtonComponentFrom() =>
+          (_$strings[r't846efa2d$AndAButtonComponentFrom']
                       .containsKey($d.globals.locale)
-                  ? _$strings[r'text_And_a_button_846efa2d'][$d.globals.locale]
-                  : _$strings[r'text_And_a_button_846efa2d'][''])
+                  ? _$strings[r't846efa2d$AndAButtonComponentFrom']
+                      [$d.globals.locale]
+                  : _$strings[r't846efa2d$AndAButtonComponentFrom'][''])
               .toString();
-      $d.text(text_And_a_button_846efa2d());
+      $d.text(t846efa2d$AndAButtonComponentFrom());
     }
     $d.open('d.button');
     $d.close();
@@ -43,15 +45,15 @@ void renderEx3(_i0.DomContext $d) {
 }
 
 const _$strings = {
-  'text_The_best_button_c49a9a67': {
+  r'tc49a9a67$TheBestButton': {
     '_params': r'{}',
     '': r'The best button',
   },
-  'text_Here_is_an_20be9e0a': {
+  r't20be9e0a$HereIsAnInputField': {
     '_params': r'{}',
     '': r'Here is an input field:',
   },
-  'text_And_a_button_846efa2d': {
+  r't846efa2d$AndAButtonComponentFrom': {
     '_params': r'{}',
     '': r'And a button component from somewhere',
   },
