@@ -7,9 +7,8 @@ void renderEx2(_i0.DomContext $d) {
   {
     String text_The_best_button_c49a9a67() =>
         (_$strings[r'text_The_best_button_c49a9a67']
-                    .containsKey($d.globals['locale'])
-                ? _$strings[r'text_The_best_button_c49a9a67']
-                    [$d.globals['locale']]
+                    .containsKey($d.globals.locale)
+                ? _$strings[r'text_The_best_button_c49a9a67'][$d.globals.locale]
                 : _$strings[r'text_The_best_button_c49a9a67'][''])
             .toString();
     $d.text(text_The_best_button_c49a9a67());

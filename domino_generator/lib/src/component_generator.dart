@@ -218,8 +218,8 @@ class ComponentGenerator {
 
     // Functions need to be used for interpolation.
     _sb.writeln('{    String $fnName($argNames) => '
-        '(_\$strings[r\'$fnName\'].containsKey(\$d.globals[\'locale\'])'
-        '? _\$strings[r\'$fnName\'][\$d.globals[\'locale\']]'
+        '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
+        '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
         ': _\$strings[r\'$fnName\'][\'\'])');
     _sb.writeln('.toString()');
     params.forEach((key, value) {

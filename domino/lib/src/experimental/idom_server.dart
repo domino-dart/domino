@@ -20,7 +20,8 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
   /// stores the indexes of currently selected node in the _shadowPath
   final _indexes = <int>[];
 
-  final globals = {};
+  @override
+  final globals = DomContextGlobals();
 
   @override
   _IdomElem get element => _path.last;
