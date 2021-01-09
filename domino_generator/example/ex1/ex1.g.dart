@@ -14,10 +14,11 @@ void renderEx1(
   $d.attr('title', 'Some help ${obj.name}.');
   {
     String text_Some_obj_text_35278f15($arg0, $arg1) =>
-        ($strings[r'text_Some_obj_text_35278f15']
+        (_$strings[r'text_Some_obj_text_35278f15']
                     .containsKey($d.globals['locale'])
-                ? $strings[r'text_Some_obj_text_35278f15'][$d.globals['locale']]
-                : $strings[r'text_Some_obj_text_35278f15'][''])
+                ? _$strings[r'text_Some_obj_text_35278f15']
+                    [$d.globals['locale']]
+                : _$strings[r'text_Some_obj_text_35278f15'][''])
             .toString()
             .replaceAll(r'$arg0', $arg0.toString())
             .replaceAll(r'$arg1', $arg1.toString());
@@ -28,9 +29,9 @@ void renderEx1(
     $d.open('span', key: obj.number.toString());
     {
       String text_cond1_65176508() =>
-          ($strings[r'text_cond1_65176508'].containsKey($d.globals['locale'])
-                  ? $strings[r'text_cond1_65176508'][$d.globals['locale']]
-                  : $strings[r'text_cond1_65176508'][''])
+          (_$strings[r'text_cond1_65176508'].containsKey($d.globals['locale'])
+                  ? _$strings[r'text_cond1_65176508'][$d.globals['locale']]
+                  : _$strings[r'text_cond1_65176508'][''])
               .toString();
       $d.text(text_cond1_65176508());
     }
@@ -39,9 +40,9 @@ void renderEx1(
     $d.open('span');
     {
       String text_cond2_915c343c() =>
-          ($strings[r'text_cond2_915c343c'].containsKey($d.globals['locale'])
-                  ? $strings[r'text_cond2_915c343c'][$d.globals['locale']]
-                  : $strings[r'text_cond2_915c343c'][''])
+          (_$strings[r'text_cond2_915c343c'].containsKey($d.globals['locale'])
+                  ? _$strings[r'text_cond2_915c343c'][$d.globals['locale']]
+                  : _$strings[r'text_cond2_915c343c'][''])
               .toString();
       $d.text(text_cond2_915c343c());
     }
@@ -50,9 +51,9 @@ void renderEx1(
     $d.open('span');
     {
       String text_cond3_abfec480() =>
-          ($strings[r'text_cond3_abfec480'].containsKey($d.globals['locale'])
-                  ? $strings[r'text_cond3_abfec480'][$d.globals['locale']]
-                  : $strings[r'text_cond3_abfec480'][''])
+          (_$strings[r'text_cond3_abfec480'].containsKey($d.globals['locale'])
+                  ? _$strings[r'text_cond3_abfec480'][$d.globals['locale']]
+                  : _$strings[r'text_cond3_abfec480'][''])
               .toString();
       $d.text(text_cond3_abfec480());
     }
@@ -66,11 +67,11 @@ void renderEx1(
       $d.clazz('x-${item.clazz}');
       {
         String text_item_label_obj_b0177529($arg0, $arg1) =>
-            ($strings[r'text_item_label_obj_b0177529']
+            (_$strings[r'text_item_label_obj_b0177529']
                         .containsKey($d.globals['locale'])
-                    ? $strings[r'text_item_label_obj_b0177529']
+                    ? _$strings[r'text_item_label_obj_b0177529']
                         [$d.globals['locale']]
-                    : $strings[r'text_item_label_obj_b0177529'][''])
+                    : _$strings[r'text_item_label_obj_b0177529'][''])
                 .toString()
                 .replaceAll(r'$arg0', $arg0.toString())
                 .replaceAll(r'$arg1', $arg1.toString());
@@ -90,16 +91,16 @@ void renderEx2(_i0.DomContext $d) {
   $d.open('div');
   {
     String text_X_4b68ab38() =>
-        ($strings[r'text_X_4b68ab38'].containsKey($d.globals['locale'])
-                ? $strings[r'text_X_4b68ab38'][$d.globals['locale']]
-                : $strings[r'text_X_4b68ab38'][''])
+        (_$strings[r'text_X_4b68ab38'].containsKey($d.globals['locale'])
+                ? _$strings[r'text_X_4b68ab38'][$d.globals['locale']]
+                : _$strings[r'text_X_4b68ab38'][''])
             .toString();
     $d.text(text_X_4b68ab38());
   }
   $d.close();
 }
 
-const $strings = {
+const _$strings = {
   'text_Some_obj_text_35278f15': {
     '_params': r'{$arg0: obj.text, $arg1: obj.number}',
     '': r'Some $arg0 and $arg1.',

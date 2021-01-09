@@ -98,16 +98,16 @@ class ComponentGenerator {
       _sb.writeln('}');
     }
 
-    _sb.writeln('const \$strings = {');
+    _sb.writeln('const _\$strings = {');
     final snames = <String>{};
-    for(final te in _texts) {
+    for (final te in _texts) {
       snames.add(te.name);
     }
-    for(final sn in snames) {
+    for (final sn in snames) {
       _sb.writeln('\'$sn\': {');
       final usedLangs = <String>{};
-      for(final te in _texts.where((te) => te.name == sn)) {
-        if(usedLangs.contains(te.lang)) continue;
+      for (final te in _texts.where((te) => te.name == sn)) {
+        if (usedLangs.contains(te.lang)) continue;
         usedLangs.add(te.lang);
         _sb.writeln('\'_params${te.lang}\': r\'${te.params}\',');
         _sb.writeln('\'${te.lang}\': r\'${te.text}\',');
@@ -115,7 +115,7 @@ class ComponentGenerator {
       _sb.writeln('},');
     }
     _sb.writeln('};');
-      
+
     String text;
     try {
       text = DartFormatter().format('${_renderImports()}\n$_sb');
@@ -203,10 +203,10 @@ class ComponentGenerator {
     final params = <String, String>{};
     for (final part in parts) {
       if (part.startsWith('\$')) {
-        params['\$arg$cnt'] = part.substring(2, part.length-1);
+        params['\$arg$cnt'] = part.substring(2, part.length - 1);
         newText.write('\$arg$cnt');
 
-        if(cnt > 0) argNames.write(',');
+        if (cnt > 0) argNames.write(',');
         argNames.write('\$arg$cnt');
         cnt++;
       } else {
@@ -218,10 +218,9 @@ class ComponentGenerator {
 
     // Functions need to be used for interpolation.
     _sb.writeln('{    String $fnName($argNames) => '
-        '(\$strings[r\'$fnName\'].containsKey(\$d.globals[\'locale\'])'
-        '? \$strings[r\'$fnName\'][\$d.globals[\'locale\']]'
-        ': \$strings[r\'$fnName\'][\'\'])'
-    );
+        '(_\$strings[r\'$fnName\'].containsKey(\$d.globals[\'locale\'])'
+        '? _\$strings[r\'$fnName\'][\$d.globals[\'locale\']]'
+        ': _\$strings[r\'$fnName\'][\'\'])');
     _sb.writeln('.toString()');
     params.forEach((key, value) {
       _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
@@ -229,8 +228,7 @@ class ComponentGenerator {
     _sb.writeln(';');
 
     // second is a call to the function with the real parameters
-    _sb.writeln(
-        '    \$d.text($fnName(${textelem.params.values.join(',')}));}');
+    _sb.writeln('    \$d.text($fnName(${textelem.params.values.join(',')}));}');
   }
 
   void _renderElem(Stack stack, XmlElement elem) {
