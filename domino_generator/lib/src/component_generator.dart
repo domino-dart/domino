@@ -7,9 +7,12 @@ import 'package:xml/xml.dart';
 import 'canonical.dart';
 
 class ComponentGenerator {
+  final bool _i18n;
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
   final _texts = <_TextElem>[];
+
+  ComponentGenerator({bool i18n}) : _i18n = i18n ?? false;
 
   void _reset() {
     _imports.clear();
@@ -98,23 +101,25 @@ class ComponentGenerator {
       _sb.writeln('}');
     }
 
-    _sb.writeln('const _\$strings = {');
-    final snames = <String>{};
-    for (final te in _texts) {
-      snames.add(te.name);
-    }
-    for (final sn in snames) {
-      _sb.writeln('\'$sn\': {');
-      final usedLangs = <String>{};
-      for (final te in _texts.where((te) => te.name == sn)) {
-        if (usedLangs.contains(te.lang)) continue;
-        usedLangs.add(te.lang);
-        _sb.writeln('\'_params${te.lang}\': r\'${te.params}\',');
-        _sb.writeln('\'${te.lang}\': r\'${te.text}\',');
+    if (_i18n) {
+      _sb.writeln('const _\$strings = {');
+      final snames = <String>{};
+      for (final te in _texts) {
+        snames.add(te.name);
       }
-      _sb.writeln('},');
+      for (final sn in snames) {
+        _sb.writeln('\'$sn\': {');
+        final usedLangs = <String>{};
+        for (final te in _texts.where((te) => te.name == sn)) {
+          if (usedLangs.contains(te.lang)) continue;
+          usedLangs.add(te.lang);
+          _sb.writeln('\'_params${te.lang}\': r\'${te.params}\',');
+          _sb.writeln('\'${te.lang}\': r\'${te.text}\',');
+        }
+        _sb.writeln('},');
+      }
+      _sb.writeln('};');
     }
-    _sb.writeln('};');
 
     String text;
     try {
@@ -216,19 +221,24 @@ class ComponentGenerator {
     final textelem = _TextElem(fnName, newText.toString(), params: params);
     _texts.add(textelem);
 
-    // Functions need to be used for interpolation.
-    _sb.writeln('{    String $fnName($argNames) => '
-        '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
-        '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
-        ': _\$strings[r\'$fnName\'][\'\'])');
-    _sb.writeln('.toString()');
-    params.forEach((key, value) {
-      _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
-    });
-    _sb.writeln(';');
+    if (_i18n) {
+      // Functions need to be used for interpolation.
+      _sb.writeln('{    String $fnName($argNames) => '
+          '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
+          '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
+          ': _\$strings[r\'$fnName\'][\'\'])');
+      _sb.writeln('.toString()');
+      params.forEach((key, value) {
+        _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
+      });
+      _sb.writeln(';');
 
-    // second is a call to the function with the real parameters
-    _sb.writeln('    \$d.text($fnName(${textelem.params.values.join(',')}));}');
+      // second is a call to the function with the real parameters
+      _sb.writeln(
+          '    \$d.text($fnName(${textelem.params.values.join(',')}));}');
+    } else {
+      _sb.writeln('    \$d.text(\'${parts.join()}\');');
+    }
   }
 
   void _renderElem(Stack stack, XmlElement elem) {
