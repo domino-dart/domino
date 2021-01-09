@@ -196,10 +196,11 @@ class ComponentGenerator {
   void _renderText(Stack stack, XmlText node) {
     final text = node.text.trim().replaceAll(_whitespace, ' ');
     if (text == '') return; // empty line
-    final fnName = 'text_' +
-        _word.allMatches(text).take(3).map((e) => e.group(0)).join('_') +
-        '_' +
+    final wordId =
+        _word.allMatches(text).take(3).map((e) => e.group(0)).join('_');
+    final textHash =
         sha256.convert(utf8.encode(text)).toString().substring(0, 8);
+    final fnName = 'text_${wordId}_$textHash';
 
     final parts = _interpolateTextParts(stack, text);
     var cnt = 0;
