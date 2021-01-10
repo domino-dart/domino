@@ -101,7 +101,7 @@ class ComponentGenerator {
       _sb.writeln('}');
     }
 
-    if (_i18n) {
+    if (_texts.isNotEmpty) {
       _sb.writeln('const _\$strings = {');
       final snames = <String>{};
       for (final te in _texts) {
@@ -179,8 +179,9 @@ class ComponentGenerator {
           _renderElem(stack, node);
         }
       } else if (node is XmlText) {
-        if (node.text.trim().isEmpty) continue;
-        _renderText(stack, node);
+        final nodeText = node.text;
+        if (nodeText.isEmpty || nodeText.trim().isEmpty) continue;
+        _renderText(stack, nodeText);
       } else if (node is XmlComment) {
         _sb.writeln('/*${node.text}*/');
       } else if (node is XmlAttribute) {
@@ -193,9 +194,14 @@ class ComponentGenerator {
 
   static final _whitespace = RegExp(r'\s+');
   static final _word = RegExp(r'\w+');
-  void _renderText(Stack stack, XmlText node) {
-    final text = node.text.trim().replaceAll(_whitespace, ' ');
-    if (text == '') return; // empty line
+  void _renderText(Stack stack, String nodeText) {
+    if (!_i18n) {
+      _sb.writeln('    \$d.text(\'${_interpolateText(stack, nodeText)}\');');
+      return;
+    }
+
+    final text = nodeText.trim().replaceAll(_whitespace, ' ');
+    if (text.isEmpty) return; // empty line
     final fnName = _textFn(text);
 
     final parts = _interpolateTextParts(stack, text);
@@ -218,24 +224,19 @@ class ComponentGenerator {
     final textelem = _TextElem(fnName, newText.toString(), params: params);
     _texts.add(textelem);
 
-    if (_i18n) {
-      // Functions need to be used for interpolation.
-      _sb.writeln('{    String $fnName($argNames) => '
-          '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
-          '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
-          ': _\$strings[r\'$fnName\'][\'\'])');
-      _sb.writeln('.toString()');
-      params.forEach((key, value) {
-        _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
-      });
-      _sb.writeln(';');
+    // Functions need to be used for interpolation.
+    _sb.writeln('{    String $fnName($argNames) => '
+        '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
+        '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
+        ': _\$strings[r\'$fnName\'][\'\'])');
+    _sb.writeln('.toString()');
+    params.forEach((key, value) {
+      _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
+    });
+    _sb.writeln(';');
 
-      // second is a call to the function with the real parameters
-      _sb.writeln(
-          '    \$d.text($fnName(${textelem.params.values.join(',')}));}');
-    } else {
-      _sb.writeln('    \$d.text(\'${parts.join()}\');');
-    }
+    // second is a call to the function with the real parameters
+    _sb.writeln('    \$d.text($fnName(${textelem.params.values.join(',')}));}');
   }
 
   String _textFn(String text) {
