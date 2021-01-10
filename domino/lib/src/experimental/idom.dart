@@ -6,7 +6,17 @@ typedef LifecycleCallback<L> = Function(LifecycleEvent<L> element);
 typedef DomEventFn<V> = Function(DomEvent<V> event);
 typedef SlotFn = void Function(DomContext $d);
 
+class DomContextGlobals {
+  final String locale;
+
+  DomContextGlobals({
+    String locale,
+  }) : locale = locale ?? '';
+}
+
 abstract class DomContext<L, V> {
+  DomContextGlobals get globals;
+
   L get element;
   dynamic get pointer;
 

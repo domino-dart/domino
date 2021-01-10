@@ -7,8 +7,12 @@ import 'package:xml/xml.dart';
 import 'canonical.dart';
 
 class ComponentGenerator {
+  final bool _i18n;
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
+  final _texts = <_TextElem>[];
+
+  ComponentGenerator({bool i18n}) : _i18n = i18n ?? false;
 
   void _reset() {
     _imports.clear();
@@ -96,6 +100,27 @@ class ComponentGenerator {
 
       _sb.writeln('}');
     }
+
+    if (_texts.isNotEmpty) {
+      _sb.writeln('const _\$strings = {');
+      final snames = <String>{};
+      for (final te in _texts) {
+        snames.add(te.name);
+      }
+      for (final sn in snames) {
+        _sb.writeln('r\'$sn\': {');
+        final usedLangs = <String>{};
+        for (final te in _texts.where((te) => te.name == sn)) {
+          if (usedLangs.contains(te.lang)) continue;
+          usedLangs.add(te.lang);
+          _sb.writeln('\'_params${te.lang}\': r\'${te.params}\',');
+          _sb.writeln('\'${te.lang}\': r\'${te.text}\',');
+        }
+        _sb.writeln('},');
+      }
+      _sb.writeln('};');
+    }
+
     String text;
     try {
       text = DartFormatter().format('${_renderImports()}\n$_sb');
@@ -154,8 +179,9 @@ class ComponentGenerator {
           _renderElem(stack, node);
         }
       } else if (node is XmlText) {
-        if (node.text.trim().isEmpty) continue;
-        _sb.writeln('    \$d.text(\'${_interpolateText(stack, node.text)}\');');
+        final nodeText = node.text;
+        if (nodeText.isEmpty || nodeText.trim().isEmpty) continue;
+        _renderText(stack, nodeText);
       } else if (node is XmlComment) {
         _sb.writeln('/*${node.text}*/');
       } else if (node is XmlAttribute) {
@@ -164,6 +190,73 @@ class ComponentGenerator {
         throw UnsupportedError('Node: ${node.runtimeType}');
       }
     }
+  }
+
+  static final _whitespace = RegExp(r'\s+');
+  static final _word = RegExp(r'\w+');
+  void _renderText(Stack stack, String nodeText) {
+    if (!_i18n) {
+      _sb.writeln('    \$d.text(\'${_interpolateText(stack, nodeText)}\');');
+      return;
+    }
+
+    final text = nodeText.trim().replaceAll(_whitespace, ' ');
+    if (text.isEmpty) return; // empty line
+    final fnName = _textFn(text);
+
+    final parts = _interpolateTextParts(stack, text);
+    var cnt = 0;
+    final argNames = StringBuffer();
+    final newText = StringBuffer();
+    final params = <String, String>{};
+    for (final part in parts) {
+      if (part.startsWith('\$')) {
+        params['\$arg$cnt'] = part.substring(2, part.length - 1);
+        newText.write('\$arg$cnt');
+
+        if (cnt > 0) argNames.write(',');
+        argNames.write('\$arg$cnt');
+        cnt++;
+      } else {
+        newText.write(part);
+      }
+    }
+    final textelem = _TextElem(fnName, newText.toString(), params: params);
+    _texts.add(textelem);
+
+    // Functions need to be used for interpolation.
+    _sb.writeln('{    String $fnName($argNames) => '
+        '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
+        '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
+        ': _\$strings[r\'$fnName\'][\'\'])');
+    _sb.writeln('.toString()');
+    params.forEach((key, value) {
+      _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
+    });
+    _sb.writeln(';');
+
+    // second is a call to the function with the real parameters
+    _sb.writeln('    \$d.text($fnName(${textelem.params.values.join(',')}));}');
+  }
+
+  String _textFn(String text) {
+    final wordParts = _word
+        .allMatches(text)
+        .map((e) => e.group(0).toLowerCase())
+        .map((v) => v.length <= 1
+            ? v.toUpperCase()
+            : v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase())
+        .take(5)
+        .toList();
+    final wordId = StringBuffer();
+    for (var i = 0; i < wordParts.length; i++) {
+      wordId.write(wordParts[i]);
+      if (i >= 2 && wordId.length > 20) break;
+    }
+
+    final textHash =
+        sha256.convert(utf8.encode(text)).toString().substring(0, 8);
+    return 't$textHash\$$wordId';
   }
 
   void _renderElem(Stack stack, XmlElement elem) {
@@ -257,7 +350,9 @@ class ComponentGenerator {
     _sb.writeln(');');
   }
 
-  String _interpolateText(Stack stack, String value) {
+  // Returns a list where each element is either text
+  // or a string for interpolation
+  List<String> _interpolateTextParts(Stack stack, String value) {
     final parts = <String>[];
 
     void addText(String v) {
@@ -286,7 +381,11 @@ class ComponentGenerator {
     if (pos < value.length) {
       addText(value.substring(pos));
     }
-    return parts.join();
+    return parts;
+  }
+
+  String _interpolateText(Stack stack, String value) {
+    return _interpolateTextParts(stack, value).join();
   }
 
   void _renderAttr(Stack stack, XmlElement elem) {
@@ -340,6 +439,7 @@ class ComponentGenerator {
   }
 }
 
+// Matches strings for interpolation
 final _expr = RegExp('{{(.+?)}}');
 
 class Stack {
@@ -380,3 +480,15 @@ class _Import {
 
 bool _isDominoElem(XmlElement elem, String tag) =>
     elem.name.namespaceUri == dominoNs && elem.name.local == tag;
+
+class _TextElem {
+  final String name;
+  final Map<String, String> params;
+  final String text;
+  final String lang;
+  _TextElem._(this.name, this.text, this.lang, this.params);
+  factory _TextElem(String name, String text,
+      {String lang, Map<String, String> params}) {
+    return _TextElem._(name, text, lang ?? '', params ?? {});
+  }
+}

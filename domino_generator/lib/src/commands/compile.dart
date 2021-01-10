@@ -37,7 +37,8 @@ class CompileCommand extends Command {
       final libraryName = argResults['library'] as String;
       final sassName = argResults['sass'] as String;
 
-      await compileDirectory(path, libraryName: libraryName, sassName: sassName);
+      await compileDirectory(path,
+          libraryName: libraryName, sassName: sassName);
     }
   }
 }

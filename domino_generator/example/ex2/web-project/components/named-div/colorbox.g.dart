@@ -10,6 +10,9 @@ void renderRedBox(_i0.DomContext $d) {
 void renderBlueBox(_i0.DomContext $d) {
   $d.open('div');
   $d.attr('style', 'background-color: blue; width: 10px; height: 10px');
-  $d.text('\n        O\n    ');
+  $d.text('\n        O\n        ');
+  $d.open('b');
+  $d.text('\n            O\n        ');
+  $d.close();
   $d.close();
 }

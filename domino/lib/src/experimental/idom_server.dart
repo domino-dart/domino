@@ -21,6 +21,9 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
   final _indexes = <int>[];
 
   @override
+  final DomContextGlobals globals;
+
+  @override
   _IdomElem get element => _path.last;
   _IdomElem get _shadowElement => _shadowPath.last;
   @override
@@ -29,9 +32,15 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
       : null;
 
   /// Creates a ServerDomContext for rendering a context to a html file
-  ServerDomContext(
-      {_IdomElem root, this.out, this.indent, this.indentAttr, this.lineEnd})
-      : _rootElem = root ?? _IdomElem(null) {
+  ServerDomContext({
+    _IdomElem root,
+    this.out,
+    this.indent,
+    this.indentAttr,
+    this.lineEnd,
+    DomContextGlobals globals,
+  })  : _rootElem = root ?? _IdomElem(null),
+        globals = globals ?? DomContextGlobals() {
     out ??= StringBuffer('');
     _indexes.add(0);
     _path.add(_rootElem);

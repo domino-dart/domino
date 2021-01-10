@@ -3,19 +3,29 @@ import 'dart:html';
 
 import 'idom.dart';
 
-void patch(Element host, Function(DomContext ctx) fn) {
-  final ctx = BrowserDomContext(host);
+void patch(
+  Element host,
+  Function(DomContext ctx) fn, {
+  DomContextGlobals globals,
+}) {
+  final ctx = BrowserDomContext(host, globals: globals);
   fn(ctx);
   ctx.cleanup();
 }
 
 class BrowserDomContext implements DomContext<Element, Event> {
+  @override
+  final DomContextGlobals globals;
   final Element _hostElement;
   final _lifecycleEvents = <_LifecycleEventData>[];
   final _positions = <_ElemPos>[];
   final _removedNodes = <Node>[];
 
-  BrowserDomContext(Element host) : _hostElement = host {
+  BrowserDomContext(
+    Element host, {
+    DomContextGlobals globals,
+  })  : _hostElement = host,
+        globals = globals ?? DomContextGlobals() {
     reset();
   }
 
