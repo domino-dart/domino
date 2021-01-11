@@ -71,6 +71,7 @@ class BindedVar<T> {
     if (val != null) {
       _setValue(val);
     } else {
+      // ignore: parameter_assignments
       val = _getValue();
     }
     if (val != _lastVal) {

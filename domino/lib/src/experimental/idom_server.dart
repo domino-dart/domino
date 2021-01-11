@@ -48,7 +48,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
   }
 
   @override
-  void open(String tag, {String key, onCreate, onRemove}) {
+  void open(String tag, {String key, Function onCreate, Function onRemove}) {
     // Create a new pseudo-element with empty properties
     final newElem = _IdomElem(tag, key: key);
 
@@ -144,7 +144,7 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
   }
 
   @override
-  void event(String name, {fn, String key, bool tracked = true}) {
+  void event(String name, {dynamic fn, String key, bool tracked = true}) {
     // no-op for server context
   }
 
@@ -165,10 +165,12 @@ class ServerDomContext implements DomContext<_IdomElem, Function> {
     indent ??= this.indent;
     lineEnd ??= this.lineEnd ?? (indent != null ? '\n' : '');
     if (indent == null) indentAttr = false;
+    // ignore: parameter_assignments
     indentAttr ??= this.indentAttr ?? false;
 
     // if elem.tag == null, then this elem is just a node list.
     if (elem.tag == null) {
+      // ignore: parameter_assignments
       indentLevel = indentLevel - 1;
     }
     final curInd = (indent ?? '') * indentLevel;

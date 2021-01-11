@@ -1,4 +1,4 @@
-List<R> unfold<R>(content) {
+List<R> unfold<R>(dynamic content) {
   final list = <R>[];
   _unfoldList(list, content);
   return list;
@@ -23,4 +23,4 @@ void _unfoldList<R>(List<R> list, content) {
   }
 }
 
-typedef bool BoolFn();
+typedef BoolFn = bool Function();

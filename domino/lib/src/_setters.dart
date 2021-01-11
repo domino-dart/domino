@@ -46,7 +46,7 @@ class ClassAdder implements Setter {
   void apply(ElementProxy e) => _classes.forEach(e.addClass);
 }
 
-/// Adds an [handler] to an [Element] for event [type]
+/// Adds a handler to an [Element] for the event type.
 ///
 /// Example:
 ///     div(set: on('click', () => print('Clicked!')))

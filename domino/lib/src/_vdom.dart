@@ -91,10 +91,10 @@ class VdomElement extends VdomNode implements ElementProxy {
   }
 
   Iterable<R> mapEventHandlers<R>(
-      R fn(String type, EventHandlerReg reg)) sync* {
+      R Function(String type, EventHandlerReg reg) fn) sync* {
     if (events == null) return;
-    for (String type in events.keys) {
-      for (EventHandlerReg reg in events[type]) {
+    for (final type in events.keys) {
+      for (final reg in events[type]) {
         final r = fn(type, reg);
         if (r != null) {
           yield r;
@@ -134,7 +134,7 @@ class NodeRefs {
     _nodes.add(node);
   }
 
-  Map bind(key, domNode) {
+  Map bind(dynamic key, dynamic domNode) {
     if (key != null) {
       _map[key] = domNode;
     }

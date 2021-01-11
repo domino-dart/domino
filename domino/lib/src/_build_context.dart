@@ -4,11 +4,11 @@ import '_unfold.dart';
 import '_vdom.dart';
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
-typedef _BuildFn(BuildContext context);
+typedef _BuildFn = Function(BuildContext context);
 
 /// Builds a single or List-embedded structure of Nodes and/or Components
 /// without the need of [BuildContext].
-typedef _NoContextBuildFn();
+typedef _NoContextBuildFn = Function();
 
 class BuildContextImpl implements BuildContext {
   @override
@@ -30,7 +30,7 @@ class BuildContextImpl implements BuildContext {
 
   @override
   Iterable<Component> get components sync* {
-    BuildContextImpl ctx = this;
+    var ctx = this;
     while (ctx != null) {
       if (ctx._component != null) {
         yield ctx._component;
@@ -39,7 +39,8 @@ class BuildContextImpl implements BuildContext {
     }
   }
 
-  List<VdomNode> buildNodes(content) => _buildNodes(NodeRefs(), content);
+  List<VdomNode> buildNodes(dynamic content) =>
+      _buildNodes(NodeRefs(), content);
 
   List<VdomNode> _buildNodes(NodeRefs nodeRefs, dynamic content,
       {List<VdomNode> nodes}) {
@@ -83,7 +84,7 @@ class BuildContextImpl implements BuildContext {
         item.apply(proxy);
         continue;
       } else if (item is Map<String, String>) {
-        for (String key in item.keys) {
+        for (final key in item.keys) {
           proxy.setAttribute(key, item[key]);
         }
         continue;

@@ -15,9 +15,10 @@ abstract class BuildContext {
 }
 
 /// Builds a single or List-embedded structure of Nodes and/or Components.
+// ignore: one_member_abstracts
 abstract class Component {
   /// Builds a single or List-embedded structure of Nodes and/or Components.
-  build(BuildContext context);
+  dynamic build(BuildContext context);
 }
 
 /// Provides lifecycle handling for a hierarchy of components.
@@ -34,11 +35,11 @@ abstract class View {
   ///
   /// [EventHandler]s registered in the [View] during the build phase will be
   /// using this automatically.
-  R track<R>(R action());
+  R track<R>(R Function() action);
 
   /// Escapes the [View]'s tracker zone (e.g. from inside an [EventHandler]),
   /// no longer triggering the invalidation of the [View] after its run finishes.
-  R escape<R>(R action());
+  R escape<R>(R Function() action);
 
   /// Dispose the [View] and free resources.
   Future dispose();
@@ -53,10 +54,10 @@ abstract class EventContext {
   String get type;
 
   /// The DOM Element where the event handler was registered.
-  get element;
+  dynamic get element;
 
   /// The native event.
-  get event;
+  dynamic get event;
 
   /// Returns a DOM Node identified with a Symbol.
   N getNode<N>(Symbol symbol);
@@ -68,7 +69,7 @@ abstract class EventContext {
 }
 
 /// Handles events.
-typedef void EventHandler(EventContext ctx);
+typedef EventHandler = void Function(EventContext ctx);
 
 /// A virtual dom element that has a 1:1 mapping to an element in the real DOM.
 class Element {
@@ -78,7 +79,7 @@ class Element {
   Element(this.tag, [this.content]);
 
   /// Creates a instance with [items] appended as content.
-  Element append(items) => Element(tag, [content, items]);
+  Element append(dynamic items) => Element(tag, [content, items]);
 }
 
 /// Enables collecting of virtual dom properties that will be applied on real DOM.
@@ -93,6 +94,7 @@ abstract class ElementProxy {
 }
 
 /// Sets properties of a DOM Element.
+// ignore: one_member_abstracts
 abstract class Setter {
   /// Sets the properties of a DOM element.
   void apply(ElementProxy proxy);
@@ -102,14 +104,14 @@ enum ChangePhase { insert, update, remove }
 
 abstract class Change {
   ChangePhase get phase;
-  get node;
+  dynamic get node;
 
   bool get isInsert => phase == ChangePhase.insert;
   bool get isUpdate => phase == ChangePhase.update;
   bool get isRemove => phase == ChangePhase.remove;
 }
 
-typedef void ChangeHandler(Change lifecycle);
+typedef ChangeHandler = void Function(Change lifecycle);
 
 /// Adds a style to an [Element] with [name] and [value]
 ///
@@ -133,7 +135,13 @@ Setter id(String id) => attr('id', id);
 ///
 /// Example:
 ///     div(clazz('main'))
-Setter clazz(class1, [class2, class3, class4, class5]) =>
+Setter clazz(
+  dynamic class1, [
+  dynamic class2,
+  dynamic class3,
+  dynamic class4,
+  dynamic class5,
+]) =>
     ClassAdder(class1, class2, class3, class4, class5);
 
 /// Adds an [handler] to an [Element] for event [event].

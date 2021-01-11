@@ -10,7 +10,7 @@ import 'src/_vdom.dart';
 export 'domino.dart';
 
 /// Register [content] (e.g. single [Component] or list of [Component] and
-/// [Node]s) to the [container] Element and start a [View].
+/// [html.Node]s) to the [container] Element and start a [View].
 View registerHtmlView(html.Element container, dynamic content) {
   return _View(container, content);
 }
@@ -30,10 +30,10 @@ class _View implements View {
   }
 
   @override
-  R track<R>(R action()) => _tracker.run(action);
+  R track<R>(R Function() action) => _tracker.run(action);
 
   @override
-  R escape<R>(R action()) => _tracker.parentZone.run(action);
+  R escape<R>(R Function() action) => _tracker.parentZone.run(action);
 
   @override
   Future invalidate() {
@@ -67,7 +67,7 @@ class _EventSubscription {
   _EventSubscription(this.type, this.listener, this.handler, this.tracked);
 }
 
-typedef void _ContextCallbackFn();
+typedef _ContextCallbackFn = void Function();
 
 class _ViewUpdater {
   final _View _view;
@@ -84,12 +84,13 @@ class _ViewUpdater {
   }
 
   void _update(html.Element container, List<VdomNode> nodes) {
+    // ignore: parameter_assignments
     nodes ??= const <VdomNode>[];
-    for (int i = 0; i < nodes.length; i++) {
+    for (var i = 0; i < nodes.length; i++) {
       final vnode = nodes[i];
       html.Node domNode;
       _VdomSource source;
-      for (int j = i; j < container.nodes.length; j++) {
+      for (var j = i; j < container.nodes.length; j++) {
         final dn = container.nodes[j];
         final dnsrc = _getSource(dn);
         final dnSymbol = dnsrc.symbol;
@@ -212,7 +213,7 @@ class _ViewUpdater {
   void _updateElement(html.Element dn, _VdomSource source, VdomElement vnode) {
     final boundKeyedRefs = vnode.nodeRefs?.bind(vnode.symbol, dn);
 
-    final Set<String> attrsToRemove = source.attributes?.keys?.toSet();
+    final attrsToRemove = source.attributes?.keys?.toSet();
     if (vnode.hasClasses) {
       attrsToRemove?.remove('class');
     }
@@ -221,9 +222,9 @@ class _ViewUpdater {
     }
 
     if (vnode.attributes != null) {
-      for (String key in vnode.attributes.keys) {
+      for (final key in vnode.attributes.keys) {
         attrsToRemove?.remove(key);
-        final String value = vnode.attributes[key];
+        final value = vnode.attributes[key];
         // Do not override DOM when the value matches the previous one.
         if (source.attributes != null && value == source.attributes[key]) {
           continue;
@@ -241,14 +242,14 @@ class _ViewUpdater {
     source.attributes = vnode.attributes;
 
     if (source.classes != null) {
-      for (String s in source.classes) {
+      for (final s in source.classes) {
         if (vnode.classes == null || !vnode.classes.contains(s)) {
           dn.classes.remove(s);
         }
       }
     }
     if (vnode.classes != null) {
-      for (String s in vnode.classes) {
+      for (final s in vnode.classes) {
         if (source.classes == null || !source.classes.contains(s)) {
           dn.classes.add(s);
         }
@@ -257,15 +258,15 @@ class _ViewUpdater {
     source.classes = vnode.classes;
 
     if (source.styles != null) {
-      for (String key in source.styles.keys) {
+      for (final key in source.styles.keys) {
         if (vnode.styles == null || !vnode.styles.containsKey(key)) {
           dn.style.removeProperty(key);
         }
       }
     }
     if (vnode.styles != null) {
-      for (String key in vnode.styles.keys) {
-        final String value = vnode.styles[key];
+      for (final key in vnode.styles.keys) {
+        final value = vnode.styles[key];
         // Do not override DOM when the value matches the previous one.
         if (source.styles != null && value == source.styles[key]) {
           continue;
@@ -282,13 +283,13 @@ class _ViewUpdater {
     if (vnode.hasEventHandlers) {
       newEvents = <String, _DomListener>{};
 
-      for (String type in vnode.events.keys) {
+      for (final type in vnode.events.keys) {
         final oldListener = oldEvents == null ? null : oldEvents[type];
         final oldList = oldListener?.subscriptions;
         final newList = <_EventSubscription>[];
         final newListener = oldListener ?? _DomListener(type, null, null);
 
-        for (EventHandlerReg reg in vnode.events[type]) {
+        for (final reg in vnode.events[type]) {
           final old = oldList?.firstWhere(
               (es) => es.handler == reg.handler && es.tracked == reg.tracked,
               orElse: () => null);
@@ -369,7 +370,7 @@ class _ViewUpdater {
       node.removeEventListener(dl.type, dl.listener);
     });
 
-    final List<_ContextCallbackFn> onRemoveCallbacks = source.onRemove;
+    final onRemoveCallbacks = source.onRemove;
     if (onRemoveCallbacks != null) {
       _onRemoveQueue.addAll(onRemoveCallbacks);
     }
@@ -382,9 +383,9 @@ class _ViewUpdater {
   }
 }
 
-typedef _NoArgFn();
-typedef _HtmlEventFn(html.Event event);
-typedef _HtmlEventElementFn(html.Event event, html.Element element);
+typedef _NoArgFn = Function();
+typedef _HtmlEventFn = Function(html.Event event);
+typedef _HtmlEventElementFn = Function(html.Event event, html.Element element);
 
 class _DomEvent implements EventContext {
   final View _view;
@@ -444,7 +445,7 @@ class SubView implements Component {
         _invalidation = invalidation;
 
   @override
-  build(BuildContext context) {
+  dynamic build(BuildContext context) {
     return Element(_tag, [
       afterInsert(_afterInsert),
       afterUpdate(_afterUpdate),

@@ -25,7 +25,7 @@ class HtmlMarkupBuilder {
 
   void _writeTo(StringSink sink, List<VdomNode> nodes, {int level = 0}) {
     if (nodes == null) return;
-    for (VdomNode node in nodes) {
+    for (final node in nodes) {
       if (_hasIndent) {
         sink.writeln();
         _writeIndent(sink, level);
@@ -59,7 +59,7 @@ class HtmlMarkupBuilder {
 
   void _writeIndent(StringSink sink, int times) {
     if (_hasIndent) {
-      for (int i = 0; i < times; i++) {
+      for (var i = 0; i < times; i++) {
         sink.write(indent);
       }
     }
@@ -102,7 +102,7 @@ class HtmlMarkupBuilder {
           .where((s) => s != 'id' && s != 'class' && s != 'style')
           .toList();
       keys.sort();
-      for (String key in keys) {
+      for (final key in keys) {
         final value = attrs[key];
         if (value != null) {
           sink.write(' $key="${_attrEscaper.convert(attrs[key])}"');

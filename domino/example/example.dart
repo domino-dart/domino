@@ -4,7 +4,7 @@ import 'package:domino/domino.dart';
 import 'package:domino/html_view.dart';
 import 'package:domino/helpers.dart';
 
-main() {
+void main() {
   registerHtmlView(html.querySelector('#main'), SimpleComponent());
 }
 
@@ -12,7 +12,7 @@ class SimpleComponent extends Component {
   int counter = 0;
 
   @override
-  build(BuildContext context) {
+  dynamic build(BuildContext context) {
     return [
       div([
         div('Counter: $counter'),
