@@ -164,11 +164,11 @@ class BrowserDomContext implements DomContext<Element, Event> {
     pos._stylesToRemove.remove(name);
 
     final elem = pos.elem;
-    final current = elem.styleMap.get(name)?.toString();
+    final current = elem.style.getPropertyValue(name);
     if (value == null && current != null) {
       elem.styleMap.delete(name);
     } else if (value != null && current != value) {
-      elem.styleMap.set(name, value);
+      elem.style.setProperty(name, value);
     }
   }
 

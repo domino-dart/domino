@@ -5,6 +5,7 @@ import 'package:path/path.dart' as p;
 
 import 'src/canonical.dart';
 import 'src/component_generator.dart';
+//import 'src/ddom_generator.dart';
 
 Future<CompilationSummary> compileFile(
   String path, {
@@ -28,6 +29,10 @@ Future<CompilationSummary> compileFile(
   final sassUpdated =
       await _updateFile(_replaceExtension(file, '.g.scss'), sassOutput);
 
+//  final gs = generateSource(await file.readAsString());
+//  await _updateFile(
+//      File(p.setExtension(file.path, '.d.dart')), gs.dartFileContent);
+//
   return CompilationSummary(
     hasSass: hasSass,
     dartUpdated: dartUpdated,
