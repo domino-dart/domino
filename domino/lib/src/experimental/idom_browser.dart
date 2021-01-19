@@ -133,7 +133,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void attr(String name, String value) {
     final pos = _positions.last;
-    pos._attrsToRemove.remove(name);
+    pos._attrsToRemove?.remove(name);
 
     final elem = pos.elem;
     final current = elem.attributes[name];
@@ -147,7 +147,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void clazz(String name, {bool present = true}) {
     final pos = _positions.last;
-    pos._classesToRemove.remove(name);
+    pos._classesToRemove?.remove(name);
 
     final elem = pos.elem;
     final contains = elem.classes.contains(name);
@@ -161,7 +161,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void style(String name, String value) {
     final pos = _positions.last;
-    pos._stylesToRemove.remove(name);
+    pos._stylesToRemove?.remove(name);
 
     final elem = pos.elem;
     final current = elem.style.getPropertyValue(name);
@@ -234,14 +234,22 @@ class BrowserDomContext implements DomContext<Element, Event> {
       throw StateError(
           'Closing tag: $tag != Element tag: ${pos.elem.tagName.toLowerCase()}');
     }
-    pos._classesToRemove.forEach(pos.elem.classes.remove);
-    pos._stylesToRemove.forEach(pos.elem.styleMap?.delete ?? (x) {});
-    pos._attrsToRemove.forEach(pos.elem.removeAttribute);
-    if (pos.index < pos.elem.nodes.length) {
-      pos.elem.nodes.skip(pos.index).toList().forEach((n) {
-        _removedNodes.add(n);
-        n.remove();
-      });
+    if (pos._classesToRemove != null && pos._classesToRemove.isNotEmpty) {
+      pos.elem.classes.removeAll(pos._classesToRemove);
+    }
+    if (pos._stylesToRemove != null && pos._stylesToRemove.isNotEmpty) {
+      for (final style in pos._stylesToRemove) {
+        pos.elem.style.removeProperty(style);
+      }
+    }
+    if (pos._attrsToRemove != null && pos._attrsToRemove.isNotEmpty) {
+      for (final attr in pos._attrsToRemove) {
+        pos.elem.removeAttribute(attr);
+      }
+    }
+    for (var i = pos.elem.nodes.length - pos.index; i > 0; i--) {
+      final n = pos.elem.nodes.removeLast();
+      _removedNodes.add(n);
     }
     if (_positions.isNotEmpty) {
       _positions.last.index++;
@@ -257,11 +265,13 @@ class _ElemPos {
   int index = 0;
 
   _ElemPos(this.elem)
-      : _classesToRemove = elem.classes.toSet(),
-        _stylesToRemove = elem.styleMap?.getProperties()?.toSet() ?? {},
-        _attrsToRemove = elem.attributes.keys.toSet() {
-    _attrsToRemove.remove('class');
-    _attrsToRemove.remove('style');
+      : _classesToRemove =
+            elem.hasAttribute('class') ? elem.classes.toSet() : null,
+        _stylesToRemove = elem.styleMap?.getProperties()?.toSet(),
+        _attrsToRemove =
+            elem.attributes.isEmpty ? null : elem.attributes.keys.toSet() {
+    _attrsToRemove?.remove('class');
+    _attrsToRemove?.remove('style');
   }
 
   Node get currentNode {

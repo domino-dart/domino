@@ -39,16 +39,21 @@ class _View implements View {
   Future invalidate() {
     _invalidate ??= Future.delayed(Duration.zero, () {
       try {
-        final nodes =
-            BuildContextImpl(this).buildNodes(_content) ?? const <VdomNode>[];
-        final updater = _ViewUpdater(this);
-        updater._update(_container, _isDisposed ? const [] : nodes);
-        updater._runCallbacks();
+        update();
       } finally {
         _invalidate = null;
       }
     });
     return _invalidate;
+  }
+
+  @override
+  void update() {
+    final nodes =
+        BuildContextImpl(this).buildNodes(_content) ?? const <VdomNode>[];
+    final updater = _ViewUpdater(this);
+    updater._update(_container, _isDisposed ? const [] : nodes);
+    updater._runCallbacks();
   }
 
   @override

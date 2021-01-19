@@ -35,7 +35,7 @@ class _View implements DView {
   Future invalidate() {
     _invalidate ??= Future.delayed(Duration.zero, () {
       try {
-        _update();
+        update();
       } finally {
         _invalidate = null;
       }
@@ -49,7 +49,8 @@ class _View implements DView {
     return invalidate();
   }
 
-  void _update() {
+  @override
+  void update() {
     final updater = _ViewUpdater(this, _container);
     updater._visit(_isDisposed ? () => <DNode>[] : _content);
     updater._runCallbacks();
@@ -70,13 +71,18 @@ class _ViewUpdater extends DVisitor {
 
   void _visit(DNodeListFn content) {
     _stack.add(_Pos(_container, 0));
+    for (final n in content()) {
+      visitNode(n);
+    }
+    _stack.removeLast().clear();
   }
 
   @override
   void visitElem(DElem node) {
     final cursor = _stack.last;
     final c = cursor.currentNode;
-    if (c is html.Element && c.tagName == node.tag) {
+    if (c is html.Element &&
+        c.tagName.toLowerCase() == node.tag.toLowerCase()) {
       cursor.skip();
       _visitElem(node, c);
     } else {
@@ -105,29 +111,37 @@ class _ViewUpdater extends DVisitor {
       elem.removeAttribute('style');
     } else if (styles != null && styles.isNotEmpty) {
       final sm = elem.styleMap;
-      final remove = sm.getProperties().toSet();
+      final remove = sm?.getProperties()?.toSet();
       styles.forEach((key, value) {
-        remove.remove(key);
-        final v = sm.get(key)?.toString();
+        remove?.remove(key);
+        final v = elem.style.getPropertyValue(key);
         if (v != value) {
-          sm.set(key, value);
+          elem.style.setProperty(key, value);
         }
       });
-      remove.forEach((r) => sm.delete(r));
+      if (remove != null && remove.isNotEmpty) {
+        for (final name in remove) {
+          elem.style.removeProperty(name);
+        }
+      }
     }
 
     final attrs = node.attrs?.values ?? const <String, String>{};
-    final removeAttrs = elem.attributes.keys.toSet()
-      ..remove('class')
-      ..remove('style');
+    final removeAttrs = elem.attributes.isEmpty
+        ? null
+        : (elem.attributes.keys.toSet()..remove('class')..remove('style'));
     attrs.forEach((key, value) {
-      removeAttrs.remove(key);
+      removeAttrs?.remove(key);
       final v = elem.attributes[key];
       if (v != value) {
         elem.attributes[key] = value;
       }
     });
-    removeAttrs.forEach((r) => elem.removeAttribute(r));
+    if (removeAttrs != null && removeAttrs.isNotEmpty) {
+      for (final name in removeAttrs) {
+        elem.removeAttribute(name);
+      }
+    }
 
     if (node.hasChildren) {
       _stack.add(_Pos(elem, 0));

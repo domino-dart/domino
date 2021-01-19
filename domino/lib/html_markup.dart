@@ -128,4 +128,9 @@ class _HtmlMarkupView implements View {
   Future dispose() async {
     // no-op
   }
+
+  @override
+  void update() {
+    throw UnimplementedError();
+  }
 }

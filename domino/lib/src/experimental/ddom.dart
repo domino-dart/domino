@@ -8,6 +8,11 @@ typedef DLifecycleCallback<L> = Function(DLifecycleEvent<L> event);
 /// A [DView] re-builds the UI after `invalidate()` is called (or automatically
 /// when [DEventCallback]s are registered).
 abstract class DView {
+  /// Updates the [DView].
+  ///
+  /// Should be used only as a last resort, use [invalidate] instead.
+  void update();
+
   /// Schedule an update of the [DView], with the returned future completing
   /// when the view is updated to the latest state.
   Future<void> invalidate();

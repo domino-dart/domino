@@ -25,6 +25,11 @@ abstract class Component {
 /// A [View] re-builds the UI after `invalidate()` is called (or automatically
 /// when [EventHandler]s are registered).
 abstract class View {
+  /// Updates the [View].
+  ///
+  /// Should be used only as a last resort, use [invalidate] instead.
+  void update();
+
   /// Schedule an update of the [View].
   Future invalidate();
 
