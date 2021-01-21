@@ -466,7 +466,8 @@ class Stack {
       }
       s = s._parent;
     }
-    throw Exception('Unknown expression: $expr');
+    // TODO: log suspicious expression
+    return expr;
   }
 }
 
