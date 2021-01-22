@@ -19,21 +19,18 @@ Future<CompilationSummary> compileFile(
         .join('\n');
     await _replaceExtension(file, '.g.html').writeAsString(debugContent);
   }
-  final cg = ComponentGenerator();
-  final dartOutput = cg.generateParsedSource(parsed);
-  final sassOutput = cg.generateScss(parsed);
-  final hasSass = sassOutput.trim().isNotEmpty;
+  final gs = htmlToSources(await file.readAsString());
   final dartUpdated =
-      await _updateFile(_replaceExtension(file, '.g.dart'), dartOutput);
+      await _updateFile(_replaceExtension(file, '.g.dart'), gs.dartFileContent);
   final sassUpdated =
-      await _updateFile(_replaceExtension(file, '.g.scss'), sassOutput);
+      await _updateFile(_replaceExtension(file, '.g.scss'), gs.sassFileContent);
 
 //  final gs = generateSource(await file.readAsString());
 //  await _updateFile(
 //      File(p.setExtension(file.path, '.d.dart')), gs.dartFileContent);
 //
   return CompilationSummary(
-    hasSass: hasSass,
+    hasSass: gs.hasSassFileContent,
     dartUpdated: dartUpdated,
     sassUpdated: sassUpdated,
   );

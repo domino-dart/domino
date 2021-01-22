@@ -2,11 +2,36 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
+import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 
 import 'canonical.dart';
 
-class ComponentGenerator {
+class GeneratedSource {
+  final String dartFileContent;
+  final String sassFileContent;
+
+  GeneratedSource({
+    @required this.dartFileContent,
+    @required this.sassFileContent,
+  });
+
+  bool get hasSassFileContent =>
+      sassFileContent != null && sassFileContent.isNotEmpty;
+}
+
+GeneratedSource htmlToSources(String htmlContent) {
+  final ps = parseToCanonical(htmlContent);
+  final cg = _ComponentGenerator();
+  final dartFileContent = cg.generateParsedSource(ps);
+  final sassFileContent = cg.generateScss(ps).trim();
+  return GeneratedSource(
+    dartFileContent: dartFileContent,
+    sassFileContent: sassFileContent,
+  );
+}
+
+class _ComponentGenerator {
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
   final _texts = <_TextElem>[];
