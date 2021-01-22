@@ -7,12 +7,10 @@ import 'package:xml/xml.dart';
 import 'canonical.dart';
 
 class ComponentGenerator {
-  final bool _i18n;
   final _imports = <String, _Import>{};
   final _sb = StringBuffer();
   final _texts = <_TextElem>[];
-
-  ComponentGenerator({bool i18n}) : _i18n = i18n ?? false;
+  final _i18n = false;
 
   void _reset() {
     _imports.clear();
