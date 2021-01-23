@@ -1,7 +1,56 @@
 import 'dart:async';
 import 'dart:html';
 
+import 'package:async_tracker/async_tracker.dart';
+
 import 'idom.dart';
+
+View registerView(Element host, Function(DomContext ctx) fn) {
+  return View(host, fn);
+}
+
+class View {
+  final Element _container;
+  final Function(DomContext ctx) _fn;
+
+  AsyncTracker _tracker;
+
+  Future _invalidate;
+  bool _isDisposed = false;
+
+  View(this._container, this._fn) {
+    _tracker = AsyncTracker()..addListener(invalidate);
+    invalidate();
+  }
+
+  R track<R>(R Function() action) => _tracker.run(action);
+
+  R escape<R>(R Function() action) => _tracker.parentZone.run(action);
+
+  Future invalidate() {
+    _invalidate ??= Future.delayed(Duration.zero, () {
+      try {
+        update();
+      } finally {
+        _invalidate = null;
+      }
+    });
+    return _invalidate;
+  }
+
+  Future dispose() async {
+    _isDisposed = true;
+    return invalidate();
+  }
+
+  void update() {
+    escape(() {
+      final ctx = BrowserDomContext(_container, view: this);
+      if (!_isDisposed) _fn(ctx);
+      ctx.cleanup();
+    });
+  }
+}
 
 void patch(
   Element host,
@@ -17,6 +66,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   final DomContextGlobals globals;
   final Element _hostElement;
+  final View _view;
   final _lifecycleEvents = <_LifecycleEventData>[];
   final _positions = <_ElemPos>[];
   final _removedNodes = <Node>[];
@@ -24,7 +74,9 @@ class BrowserDomContext implements DomContext<Element, Event> {
   BrowserDomContext(
     Element host, {
     DomContextGlobals globals,
+    View view,
   })  : _hostElement = host,
+        _view = view,
         globals = globals ?? DomContextGlobals() {
     reset();
   }
@@ -47,7 +99,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
       _lifecycleEvents.clear();
 
       for (final data in list) {
-        await data._fn(_LifecycleEvent(data._elem));
+        await data._fn(_LifecycleEvent(_view, data._elem));
       }
     }
   }
@@ -206,9 +258,12 @@ class BrowserDomContext implements DomContext<Element, Event> {
     if (fn == null && contains) {
       extra.eventSubscriptions.remove(ekey).cancel();
     } else if (fn != null && !contains) {
-      // TODO: set tracker
       extra.eventSubscriptions[ekey] = elem.on[name].listen((e) {
-        fn(_DomEvent(e));
+        if (tracked) {
+          _view.track(() => fn(_DomEvent(_view, e)));
+        } else {
+          _view.escape(() => fn(_DomEvent(_view, e)));
+        }
       });
     }
   }
@@ -305,25 +360,29 @@ class _LifecycleEventData {
 }
 
 class _LifecycleEvent extends LifecycleEvent<Element> {
+  final View _view;
+
   @override
   final Element element;
 
-  _LifecycleEvent(this.element);
+  _LifecycleEvent(this._view, this.element);
 
   @override
   void triggerUpdate() {
-    // TODO: implement triggerUpdate
+    _view.invalidate();
   }
 }
 
 class _DomEvent extends DomEvent<Event> {
+  final View _view;
+
   @override
   final Event event;
 
-  _DomEvent(this.event);
+  _DomEvent(this._view, this.event);
 
   @override
   void triggerUpdate() {
-    // TODO: implement triggerUpdate
+    _view.invalidate();
   }
 }

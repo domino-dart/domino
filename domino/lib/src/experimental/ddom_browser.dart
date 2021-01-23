@@ -66,7 +66,11 @@ class _ViewUpdater extends DVisitor {
   _ViewUpdater(this._view, this._container);
 
   void _runCallbacks() {
-    _onCreateQueue.forEach((fn) => fn());
+    if (_onCreateQueue.isNotEmpty) {
+      for (final fn in _onCreateQueue) {
+        fn();
+      }
+    }
   }
 
   void _visit(DNodeListFn content) {
@@ -112,13 +116,14 @@ class _ViewUpdater extends DVisitor {
     } else if (styles != null && styles.isNotEmpty) {
       final sm = elem.styleMap;
       final remove = sm?.getProperties()?.toSet();
-      styles.forEach((key, value) {
+      for (final key in styles.keys) {
+        final value = styles[key];
         remove?.remove(key);
         final v = elem.style.getPropertyValue(key);
         if (v != value) {
           elem.style.setProperty(key, value);
         }
-      });
+      }
       if (remove != null && remove.isNotEmpty) {
         for (final name in remove) {
           elem.style.removeProperty(name);
@@ -126,17 +131,20 @@ class _ViewUpdater extends DVisitor {
       }
     }
 
-    final attrs = node.attrs?.values ?? const <String, String>{};
+    final attrs = node.attrs?.values;
     final removeAttrs = elem.attributes.isEmpty
         ? null
         : (elem.attributes.keys.toSet()..remove('class')..remove('style'));
-    attrs.forEach((key, value) {
-      removeAttrs?.remove(key);
-      final v = elem.attributes[key];
-      if (v != value) {
-        elem.attributes[key] = value;
+    if (attrs != null) {
+      for (final key in attrs.keys) {
+        final value = attrs[key];
+        removeAttrs?.remove(key);
+        final v = elem.attributes[key];
+        if (v != value) {
+          elem.attributes[key] = value;
+        }
       }
-    });
+    }
     if (removeAttrs != null && removeAttrs.isNotEmpty) {
       for (final name in removeAttrs) {
         elem.removeAttribute(name);
@@ -165,7 +173,8 @@ class _ViewUpdater extends DVisitor {
     if (node.events != null) {
       initNodeExt();
 
-      node.events.forEach((event, definition) {
+      for (final event in node.events.keys) {
+        final definition = node.events[event];
         if (definition.ifFn != null && !definition.ifFn()) return;
         removeEvents?.remove(event);
 
@@ -188,12 +197,14 @@ class _ViewUpdater extends DVisitor {
         };
         elem.addEventListener(event, eventListener);
         nodeExt.boundEvents[event] = _BoundEvent(definition, eventListener);
-      });
+      }
     }
-    removeEvents?.forEach((event) {
-      final be = nodeExt.boundEvents.remove(event);
-      elem.removeEventListener(event, be.eventListener);
-    });
+    if (removeEvents != null && removeEvents.isNotEmpty) {
+      for (final event in removeEvents) {
+        final be = nodeExt.boundEvents.remove(event);
+        elem.removeEventListener(event, be.eventListener);
+      }
+    }
   }
 
   @override

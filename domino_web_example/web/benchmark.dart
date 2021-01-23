@@ -16,12 +16,14 @@ void main() {
   });
   // 237k-339k
   // 469k-483k
+  // 434k-451k
   document.getElementById('b2').onClick.listen((_) async {
     await _benchmark(() => _idomInit(), () => _idom());
   });
   // 225-236k
   // 202k
   // 494k-536k / 419k
+  // 414k-438k
   document.getElementById('b3').onClick.listen((_) async {
     await _benchmark(() => _ddomInit(), () => _ddom());
   });
@@ -40,6 +42,7 @@ Future<void> _benchmark(
     if (sw.elapsed.inSeconds > 9) break;
   }
   print('total: $count in ${sw.elapsed}');
+  document.getElementById('r').text = '$count in ${sw.elapsed}';
 }
 
 old.View _oldView;
@@ -69,14 +72,11 @@ void _old() {
 }
 
 Element _idomRoot;
+ib.View _idomView;
 Future<void> _idomInit() async {
   final output = document.getElementById('output');
-  output.innerHtml = '';
   output.append(_idomRoot = DivElement());
-}
-
-void _idom() {
-  ib.patch(_idomRoot, (ctx) {
+  _idomView = ib.registerView(_idomRoot, (ctx) {
     ctx.open('div');
     ctx.attr('title', 'abc');
     ctx.clazz('c1');
@@ -85,11 +85,15 @@ void _idom() {
     ctx.text('text1');
     ctx.close();
     ctx.open('span');
-    final t2 = () =>'text2';
+    final t2 = () => 'text2';
     ctx.text(t2());
     ctx.close();
     ctx.close();
   });
+}
+
+void _idom() {
+  _idomView.update();
 }
 
 ddom.DView _ddomView;
