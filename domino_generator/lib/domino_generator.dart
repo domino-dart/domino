@@ -19,7 +19,7 @@ Future<CompilationSummary> compileFile(
         .join('\n');
     await _replaceExtension(file, '.g.html').writeAsString(debugContent);
   }
-  final gs = htmlToSources(await file.readAsString());
+  final gs = parseHtmlToSources(await file.readAsString());
   final dartUpdated =
       await _updateFile(_replaceExtension(file, '.g.dart'), gs.dartFileContent);
   final sassUpdated =

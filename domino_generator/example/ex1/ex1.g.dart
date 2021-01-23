@@ -1,10 +1,10 @@
-import 'package:domino/src/experimental/idom.dart' as _i0 show DomContext;
-import 'package:meta/meta.dart' as _i2 show required;
-import 'ex1_model.dart' as _i1 show Example;
+import 'package:domino/src/experimental/idom.dart' as _i1;
+import 'package:meta/meta.dart' as _i2;
+import 'ex1_model.dart' as _i3;
 
 void renderEx1(
-  _i0.DomContext $d, {
-  @_i2.required _i1.Example obj,
+  _i1.DomContext $d, {
+  @_i2.required _i3.Example obj,
 
   /// Go recursive
   bool extra,
@@ -44,7 +44,7 @@ void renderEx1(
   renderEx2($d);
 }
 
-void renderEx2(_i0.DomContext $d) {
+void renderEx2(_i1.DomContext $d) {
   $d.open('div');
   $d.text('X');
   $d.close();

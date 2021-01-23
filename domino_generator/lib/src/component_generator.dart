@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:code_builder/code_builder.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
 import 'package:meta/meta.dart';
@@ -20,10 +21,14 @@ class GeneratedSource {
       sassFileContent != null && sassFileContent.isNotEmpty;
 }
 
-GeneratedSource htmlToSources(String htmlContent) {
+GeneratedSource parseHtmlToSources(String htmlContent) {
   final ps = parseToCanonical(htmlContent);
   final cg = _ComponentGenerator();
-  final dartFileContent = cg.generateParsedSource(ps);
+  final library = cg.generateLibrary(ps);
+
+  final emitter = DartEmitter(Allocator.simplePrefixing());
+  final dartFileContent = DartFormatter().format('${library.accept(emitter)}');
+
   final sassFileContent = cg.generateScss(ps).trim();
   return GeneratedSource(
     dartFileContent: dartFileContent,
@@ -31,127 +36,81 @@ GeneratedSource htmlToSources(String htmlContent) {
   );
 }
 
+final _idomUri = 'package:domino/src/experimental/idom.dart';
+final _required = refer('required', 'package:meta/meta.dart');
+
 class _ComponentGenerator {
-  final _imports = <String, _Import>{};
-  final _sb = StringBuffer();
   final _texts = <_TextElem>[];
   final _i18n = false;
 
-  void _reset() {
-    _imports.clear();
-    _sb.clear();
-  }
+  Library generateLibrary(ParsedSource parsed) {
+    return Library((lib) {
+      for (final template in parsed.templates) {
+        final name = template.getAttribute('method-name', namespace: dominoNs);
 
-  String _importAlias(String url, Iterable<String> types) {
-    if (url == null || url == 'dart:core') return null;
-    final imp =
-        _imports.putIfAbsent(url, () => _Import(url, '_i${_imports.length}'));
-    imp.show.addAll(types);
-    return imp.alias;
-  }
+        final topLevelObjects = <String>[];
+        lib.body.add(Method.returnsVoid((m) {
+          m.name = name;
+          m.requiredParameters.add(Parameter((p) {
+            p.name = r'$d';
+            p.type = refer('DomContext', _idomUri);
+          }));
 
-  String _renderImports() {
-    final list = _imports.values.toList();
-    list.sort((a, b) {
-      if (a.url.startsWith('package:') && !b.url.startsWith('package:')) {
-        return -1;
+          final defaultInits = <String>[];
+
+          for (final ve in template
+              .findElements('template-var', namespace: dominoNs)
+              .toList()) {
+            final library = ve.getDominoAttr('library');
+            final type = ve.getDominoAttr('type');
+            final name = ve.getDominoAttr('name');
+            final defaultValue = ve.getDominoAttr('default');
+            final documentation = ve.getDominoAttr('doc');
+            final required = ve.getDominoAttr('required') == 'true';
+            ve.parent.children.remove(ve);
+            m.optionalParameters.add(Parameter((p) {
+              p.name = name;
+              p.type = refer(type, library);
+              p.named = true;
+              if (documentation != null) {
+                p.docs.addAll(documentation.split('\n').map((l) => '/// $l'));
+              }
+              if (required) p.annotations.add(_required);
+            }));
+
+            if (defaultValue != null) {
+              defaultInits.add('$name ??= $defaultValue;');
+            }
+          }
+          m.body = Code.scope((allocator) {
+            final code = StringBuffer();
+            defaultInits.forEach(code.writeln);
+            _render(code, allocator, Stack(objects: topLevelObjects),
+                template.nodes);
+            if (_texts.isNotEmpty) {
+              code.writeln('const _\$strings = {');
+              final snames = <String>{};
+              for (final te in _texts) {
+                snames.add(te.name);
+              }
+              for (final sn in snames) {
+                code.writeln('r\'$sn\': {');
+                final usedLangs = <String>{};
+                for (final te in _texts.where((te) => te.name == sn)) {
+                  if (usedLangs.contains(te.lang)) continue;
+                  usedLangs.add(te.lang);
+                  code.writeln('\'_params${te.lang}\': r\'${te.params}\',');
+                  code.writeln('\'${te.lang}\': r\'${te.text}\',');
+                }
+                code.writeln('},');
+              }
+              code.writeln('};');
+            }
+            return code.toString();
+          });
+        }));
       }
-      if (!a.url.startsWith('package:') && b.url.startsWith('package:')) {
-        return 1;
-      }
-      return a.url.compareTo(b.url);
     });
-    return list
-        .map((i) =>
-            'import \'${i.url}\' as ${i.alias} show ${(i.show.toList()..sort()).join(', ')};\n')
-        .join();
-  }
-
-  String generateSource(String source) {
-    return generateParsedSource(parseToCanonical(source));
-  }
-
-  String generateParsedSource(ParsedSource parsed) {
-    _reset();
-    final idomcAlias = _importAlias(
-        'package:domino/src/experimental/idom.dart', ['DomContext']);
-
-    for (final template in parsed.templates) {
-      final name = template.getAttribute('method-name', namespace: dominoNs);
-
-      final topLevelObjects = <String>[];
-
-      _sb.writeln('void $name($idomcAlias.DomContext \$d');
-      final defaultInits = <String>[];
-      for (final ve in template
-          .findElements('template-var', namespace: dominoNs)
-          .toList()) {
-        final library = ve.getDominoAttr('library');
-        final type = ve.getDominoAttr('type');
-        final name = ve.getDominoAttr('name');
-        final defaultValue = ve.getDominoAttr('default');
-        final documentation = ve.getDominoAttr('doc');
-        final required = ve.getDominoAttr('required') == 'true';
-        ve.parent.children.remove(ve);
-        final alias = _importAlias(library, [type]);
-        final aliasedType = alias == null ? type : '$alias.$type';
-        if (topLevelObjects.isEmpty) {
-          _sb.write(', {');
-        }
-        topLevelObjects.add(name);
-        if (documentation != null) {
-          _sb.write('\n/// $documentation\n');
-        }
-        if (required) {
-          final metaAlias =
-              _importAlias('package:meta/meta.dart', ['required']);
-          _sb.write('@$metaAlias.required ');
-        }
-        _sb.write('$aliasedType $name,\n');
-        if (defaultValue != null) {
-          defaultInits.add('$name ??= $defaultValue;');
-        }
-      }
-      if (topLevelObjects.isNotEmpty) {
-        _sb.write('}');
-      }
-      _sb.writeln(') {');
-      defaultInits.forEach(_sb.writeln);
-      topLevelObjects.add('\$d');
-
-      _render(Stack(objects: topLevelObjects), template.nodes);
-
-      _sb.writeln('}');
-    }
-
-    if (_texts.isNotEmpty) {
-      _sb.writeln('const _\$strings = {');
-      final snames = <String>{};
-      for (final te in _texts) {
-        snames.add(te.name);
-      }
-      for (final sn in snames) {
-        _sb.writeln('r\'$sn\': {');
-        final usedLangs = <String>{};
-        for (final te in _texts.where((te) => te.name == sn)) {
-          if (usedLangs.contains(te.lang)) continue;
-          usedLangs.add(te.lang);
-          _sb.writeln('\'_params${te.lang}\': r\'${te.params}\',');
-          _sb.writeln('\'${te.lang}\': r\'${te.text}\',');
-        }
-        _sb.writeln('},');
-      }
-      _sb.writeln('};');
-    }
-
-    String text;
-    try {
-      text = DartFormatter().format('${_renderImports()}\n$_sb');
-    } on FormatterException catch (e) {
-      print(e);
-      text = '${_renderImports()}\n$_sb';
-    }
-    return text;
   }
 
   String _scssName(XmlElement style) {
@@ -163,50 +122,51 @@ class _ComponentGenerator {
     return ['ds', hash].join('_');
   }
 
-  void _render(Stack stack, Iterable<XmlNode> nodes) {
+  void _render(StringBuffer code, String Function(Reference ref) allocator,
+      Stack stack, Iterable<XmlNode> nodes) {
     for (final node in nodes) {
       if (node is XmlElement) {
         if (_isDominoElem(node, 'for')) {
           final expr = node.getDominoAttr('expr').split(' in ');
           final object = expr[0].trim();
           final ns = Stack(parent: stack, objects: [object]);
-          _sb.writeln(
+          code.writeln(
               'for (final $object in ${stack.canonicalize(expr[1].trim())}) {');
-          _render(ns, node.nodes);
-          _sb.writeln('}');
+          _render(code, allocator, ns, node.nodes);
+          code.writeln('}');
         } else if (_isDominoElem(node, 'if')) {
           final cond = node.getDominoAttr('expr');
-          _sb.writeln('if (${stack.canonicalize(cond)}) {');
-          _render(stack, node.nodes);
-          _sb.writeln('}');
+          code.writeln('if (${stack.canonicalize(cond)}) {');
+          _render(code, allocator, stack, node.nodes);
+          code.writeln('}');
         } else if (_isDominoElem(node, 'else-if')) {
           final cond = node.getDominoAttr('expr');
-          _sb.writeln('else if (${stack.canonicalize(cond)}) {');
-          _render(stack, node.nodes);
-          _sb.writeln('}');
+          code.writeln('else if (${stack.canonicalize(cond)}) {');
+          _render(code, allocator, stack, node.nodes);
+          code.writeln('}');
         } else if (_isDominoElem(node, 'else')) {
-          _sb.writeln('else {');
-          _render(stack, node.nodes);
-          _sb.writeln('}');
+          code.writeln('else {');
+          _render(code, allocator, stack, node.nodes);
+          code.writeln('}');
         } else if (_isDominoElem(node, 'call')) {
-          _renderCall(stack, node);
+          _renderCall(code, allocator, stack, node);
         } else if (_isDominoElem(node, 'attr')) {
-          _renderAttr(stack, node);
+          _renderAttr(code, stack, node);
         } else if (_isDominoElem(node, 'class')) {
-          _renderClass(stack, node);
+          _renderClass(code, stack, node);
         } else if (_isDominoElem(node, 'slot')) {
-          _renderSlot(stack, node);
+          _renderSlot(code, stack, node);
         } else if (_isDominoElem(node, 'style')) {
-          _renderStyle(stack, node);
+          _renderStyle(code, stack, node);
         } else {
-          _renderElem(stack, node);
+          _renderElem(code, allocator, stack, node);
         }
       } else if (node is XmlText) {
         final nodeText = node.text;
         if (nodeText.isEmpty || nodeText.trim().isEmpty) continue;
-        _renderText(stack, nodeText);
+        _renderText(code, stack, nodeText);
       } else if (node is XmlComment) {
-        _sb.writeln('/*${node.text}*/');
+        code.writeln('/*${node.text}*/');
       } else if (node is XmlAttribute) {
         //
       } else {
@@ -217,9 +177,9 @@ class _ComponentGenerator {
 
   static final _whitespace = RegExp(r'\s+');
   static final _word = RegExp(r'\w+');
-  void _renderText(Stack stack, String nodeText) {
+  void _renderText(StringBuffer code, Stack stack, String nodeText) {
     if (!_i18n) {
-      _sb.writeln('    \$d.text(\'${_interpolateText(stack, nodeText)}\');');
+      code.writeln('    \$d.text(\'${_interpolateText(stack, nodeText)}\');');
       return;
     }
 
@@ -248,18 +208,19 @@ class _ComponentGenerator {
     _texts.add(textelem);
 
     // Functions need to be used for interpolation.
-    _sb.writeln('{    String $fnName($argNames) => '
+    code.writeln('{    String $fnName($argNames) => '
         '(_\$strings[r\'$fnName\'].containsKey(\$d.globals.locale)'
         '? _\$strings[r\'$fnName\'][\$d.globals.locale]'
         ': _\$strings[r\'$fnName\'][\'\'])');
-    _sb.writeln('.toString()');
+    code.writeln('.toString()');
     params.forEach((key, value) {
-      _sb.writeln('      .replaceAll(r\'$key\', $key.toString())');
+      code.writeln('      .replaceAll(r\'$key\', $key.toString())');
     });
-    _sb.writeln(';');
+    code.writeln(';');
 
     // second is a call to the function with the real parameters
-    _sb.writeln('    \$d.text($fnName(${textelem.params.values.join(',')}));}');
+    code.writeln(
+        '    \$d.text($fnName(${textelem.params.values.join(',')}));}');
   }
 
   String _textFn(String text) {
@@ -282,7 +243,8 @@ class _ComponentGenerator {
     return 't$textHash\$$wordId';
   }
 
-  void _renderElem(Stack stack, XmlElement elem) {
+  void _renderElem(StringBuffer code, String Function(Reference ref) allocator,
+      Stack stack, XmlElement elem) {
     final tag = elem.name.local == 'element'
         ? elem.getDominoAttr('tag')
         : elem.name.local;
@@ -292,10 +254,10 @@ class _ComponentGenerator {
       openParams.add(', key: $key');
     }
 
-    _sb.writeln('    \$d.open(\'$tag\' ${openParams.join()});');
+    code.writeln('    \$d.open(\'$tag\' ${openParams.join()});');
     for (final attr in elem.attributes) {
       if (attr.name.namespaceUri != null) continue;
-      _sb.writeln(
+      code.writeln(
           '    \$d.attr(\'${attr.name.local}\', \'${_interpolateText(stack, attr.value)}\');');
     }
 
@@ -304,7 +266,7 @@ class _ComponentGenerator {
         in elem.attributes.where((attr) => attr.name.namespaceUri == null)) {
       if (dattr.name.local.startsWith('var-')) {
         final valname = dartName(dattr.name.local.split('-')[1]);
-        _sb.writeln('\n    var $valname;');
+        code.writeln('\n    var $valname;');
       }
     }
     // 'd-' attributes
@@ -315,11 +277,11 @@ class _ComponentGenerator {
       if (attr.startsWith('event-on')) {
         final parts = attr.split('-');
         final eventName = parts[1].substring(2);
-        _sb.writeln(
+        code.writeln(
             '    \$d.event(\'$eventName\', fn: ${_interpolateText(stack, dattr.value)});');
       }
       if (attr.startsWith('event-list-')) {
-        _sb.writeln('''
+        code.writeln('''
         for(final key in ${_interpolateText(stack, dattr.value)}.keys) {
             \$d.event(key, fn: ${_interpolateText(stack, dattr.value)}[key]);
         }
@@ -329,7 +291,7 @@ class _ComponentGenerator {
       if (attr.startsWith('bind-input-')) {
         final ba = attr.split('-').sublist(2).join('-'); // binded attribute
         final ex = dattr.value; // expression
-        _sb.writeln('''{
+        code.writeln('''{
           final elem = \$d.element;
           elem.$ba = $ex;
           \$d.event('input', fn: (event) {
@@ -342,35 +304,32 @@ class _ComponentGenerator {
       }
     }
 
-    _render(stack, elem.nodes);
-    _sb.writeln('    \$d.close();');
+    _render(code, allocator, stack, elem.nodes);
+    code.writeln('    \$d.close();');
   }
 
-  void _renderCall(Stack stack, XmlElement elem) {
+  void _renderCall(StringBuffer code, String Function(Reference ref) allocator,
+      Stack stack, XmlElement elem) {
     final library = elem.removeDominoAttr('library');
     final method = elem.removeDominoAttr('method') ?? '';
-    final alias = _importAlias(library, [method]);
-    if (alias != null) {
-      _sb.write(alias == null ? '' : '$alias.');
-    }
 
-    _sb.write('$method(\$d');
+    code.write(allocator(refer(method, library)));
+    code.write('(\$d');
 
     for (final ch in elem.elements) {
       if (ch.name.local == 'call-var') {
-        _sb.write(', ${ch.getDominoAttr('name')}:${ch.getDominoAttr('value')}');
+        code.write(
+            ', ${ch.getDominoAttr('name')}:${ch.getDominoAttr('value')}');
       }
       if (ch.name.local == 'call-slot') {
-        final idomcAlias = _importAlias(
-            'package:domino/src/experimental/idom.dart', ['DomContext']);
-        _sb.writeln(
-            ', ${ch.getDominoAttr('name')}: ($idomcAlias.DomContext \$d) {');
-        _render(stack, ch.nodes);
-        _sb.writeln('}');
+        final dcFQN = allocator(refer('DomContext', _idomUri));
+        code.writeln(', ${ch.getDominoAttr('name')}: ($dcFQN \$d) {');
+        _render(code, allocator, stack, ch.nodes);
+        code.writeln('}');
       }
     }
 
-    _sb.writeln(');');
+    code.writeln(');');
   }
 
   // Returns a list where each element is either text
@@ -411,29 +370,29 @@ class _ComponentGenerator {
     return _interpolateTextParts(stack, value).join();
   }
 
-  void _renderAttr(Stack stack, XmlElement elem) {
+  void _renderAttr(StringBuffer code, Stack stack, XmlElement elem) {
     final name = elem.getDominoAttr('name');
     final value = _interpolateText(stack, elem.getDominoAttr('value'));
-    _sb.writeln('\$d.attr(\'$name\', $value);');
+    code.writeln('\$d.attr(\'$name\', $value);');
   }
 
-  void _renderClass(Stack stack, XmlElement elem) {
+  void _renderClass(StringBuffer code, Stack stack, XmlElement elem) {
     final nameAttr = elem.getDominoAttr('name');
     final name = _interpolateText(stack, nameAttr);
     final presentAttr = elem.getDominoAttr('present');
     final present =
         presentAttr == null ? '' : ', ${_interpolateText(stack, presentAttr)}';
-    _sb.writeln('\$d.clazz(\'$name\'$present);');
+    code.writeln('\$d.clazz(\'$name\'$present);');
   }
 
-  void _renderSlot(Stack stack, XmlElement elem) {
+  void _renderSlot(StringBuffer code, Stack stack, XmlElement elem) {
     final method = elem.removeDominoAttr('name');
-    _sb.writeln('if ($method != null) {$method(\$d);}');
+    code.writeln('if ($method != null) {$method(\$d);}');
   }
 
-  void _renderStyle(Stack stack, XmlElement elem) {
+  void _renderStyle(StringBuffer code, Stack stack, XmlElement elem) {
     final cn = _scssName(elem);
-    _sb.writeln('    \$d.clazz(\'$cn\');\n');
+    code.writeln('    \$d.clazz(\'$cn\');\n');
   }
 
   String generateScss(ParsedSource parsedSource) {
@@ -492,14 +451,6 @@ class Stack {
     // TODO: log suspicious expression
     return expr;
   }
-}
-
-class _Import {
-  final String url;
-  final String alias;
-  final show = <String>{};
-
-  _Import(this.url, this.alias);
 }
 
 bool _isDominoElem(XmlElement elem, String tag) =>

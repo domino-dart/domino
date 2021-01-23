@@ -1,7 +1,6 @@
-import 'package:domino/src/experimental/idom.dart' as _i0
-    show DomContext, SlotFn;
+import 'package:domino/src/experimental/idom.dart' as _i1;
 
-void renderRedBox(_i0.DomContext $d) {
+void renderRedBox(_i1.DomContext $d) {
   $d.clazz('ds_1b0a43d1a5df11d59cc6');
 
   $d.open('div');
@@ -9,10 +8,7 @@ void renderRedBox(_i0.DomContext $d) {
   $d.close();
 }
 
-void renderBlueBox(
-  _i0.DomContext $d, {
-  _i0.SlotFn slot,
-}) {
+void renderBlueBox(_i1.DomContext $d, {_i1.SlotFn slot}) {
   $d.clazz('ds_fea58795f3a2aa58e9a7');
 
   $d.open('div');
