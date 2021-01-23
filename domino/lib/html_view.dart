@@ -243,7 +243,11 @@ class _ViewUpdater {
         }
       }
     }
-    attrsToRemove?.forEach(dn.attributes.remove);
+    if (attrsToRemove != null) {
+      for (final attr in attrsToRemove) {
+        dn.attributes.remove(attr);
+      }
+    }
     source.attributes = vnode.attributes;
 
     if (source.classes != null) {
