@@ -15,7 +15,7 @@ abstract class DView {
 
   /// Schedule an update of the [DView], with the returned future completing
   /// when the view is updated to the latest state.
-  Future<void> invalidate();
+  Future<void>? invalidate();
 
   /// Runs [action] in the [DView]'s tracker zone.
   ///
@@ -31,11 +31,11 @@ abstract class DView {
   R escape<R>(R Function() action);
 
   /// Dispose the [DView] and free resources.
-  Future dispose();
+  Future? dispose();
 }
 
 abstract class DVisitor {
-  void visitNode(DNode node) {
+  void visitNode(DNode? node) {
     if (node == null) return;
     if (node is DComponent) {
       visitComponent(node);
@@ -72,7 +72,7 @@ abstract class DComponent extends DNode {
   static DComponent withFn(DNodeListFn fn) => _DComponentWithFn(fn);
   static DComponent ofNodes(List<DNode> nodes) => _DComponentOfNodes(nodes);
 
-  Iterable<DNode> renderNodes();
+  Iterable<DNode?> renderNodes();
 
   @override
   void visit(DVisitor visitor) => visitor.visitComponent(this);
@@ -96,12 +96,12 @@ class _DComponentOfNodes extends DComponent {
 
 class DElem extends DNode {
   final String tag;
-  final DStringList classes;
-  final DStringMap attrs;
-  final DStringMap styles;
-  final List<DNode> children;
-  final Map<String, DEventDefinition> events;
-  final DLifecycleCallback onCreate;
+  final DStringList? classes;
+  final DStringMap? attrs;
+  final DStringMap? styles;
+  final List<DNode>? children;
+  final Map<String, DEventDefinition>? events;
+  final DLifecycleCallback? onCreate;
 
   DElem(
     this.tag, {
@@ -116,63 +116,63 @@ class DElem extends DNode {
   @override
   void visit(DVisitor visitor) => visitor.visitElem(this);
 
-  bool get hasChildren => children != null && children.isNotEmpty;
+  bool get hasChildren => children != null && children!.isNotEmpty;
 }
 
 typedef DBoolFn = bool Function();
 typedef DStringFn = String Function();
 
 class DStringList {
-  final List<String> _values;
-  final Map<String, DBoolFn> _ifs;
-  final List<DStringFn> _fns;
+  final List<String>? _values;
+  final Map<String, DBoolFn>? _ifs;
+  final List<DStringFn>? _fns;
 
   DStringList({
-    Iterable<String> values,
-    Map<String, DBoolFn> ifs,
-    Iterable<DStringFn> fns,
+    Iterable<String>? values,
+    Map<String, DBoolFn>? ifs,
+    Iterable<DStringFn>? fns,
   })  : _values = values?.toList(),
         _ifs = ifs,
         _fns = fns?.toList();
 
   List<String> get asList {
     return <String>[
-      if (_values != null) ..._values,
+      if (_values != null) ..._values!,
       if (_ifs != null)
-        ..._ifs.entries.where((e) => e.value()).map((e) => e.key),
+        ..._ifs!.entries.where((e) => e.value()).map((e) => e.key),
       if (_fns != null)
-        ..._fns.map((fn) => fn()).where((v) => v != null && v.isNotEmpty),
+        ..._fns!.map((fn) => fn()).where((v) => v != null && v.isNotEmpty),
     ];
   }
 }
 
 class DStringMap {
-  final Map<String, String> _values;
-  final Map<String, DStringFn> _fns;
+  final Map<String, String>? _values;
+  final Map<String, DStringFn>? _fns;
 
   DStringMap({
-    Map<String, String> values,
-    Map<String, DStringFn> fns,
+    Map<String, String>? values,
+    Map<String, DStringFn>? fns,
   })  : _values = values,
         _fns = fns;
 
   Map<String, String> get values {
     final fnsv = _fns == null
         ? null
-        : _fns.entries.map((e) {
+        : _fns!.entries.map((e) {
             final v = e.value();
             return v == null ? null : MapEntry(e.key, v);
           }).where((e) => e != null);
     return <String, String>{
-      if (_values != null) ..._values,
-      if (_fns != null) ...Map.fromEntries(fnsv),
+      if (_values != null) ..._values!,
+      if (_fns != null) ...Map.fromEntries(fnsv!),
     };
   }
 }
 
 class DEventDefinition {
   final DEventCallback callback;
-  final DBoolFn ifFn;
+  final DBoolFn? ifFn;
   final dynamic identityKey;
   final bool escapeTracking;
 
@@ -185,15 +185,15 @@ class DEventDefinition {
 }
 
 class DText extends DNode {
-  final String _value;
-  final String Function() _fn;
+  final String? _value;
+  final String Function()? _fn;
   DText(this._value) : _fn = null;
   DText.fn(this._fn) : _value = null;
 
   @override
   void visit(DVisitor visitor) => visitor.visitText(this);
 
-  String get value => _value ?? _fn();
+  String get value => _value ?? _fn!();
 }
 
 class DInnerHtml extends DNode {
@@ -217,7 +217,7 @@ abstract class DEvent<L, V> {
 
 class DIfComponent extends DComponent {
   final List<DIfExpr> exprs;
-  final DNodeListFn orElse;
+  final DNodeListFn? orElse;
 
   DIfComponent(this.exprs, {this.orElse});
 
@@ -228,7 +228,7 @@ class DIfComponent extends DComponent {
         return expr.nodeListFn();
       }
     }
-    if (orElse != null) return orElse();
+    if (orElse != null) return orElse!();
     return Iterable<DNode>.empty();
   }
 }
@@ -245,7 +245,7 @@ class DForComponent<T> extends DComponent {
   DForComponent(this.iterable);
 
   @override
-  Iterable<DNode> renderNodes() {
+  Iterable<DNode?> renderNodes() {
     return iterable().map((e) => e._component);
   }
 }
@@ -254,7 +254,7 @@ class DForExpr {
   final dynamic item;
   final DNodeListFn fn;
 
-  DComponent _component;
+  DComponent? _component;
 
   DForExpr(this.item, this.fn);
 

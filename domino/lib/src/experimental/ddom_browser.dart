@@ -15,9 +15,9 @@ class _View implements DView {
   final html.Element _container;
   final DNodeListFn _content;
 
-  AsyncTracker _tracker;
+  late AsyncTracker _tracker;
 
-  Future _invalidate;
+  Future? _invalidate;
   bool _isDisposed = false;
 
   _View(this._container, this._content) {
@@ -32,7 +32,7 @@ class _View implements DView {
   R escape<R>(R Function() action) => _tracker.parentZone.run(action);
 
   @override
-  Future invalidate() {
+  Future? invalidate() {
     _invalidate ??= Future.delayed(Duration.zero, () {
       try {
         update();
@@ -44,7 +44,7 @@ class _View implements DView {
   }
 
   @override
-  Future dispose() async {
+  Future? dispose() async {
     _isDisposed = true;
     return invalidate();
   }
@@ -92,7 +92,7 @@ class _ViewUpdater extends DVisitor {
     } else {
       final elem = html.Element.tag(node.tag);
       if (node.onCreate != null) {
-        _onCreateQueue.add(() => node.onCreate(_DLifecycleEvent(_view, elem)));
+        _onCreateQueue.add(() => node.onCreate!(_DLifecycleEvent(_view, elem)));
       }
       cursor.insertBefore(elem, c);
       _visitElem(node, elem);
@@ -141,7 +141,7 @@ class _ViewUpdater extends DVisitor {
         removeAttrs?.remove(key);
         final v = elem.attributes[key];
         if (v != value) {
-          elem.attributes[key] = value;
+          elem.attributes[key] = value!;
         }
       }
     }
@@ -153,7 +153,7 @@ class _ViewUpdater extends DVisitor {
 
     if (node.hasChildren) {
       _stack.add(_Pos(elem, 0));
-      for (final n in node.children) {
+      for (final n in node.children!) {
         visitNode(n);
       }
       final cc = _stack.removeLast();
@@ -173,12 +173,12 @@ class _ViewUpdater extends DVisitor {
     if (node.events != null) {
       initNodeExt();
 
-      for (final event in node.events.keys) {
-        final definition = node.events[event];
-        if (definition.ifFn != null && !definition.ifFn()) return;
+      for (final event in node.events!.keys) {
+        final definition = node.events![event]!;
+        if (definition.ifFn != null && !definition.ifFn!()) return;
         removeEvents?.remove(event);
 
-        final oldBound = nodeExt.boundEvents[event];
+        final oldBound = nodeExt!.boundEvents[event];
         if (oldBound != null &&
             definition.identityKey == oldBound.definition.identityKey) {
           return;
@@ -196,12 +196,12 @@ class _ViewUpdater extends DVisitor {
           }
         };
         elem.addEventListener(event, eventListener);
-        nodeExt.boundEvents[event] = _BoundEvent(definition, eventListener);
+        nodeExt!.boundEvents[event] = _BoundEvent(definition, eventListener);
       }
     }
     if (removeEvents != null && removeEvents.isNotEmpty) {
       for (final event in removeEvents) {
-        final be = nodeExt.boundEvents.remove(event);
+        final be = nodeExt!.boundEvents.remove(event)!;
         elem.removeEventListener(event, be.eventListener);
       }
     }
@@ -233,13 +233,13 @@ class _Pos {
 
   _Pos(this.parent, this.index);
 
-  html.Node get currentNode {
+  html.Node? get currentNode {
     final nodes = parent.nodes;
     if (nodes.length <= index) return null;
     return nodes[index];
   }
 
-  void insertBefore(html.Node node, html.Node child) {
+  void insertBefore(html.Node node, html.Node? child) {
     if (child == null) {
       parent.append(node);
     } else {
@@ -276,11 +276,11 @@ class _BoundEvent {
 
 final Expando<_HtmlNodeExt> _htmlNodeExtExpando = Expando();
 
-_HtmlNodeExt _getHtmlNodeExt(html.Node node) {
+_HtmlNodeExt? _getHtmlNodeExt(html.Node node) {
   return _htmlNodeExtExpando[node];
 }
 
-void _setHtmlNodeExt(html.Node node, _HtmlNodeExt ext) {
+void _setHtmlNodeExt(html.Node node, _HtmlNodeExt? ext) {
   _htmlNodeExtExpando[node] = ext;
 }
 

@@ -8,7 +8,7 @@ final _textEscaper = HtmlEscape(HtmlEscapeMode.element);
 /// Builds HTML markup based on the hierarchy of [DNode]s.
 /// Intended mostly for testing and server-side rendering.
 class HtmlBuilderVisitor extends DVisitor {
-  final String indent;
+  final String? indent;
   final bool _hasIndent;
   final _sink = StringBuffer();
   int _indentLevel = 0;
@@ -34,7 +34,7 @@ class HtmlBuilderVisitor extends DVisitor {
     if (node.hasChildren) {
       _sink.write('>');
       _indentLevel++;
-      node.children.forEach(visitNode);
+      node.children!.forEach(visitNode);
       _indentLevel--;
       _writeIndent();
       _sink.write('</${node.tag}>');
@@ -70,15 +70,15 @@ class HtmlBuilderVisitor extends DVisitor {
 
   void _writeAttributes(
     StringSink sink,
-    Map<String, String> attrs,
-    Iterable<String> classes,
-    Map<String, String> styles,
+    Map<String, String>? attrs,
+    Iterable<String>? classes,
+    Map<String, String>? styles,
   ) {
     if (attrs != null && attrs.containsKey('id')) {
-      sink.write(' id="${_attrEscaper.convert(attrs['id'])}"');
+      sink.write(' id="${_attrEscaper.convert(attrs['id']!)}"');
     }
 
-    String classValue;
+    String? classValue;
     if (classes != null) {
       classValue = classes.join(' ');
     } else if (attrs != null && attrs.containsKey('class')) {
@@ -88,7 +88,7 @@ class HtmlBuilderVisitor extends DVisitor {
       sink.write(' class="${_attrEscaper.convert(classValue)}"');
     }
 
-    String styleValue;
+    String? styleValue;
     if (styles != null) {
       final list = styles.keys.map((key) => '$key: ${styles[key]}').toList();
       list.sort();
@@ -108,7 +108,7 @@ class HtmlBuilderVisitor extends DVisitor {
       for (final key in keys) {
         final value = attrs[key];
         if (value != null) {
-          sink.write(' $key="${_attrEscaper.convert(attrs[key])}"');
+          sink.write(' $key="${_attrEscaper.convert(attrs[key]!)}"');
         }
       }
     }

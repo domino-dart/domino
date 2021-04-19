@@ -14,8 +14,8 @@ class BuildContextImpl implements BuildContext {
   @override
   final View view;
 
-  final BuildContextImpl _parent;
-  final Component _component;
+  final BuildContextImpl? _parent;
+  final Component? _component;
 
   BuildContextImpl._(this.view, this._parent, this._component);
   BuildContextImpl(this.view)
@@ -26,24 +26,24 @@ class BuildContextImpl implements BuildContext {
       BuildContextImpl._(view, this, component);
 
   @override
-  Component get component => _component;
+  Component? get component => _component;
 
   @override
   Iterable<Component> get components sync* {
-    var ctx = this;
+    BuildContextImpl? ctx = this;
     while (ctx != null) {
       if (ctx._component != null) {
-        yield ctx._component;
+        yield ctx._component!;
       }
       ctx = ctx._parent;
     }
   }
 
-  List<VdomNode> buildNodes(dynamic content) =>
+  List<VdomNode>? buildNodes(dynamic content) =>
       _buildNodes(NodeRefs(), content);
 
-  List<VdomNode> _buildNodes(NodeRefs nodeRefs, dynamic content,
-      {List<VdomNode> nodes}) {
+  List<VdomNode>? _buildNodes(NodeRefs nodeRefs, dynamic content,
+      {List<VdomNode>? nodes}) {
     if (content == null) {
       return nodes;
     }
@@ -76,8 +76,8 @@ class BuildContextImpl implements BuildContext {
     return nodes;
   }
 
-  List _contentChildren(ElementProxy proxy, content) {
-    List result;
+  List? _contentChildren(ElementProxy proxy, content) {
+    List? result;
     for (var item in unfold(content)) {
       if (item == null) continue;
       if (item is Setter) {

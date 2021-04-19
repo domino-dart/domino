@@ -4,11 +4,12 @@ version: 0.6.0
 homepage: https://github.com/domino-dart/domino/tree/master/domino
 
 environment:
-  sdk: '>=2.5.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
   async_tracker: ^0.1.1
   meta: ^1.0.0
+  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
   pedantic: ^1.0.0
