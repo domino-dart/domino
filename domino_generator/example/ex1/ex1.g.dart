@@ -1,3 +1,5 @@
+// @dart=2.9
+
 import 'package:domino/src/experimental/idom.dart' as _i1;
 import 'package:meta/meta.dart' as _i2;
 import 'ex1_model.dart' as _i3;

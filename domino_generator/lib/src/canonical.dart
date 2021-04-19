@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
@@ -7,7 +8,7 @@ final dominoNs = 'domino';
 
 class ParsedSource {
   final List<XmlElement> templates;
-  final String path;
+  final String? path;
 
   ParsedSource(this.templates, [this.path]);
 }
@@ -19,7 +20,7 @@ ParsedSource parseFileToCanonical(String path) {
   return ParsedSource(parsed.templates, path);
 }
 
-ParsedSource parseToCanonical(String html, {String defTemp}) {
+ParsedSource parseToCanonical(String html, {String? defTemp}) {
   final templates = <XmlElement>[];
 
   final source = '<d:root xmlns:d="$dominoNs">\n$html\n</d:root>';
@@ -56,7 +57,7 @@ ParsedSource parseToCanonical(String html, {String defTemp}) {
 
     templateElem.setDominoAttr(
       'method-name',
-      dartName(templateElem.getDominoAttr('name'), prefix: 'render'),
+      dartName(templateElem.getDominoAttr('name')!, prefix: 'render'),
     );
 
     for (final attr in templateElem.attributes.toList()) {
@@ -76,14 +77,14 @@ ParsedSource parseToCanonical(String html, {String defTemp}) {
         parts.remove('required');
         required = true;
       }
-      String defaultValue;
+      String? defaultValue;
       final defaultAttr =
-          parts.firstWhere((p) => p.startsWith('default:'), orElse: () => null);
+          parts.firstWhereOrNull((p) => p.startsWith('default:'));
       if (defaultAttr != null) {
         parts.remove(defaultAttr);
         defaultValue = defaultAttr.substring(8).trim();
       }
-      String documentation;
+      String? documentation;
       if (parts.isNotEmpty) {
         documentation = parts.removeAt(0);
       }
@@ -117,14 +118,13 @@ Iterable<String> _collectSlots(XmlElement elem) {
       .toList();
 }
 
-void _pullAttr(XmlElement node, String tag, {Iterable<String> alternatives}) {
+void _pullAttr(XmlElement node, String tag, {Iterable<String>? alternatives}) {
   final attrs = [tag, if (alternatives != null) ...alternatives]
       .where((s) => s != null)
       .toList();
   for (final attr in attrs) {
-    final first = node.attributes.firstWhere(
+    final first = node.attributes.firstWhereOrNull(
       (a) => a.name.local == attr && a.name.namespaceUri == dominoNs,
-      orElse: () => null,
     );
     if (first != null) {
       node.attributes.remove(first);
@@ -140,7 +140,7 @@ void _pullAttr(XmlElement node, String tag, {Iterable<String> alternatives}) {
 
 void _rewriteAll(List<XmlNode> list) {
   for (int i = 0; i < list.length; i++) {
-    XmlNode old;
+    XmlNode? old;
     while (old != list[i]) {
       old = list[i];
       _rewrite(old);
@@ -294,11 +294,11 @@ String dartName(String htmlName, {String prefix = ''}) {
 
   final parts =
       _caseRegExp.allMatches(htmlName).map((e) => e.group(0)).toList();
-  if (prefix != null && prefix.isNotEmpty && !parts.first.startsWith(prefix)) {
+  if (prefix != null && prefix.isNotEmpty && !parts.first!.startsWith(prefix)) {
     parts.insert(0, prefix);
   }
   final cased = parts
-      .map((s) => s.toLowerCase())
+      .map((s) => s!.toLowerCase())
       .map((s) => s.substring(0, 1).toUpperCase() + s.substring(1))
       .join();
   return cased.substring(0, 1).toLowerCase() + cased.substring(1);
@@ -312,8 +312,8 @@ extension XmlElementExt on XmlElement {
     bool moveAttributes = false,
     bool moveChildren = false,
   }) {
-    final index = parent.children.indexOf(this);
-    parent.children.replaceRange(index, index + 1, [other]);
+    final index = parent!.children.indexOf(this);
+    parent!.children.replaceRange(index, index + 1, [other]);
     if (moveAttributes) {
       other.attributes.addAll(attributes.map((a) => a.copy() as XmlAttribute));
     }
@@ -323,8 +323,8 @@ extension XmlElementExt on XmlElement {
   }
 
   void injectInTree(XmlElement other) {
-    final index = parent.children.indexOf(this);
-    parent.children.replaceRange(index, index + 1, [other]);
+    final index = parent!.children.indexOf(this);
+    parent!.children.replaceRange(index, index + 1, [other]);
     other.append(copy());
   }
 
@@ -340,7 +340,7 @@ extension XmlElementExt on XmlElement {
     }
   }
 
-  String getDominoAttr(String name) {
+  String? getDominoAttr(String name) {
     return getAttribute(name, namespace: dominoNs);
   }
 
@@ -348,7 +348,7 @@ extension XmlElementExt on XmlElement {
     setAttribute(name, value, namespace: dominoNs);
   }
 
-  String removeDominoAttr(String name) {
+  String? removeDominoAttr(String name) {
     final v = getDominoAttr(name);
     removeAttribute(name, namespace: dominoNs);
     return v;

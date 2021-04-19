@@ -1,6 +1,6 @@
 import 'package:code_builder/code_builder.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 import 'package:dart_style/dart_style.dart';
-import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 
 import 'canonical.dart';
@@ -10,8 +10,8 @@ class GeneratedSource {
   final String sassFileContent;
 
   GeneratedSource({
-    @required this.dartFileContent,
-    @required this.sassFileContent,
+    required this.dartFileContent,
+    required this.sassFileContent,
   });
 }
 
@@ -29,12 +29,12 @@ GeneratedSource generateSource(String htmlContent) {
 
       lib.body.add(Class((clazz) {
         final methodName =
-            template.getAttribute('method-name', namespace: dominoNs);
+            template.getAttribute('method-name', namespace: dominoNs)!;
         clazz.name = methodName.replaceFirst('render', '');
         clazz.extend = refer('DComponent', _ddomDart);
         clazz.fields.addAll(vars.map((v) => Field((f) {
               f.name = v.name;
-              f.type = refer(v.type, v.library);
+              f.type = refer(v.type!, v.library);
               if (v.documentation != null) {
                 f.docs.add('  /// ${v.documentation}');
               }
@@ -47,11 +47,11 @@ GeneratedSource generateSource(String htmlContent) {
         }));
         clazz.constructors.add(Constructor((c) {
           c.optionalParameters.addAll(vars.map((v) => Parameter((p) {
-                p.name = v.name;
+                p.name = v.name!;
                 p.toThis = true;
                 p.named = true;
                 if (v.required) p.annotations.add(_required);
-                if (v.defaultValue != null) p.defaultTo = Code(v.defaultValue);
+                if (v.defaultValue != null) p.defaultTo = Code(v.defaultValue!);
               })));
         }));
         clazz.methods.add(Method((m) {
@@ -70,7 +70,7 @@ GeneratedSource generateSource(String htmlContent) {
     }
   });
 
-  final emitter = DartEmitter(Allocator.simplePrefixing());
+  final emitter = DartEmitter(allocator: Allocator.simplePrefixing());
   return GeneratedSource(
     dartFileContent: DartFormatter().format('${library.accept(emitter)}'),
     sassFileContent: '',
@@ -116,7 +116,7 @@ Iterable<String> _render(
 
       final children = _render(allocator, node.children).toList();
       if (_isDominoElem(node, 'for')) {
-        final expr = node.getDominoAttr('expr').split(' in ');
+        final expr = node.getDominoAttr('expr')!.split(' in ');
         final dfc = allocator(refer('DForComponent', _ddomDart));
         final dfe = allocator(refer('DForExpr', _ddomDart));
         yield '$dfc(() => ${expr.last}.map((${expr.first}) => $dfe(${expr.first}, () => <$dnodeQN>[${children.join(', ')}])))';
@@ -177,7 +177,7 @@ List<String> _interpolateTextParts(String value) {
     if (pos < m.start) {
       addText(value.substring(pos, m.start));
     }
-    final e = m.group(1).trim();
+    final e = m.group(1)!.trim();
     parts.add('\${$e}');
     pos = m.end;
   }
@@ -193,11 +193,11 @@ String _interpolateText(String value) {
 
 
 class TemplateVar {
-  String library;
-  String type;
-  String name;
-  String defaultValue;
-  String documentation;
+  String? library;
+  String? type;
+  String? name;
+  String? defaultValue;
+  String? documentation;
   bool required = false;
 
   TemplateVar.fromElem(XmlElement ve) {
@@ -211,11 +211,11 @@ class TemplateVar {
 }
 
 extension XmlElementExt on XmlElement {
-  XmlElement get nextElementSibling {
-    final list = parent.children;
+  XmlElement? get nextElementSibling {
+    final list = parent!.children;
     final index = list.indexOf(this);
     return list
         .skip(index + 1)
-        .firstWhere((n) => n is XmlElement, orElse: () => null) as XmlElement;
+        .firstWhereOrNull((n) => n is XmlElement) as XmlElement?;
   }
 }

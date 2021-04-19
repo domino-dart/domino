@@ -8,7 +8,7 @@ void renderRedBox(_i1.DomContext $d) {
   $d.close();
 }
 
-void renderBlueBox(_i1.DomContext $d, {_i1.SlotFn slot}) {
+void renderBlueBox(_i1.DomContext $d, {_i1.SlotFn? slot}) {
   $d.clazz('ds_fea58795f3a2aa58e9a7');
 
   $d.open('div');

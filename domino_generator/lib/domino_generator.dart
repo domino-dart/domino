@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 
 import 'src/canonical.dart';
@@ -42,9 +41,9 @@ class CompilationSummary {
   final bool sassUpdated;
 
   CompilationSummary({
-    @required this.hasSass,
-    @required this.dartUpdated,
-    @required this.sassUpdated,
+    required this.hasSass,
+    required this.dartUpdated,
+    required this.sassUpdated,
   });
 }
 
@@ -52,8 +51,8 @@ Future<void> compileDirectory(
   String path, {
   bool recursive = true,
   bool debugParse = false,
-  String libraryName,
-  String sassName,
+  String? libraryName,
+  String? sassName,
 }) async {
   final stream = Directory(path)
       .list(recursive: recursive)
