@@ -1,6 +1,6 @@
 name: domino_generator
 description: Code generator for HTML/JS widgets using package:domino.
-version: 0.6.0
+version: 0.7.0
 
 environment:
   sdk: '>=2.12.0 <3.0.0'
