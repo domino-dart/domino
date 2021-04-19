@@ -161,22 +161,22 @@ Setter on(String event, Function? handler, {bool? tracked}) {
   return EventSetter(event, handler, tracked: tracked);
 }
 
-Setter afterInsert(ChangeHandler handler) {
+Setter? afterInsert(ChangeHandler? handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.insert, handler);
 }
 
-Setter afterUpdate(ChangeHandler handler) {
+Setter? afterUpdate(ChangeHandler? handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.update, handler);
 }
 
-Setter afterRemove(ChangeHandler handler) {
+Setter? afterRemove(ChangeHandler? handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.remove, handler);
 }
 
-Setter innerHtml(String html) {
+Setter? innerHtml(String? html) {
   if (html == null) return null;
   return InnerHtmlSetter(html);
 }

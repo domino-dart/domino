@@ -39,7 +39,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
     this.indentAttr,
     this.lineEnd,
     DomContextGlobals? globals,
-  })  : _rootElem = root ?? _IdomElem(null),
+  })  : _rootElem = root ?? _IdomElem("root"),
         globals = globals ?? DomContextGlobals() {
     out ??= StringBuffer('');
     _indexes.add(0);
@@ -192,7 +192,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
       }
       if (elem.clazz!.isNotEmpty) {
         out.write('${ml}class="${indentAttr ? mml : ''}');
-        out.write(_attrEscaper.convert(elem.clazz?.join(mml)));
+        out.write(_attrEscaper.convert(elem.clazz.join(mml)));
         out.write('"');
         simple = false;
       }
@@ -248,18 +248,25 @@ abstract class _IdomNode {}
 
 // Element node
 class _IdomElem implements _IdomNode {
-  String? tag;
+  String tag;
   String? key;
-  Map<String, String>? attr;
-  Set<String>? clazz;
-  Map<String, String>? style;
-  List<_IdomNode>? nodes;
-  _IdomElem(this.tag,
-      {this.key, this.attr, this.style, this.clazz, this.nodes}) {
+  Map<String, String> attr;
+  Set<String> clazz;
+  Map<String, String> style;
+  List<_IdomNode> nodes;
+  _IdomElem._(
+      this.tag, this.key, this.attr, this.clazz, this.style, this.nodes);
+  factory _IdomElem(String tag,
+      {String? key,
+      Map<String, String>? attr,
+      Set<String>? clazz,
+      Map<String, String>? style,
+      List<_IdomNode>? nodes}) {
     attr ??= {};
     style ??= {};
     clazz ??= {};
     nodes ??= [];
+    return _IdomElem._(tag, key, attr, clazz, style, nodes);
   }
 
   // Pull every parameter from the other

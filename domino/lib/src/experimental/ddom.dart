@@ -162,7 +162,7 @@ class DStringMap {
         : _fns!.entries.map((e) {
             final v = e.value();
             return v == null ? null : MapEntry(e.key, v);
-          }).where((e) => e != null);
+          }).where((e) => e != null).whereType<MapEntry<String, String>>();
     return <String, String>{
       if (_values != null) ..._values!,
       if (_fns != null) ...Map.fromEntries(fnsv!),
