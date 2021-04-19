@@ -39,7 +39,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
     this.indentAttr,
     this.lineEnd,
     DomContextGlobals? globals,
-  })  : _rootElem = root ?? _IdomElem("root"),
+  })  : _rootElem = root ?? _IdomElem(null),
         globals = globals ?? DomContextGlobals() {
     out ??= StringBuffer('');
     _indexes.add(0);
@@ -248,7 +248,7 @@ abstract class _IdomNode {}
 
 // Element node
 class _IdomElem implements _IdomNode {
-  String tag;
+  String? tag;
   String? key;
   Map<String, String> attr;
   Set<String> clazz;
@@ -256,7 +256,7 @@ class _IdomElem implements _IdomNode {
   List<_IdomNode> nodes;
   _IdomElem._(
       this.tag, this.key, this.attr, this.clazz, this.style, this.nodes);
-  factory _IdomElem(String tag,
+  factory _IdomElem(String? tag,
       {String? key,
       Map<String, String>? attr,
       Set<String>? clazz,

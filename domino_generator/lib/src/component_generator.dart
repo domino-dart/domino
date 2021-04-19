@@ -36,7 +36,6 @@ GeneratedSource parseHtmlToSources(String htmlContent) {
 }
 
 final _idomUri = 'package:domino/src/experimental/idom.dart';
-final _required = refer('required', 'package:meta/meta.dart');
 
 class _ComponentGenerator {
   final _texts = <_TextElem>[];
@@ -69,12 +68,16 @@ class _ComponentGenerator {
             ve.parent!.children.remove(ve);
             m.optionalParameters.add(Parameter((p) {
               p.name = name!;
-              p.type = refer(type!, library);
               p.named = true;
+              if(required) {
+                p.required = true;
+                p.type = refer(type!, library);
+              } else {
+                p.type = refer(type! + '?', library);
+              }
               if (documentation != null) {
                 p.docs.addAll(documentation.split('\n').map((l) => '/// $l'));
               }
-              if (required) p.annotations.add(_required);
             }));
 
             if (defaultValue != null) {
