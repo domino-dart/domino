@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0
+
+- Null-safety migration
+
 ## 0.6.0
 
 - Experimental incremental DOM API.
