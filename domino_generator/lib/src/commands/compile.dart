@@ -26,7 +26,7 @@ class CompileCommand extends Command {
 
   @override
   Future<void> run() async {
-    final path = argResults['path'] as String;
+    final path = argResults!['path'] as String;
     ArgumentError.checkNotNull(path, 'path');
 
     if (await FileSystemEntity.isFile(path)) {
@@ -34,8 +34,8 @@ class CompileCommand extends Command {
       await compileFile(path);
     } else {
       // generate all templates in a directory, recursively
-      final libraryName = argResults['library'] as String;
-      final sassName = argResults['sass'] as String;
+      final libraryName = argResults!['library'] as String?;
+      final sassName = argResults!['sass'] as String?;
 
       await compileDirectory(path,
           libraryName: libraryName, sassName: sassName);

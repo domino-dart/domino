@@ -1,24 +1,25 @@
 name: domino_generator
 description: Code generator for HTML/JS widgets using package:domino.
-version: 0.6.0
+version: 0.7.0
 
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  args: ^1.6.0
-  code_builder: ^3.6.0
-  crypto: ^2.0.0
-  dart_style: ^1.3.3
-  domino: ^0.6.0
-  html: ^0.14.0
-  meta: ^1.0.0
-  path: ^1.0.0
-  xml: ^4.1.0
+  args: ^2.0.0
+  code_builder: ^4.0.0
+  crypto: ^3.0.1
+  dart_style: ^2.0.0
+  domino: ^0.7.0
+  html: ^0.15.0
+  meta: ^1.3.0
+  path: ^1.8.0
+  xml: ^5.1.0
+  collection: ^1.15.0-nullsafety.4
 
 dev_dependencies:
-  pedantic: 1.8.0
-  test: ^1.0.0
+  pedantic: ^1.11.0
+  test: ^1.16.8
 
 executables:
   domino_generator:

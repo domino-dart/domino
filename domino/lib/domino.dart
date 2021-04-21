@@ -8,7 +8,7 @@ abstract class BuildContext {
   View get view;
 
   /// The currently active component.
-  Component get component;
+  Component? get component;
 
   /// List of [Component]s, ordered from the currently active to the top-level ones.
   Iterable<Component> get components;
@@ -31,7 +31,7 @@ abstract class View {
   void update();
 
   /// Schedule an update of the [View].
-  Future invalidate();
+  Future? invalidate();
 
   /// Runs [action] in the [View]'s tracker zone.
   ///
@@ -47,7 +47,7 @@ abstract class View {
   R escape<R>(R Function() action);
 
   /// Dispose the [View] and free resources.
-  Future dispose();
+  Future? dispose();
 }
 
 /// DOM Event wrapper.
@@ -65,7 +65,7 @@ abstract class EventContext {
   dynamic get event;
 
   /// Returns a DOM Node identified with a Symbol.
-  N getNode<N>(Symbol symbol);
+  N? getNode<N>(Symbol symbol);
 
   bool get defaultPrevented;
   void preventDefault();
@@ -91,10 +91,10 @@ class Element {
 abstract class ElementProxy {
   void setSymbol(Symbol symbol);
   void addClass(String className);
-  void setAttribute(String name, String value);
+  void setAttribute(String name, String? value);
   void setStyle(String name, String value);
   void setInnerHtml(String html);
-  void addEventHandler(String type, Function handler, bool tracked);
+  void addEventHandler(String type, Function? handler, bool tracked);
   void addChangeHandler(ChangePhase phase, ChangeHandler handler);
 }
 
@@ -157,26 +157,26 @@ Setter clazz(
 ///
 /// Example:
 ///     div(on('click', () => print('Clicked!')))
-Setter on(String event, Function handler, {bool tracked}) {
+Setter on(String event, Function? handler, {bool? tracked}) {
   return EventSetter(event, handler, tracked: tracked);
 }
 
-Setter afterInsert(ChangeHandler handler) {
+Setter? afterInsert(ChangeHandler? handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.insert, handler);
 }
 
-Setter afterUpdate(ChangeHandler handler) {
+Setter? afterUpdate(ChangeHandler? handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.update, handler);
 }
 
-Setter afterRemove(ChangeHandler handler) {
+Setter? afterRemove(ChangeHandler? handler) {
   if (handler == null) return null;
   return LifecycleSetter(ChangePhase.remove, handler);
 }
 
-Setter innerHtml(String html) {
+Setter? innerHtml(String? html) {
   if (html == null) return null;
   return InnerHtmlSetter(html);
 }

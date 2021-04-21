@@ -1,14 +1,11 @@
 import 'package:domino/src/experimental/idom.dart' as _i1;
-import 'package:meta/meta.dart' as _i2;
-import 'ex1_model.dart' as _i3;
+import 'ex1_model.dart' as _i2;
 
-void renderEx1(
-  _i1.DomContext $d, {
-  @_i2.required _i3.Example obj,
+void renderEx1(_i1.DomContext $d,
+    {required _i2.Example obj,
 
-  /// Go recursive
-  bool extra,
-}) {
+    /// Go recursive
+    bool? extra}) {
   extra ??= false;
   $d.open('div', key: 'key1');
   $d.attr('title', 'Some help ${obj.name}.');

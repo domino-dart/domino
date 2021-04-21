@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:code_builder/code_builder.dart';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:dart_style/dart_style.dart';
-import 'package:meta/meta.dart';
 import 'package:xml/xml.dart';
 
 import 'canonical.dart';
@@ -13,8 +12,8 @@ class GeneratedSource {
   final String sassFileContent;
 
   GeneratedSource({
-    @required this.dartFileContent,
-    @required this.sassFileContent,
+    required this.dartFileContent,
+    required this.sassFileContent,
   });
 
   bool get hasSassFileContent =>
@@ -26,7 +25,7 @@ GeneratedSource parseHtmlToSources(String htmlContent) {
   final cg = _ComponentGenerator();
   final library = cg.generateLibrary(ps);
 
-  final emitter = DartEmitter(Allocator.simplePrefixing());
+  final emitter = DartEmitter(allocator: Allocator.simplePrefixing());
   final dartFileContent = DartFormatter().format('${library.accept(emitter)}');
 
   final sassFileContent = cg.generateScss(ps).trim();
@@ -37,7 +36,6 @@ GeneratedSource parseHtmlToSources(String htmlContent) {
 }
 
 final _idomUri = 'package:domino/src/experimental/idom.dart';
-final _required = refer('required', 'package:meta/meta.dart');
 
 class _ComponentGenerator {
   final _texts = <_TextElem>[];
@@ -67,15 +65,19 @@ class _ComponentGenerator {
             final defaultValue = ve.getDominoAttr('default');
             final documentation = ve.getDominoAttr('doc');
             final required = ve.getDominoAttr('required') == 'true';
-            ve.parent.children.remove(ve);
+            ve.parent!.children.remove(ve);
             m.optionalParameters.add(Parameter((p) {
-              p.name = name;
-              p.type = refer(type, library);
+              p.name = name!;
               p.named = true;
+              if(required) {
+                p.required = true;
+                p.type = refer(type!, library);
+              } else {
+                p.type = refer(type! + '?', library);
+              }
               if (documentation != null) {
                 p.docs.addAll(documentation.split('\n').map((l) => '/// $l'));
               }
-              if (required) p.annotations.add(_required);
             }));
 
             if (defaultValue != null) {
@@ -127,7 +129,7 @@ class _ComponentGenerator {
     for (final node in nodes) {
       if (node is XmlElement) {
         if (_isDominoElem(node, 'for')) {
-          final expr = node.getDominoAttr('expr').split(' in ');
+          final expr = node.getDominoAttr('expr')!.split(' in ');
           final object = expr[0].trim();
           final ns = Stack(parent: stack, objects: [object]);
           code.writeln(
@@ -226,7 +228,7 @@ class _ComponentGenerator {
   String _textFn(String text) {
     final wordParts = _word
         .allMatches(text)
-        .map((e) => e.group(0).toLowerCase())
+        .map((e) => e.group(0)!.toLowerCase())
         .map((v) => v.length <= 1
             ? v.toUpperCase()
             : v.substring(0, 1).toUpperCase() + v.substring(1).toLowerCase())
@@ -353,7 +355,7 @@ class _ComponentGenerator {
       if (pos < m.start) {
         addText(value.substring(pos, m.start));
       }
-      var e = m.group(1).trim();
+      String? e = m.group(1)!.trim();
       if (e != '\' \'') {
         e = stack.canonicalize(e);
       }
@@ -372,12 +374,12 @@ class _ComponentGenerator {
 
   void _renderAttr(StringBuffer code, Stack stack, XmlElement elem) {
     final name = elem.getDominoAttr('name');
-    final value = _interpolateText(stack, elem.getDominoAttr('value'));
+    final value = _interpolateText(stack, elem.getDominoAttr('value')!);
     code.writeln('\$d.attr(\'$name\', $value);');
   }
 
   void _renderClass(StringBuffer code, Stack stack, XmlElement elem) {
-    final nameAttr = elem.getDominoAttr('name');
+    final nameAttr = elem.getDominoAttr('name')!;
     final name = _interpolateText(stack, nameAttr);
     final presentAttr = elem.getDominoAttr('present');
     final present =
@@ -425,14 +427,14 @@ class _ComponentGenerator {
 final _expr = RegExp('{{(.+?)}}');
 
 class Stack {
-  final Stack _parent;
+  final Stack? _parent;
   final Set<String> _objects;
-  final bool _emitWhitespaces;
+  final bool? _emitWhitespaces;
 
   Stack({
-    Stack parent,
-    bool emitWhitespaces,
-    Iterable<String> objects,
+    Stack? parent,
+    bool? emitWhitespaces,
+    Iterable<String>? objects,
   })  : _parent = parent,
         _objects = objects?.toSet() ?? <String>{},
         _emitWhitespaces = emitWhitespaces;
@@ -440,10 +442,10 @@ class Stack {
   bool get emitWhitespaces =>
       _emitWhitespaces ?? _parent?.emitWhitespaces ?? false;
 
-  String canonicalize(String expr) {
-    var s = this;
+  String? canonicalize(String? expr) {
+    Stack? s = this;
     while (s != null) {
-      if (s._objects.any((o) => expr.contains(o))) {
+      if (s._objects.any((o) => expr!.contains(o))) {
         return expr;
       }
       s = s._parent;
@@ -463,7 +465,7 @@ class _TextElem {
   final String lang;
   _TextElem._(this.name, this.text, this.lang, this.params);
   factory _TextElem(String name, String text,
-      {String lang, Map<String, String> params}) {
+      {String? lang, Map<String, String>? params}) {
     return _TextElem._(name, text, lang ?? '', params ?? {});
   }
 }

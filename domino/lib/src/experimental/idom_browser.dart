@@ -4,6 +4,7 @@ import 'dart:html';
 import 'package:async_tracker/async_tracker.dart';
 
 import 'idom.dart';
+import 'package:collection/collection.dart' show IterableExtension;
 
 View registerView(Element host, Function(DomContext ctx) fn) {
   return View(host, fn);
@@ -13,9 +14,9 @@ class View {
   final Element _container;
   final Function(DomContext ctx) _fn;
 
-  AsyncTracker _tracker;
+  late AsyncTracker _tracker;
 
-  Future _invalidate;
+  Future? _invalidate;
   bool _isDisposed = false;
 
   View(this._container, this._fn) {
@@ -27,7 +28,7 @@ class View {
 
   R escape<R>(R Function() action) => _tracker.parentZone.run(action);
 
-  Future invalidate() {
+  Future? invalidate() {
     _invalidate ??= Future.delayed(Duration.zero, () {
       try {
         update();
@@ -38,7 +39,7 @@ class View {
     return _invalidate;
   }
 
-  Future dispose() async {
+  Future? dispose() async {
     _isDisposed = true;
     return invalidate();
   }
@@ -55,7 +56,7 @@ class View {
 void patch(
   Element host,
   Function(DomContext ctx) fn, {
-  DomContextGlobals globals,
+  DomContextGlobals? globals,
 }) {
   final ctx = BrowserDomContext(host, globals: globals);
   fn(ctx);
@@ -66,15 +67,15 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   final DomContextGlobals globals;
   final Element _hostElement;
-  final View _view;
+  final View? _view;
   final _lifecycleEvents = <_LifecycleEventData>[];
   final _positions = <_ElemPos>[];
   final _removedNodes = <Node>[];
 
   BrowserDomContext(
     Element host, {
-    DomContextGlobals globals,
-    View view,
+    DomContextGlobals? globals,
+    View? view,
   })  : _hostElement = host,
         _view = view,
         globals = globals ?? DomContextGlobals() {
@@ -113,9 +114,9 @@ class BrowserDomContext implements DomContext<Element, Event> {
   @override
   void open(
     String tag, {
-    String key,
-    LifecycleCallback<Element> onCreate,
-    LifecycleCallback<Element> onRemove,
+    String? key,
+    LifecycleCallback<Element>? onCreate,
+    LifecycleCallback<Element>? onRemove,
   }) {
     final pos = _positions.last;
 
@@ -127,18 +128,17 @@ class BrowserDomContext implements DomContext<Element, Event> {
         currentElem?.tagName?.toLowerCase() == tag.toLowerCase() &&
             currentExtra?.key == key;
     if (matchesCurrentElem) {
-      _positions.add(_ElemPos(currentElem));
+      _positions.add(_ElemPos(currentElem!));
       return;
     }
 
     if (key != null) {
       // match tag + key after the current position
-      final matchedElem = pos.elem.children.skip(pos.index).firstWhere(
+      final matchedElem = pos.elem.children.skip(pos.index).firstWhereOrNull(
           (n) =>
               n is Element &&
               n.tagName.toLowerCase() == tag.toLowerCase() &&
-              _elemExpando[n]?.key == key,
-          orElse: () => null);
+              _elemExpando[n]?.key == key);
       if (matchedElem != null) {
         if (pos.elem.nodes.indexOf(matchedElem) != pos.index) {
           matchedElem.remove();
@@ -149,12 +149,11 @@ class BrowserDomContext implements DomContext<Element, Event> {
       }
     } else {
       // otherwise match tag of an element (without any key)
-      final matchedElem = pos.elem.children.skip(pos.index).firstWhere(
+      final matchedElem = pos.elem.children.skip(pos.index).firstWhereOrNull(
           (n) =>
               n is Element &&
               n.tagName.toLowerCase() == tag.toLowerCase() &&
-              _elemExpando[n]?.key == null,
-          orElse: () => null);
+              _elemExpando[n]?.key == null);
 
       if (matchedElem != null) {
         if (pos.elem.nodes.indexOf(matchedElem) != pos.index) {
@@ -218,7 +217,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
     final elem = pos.elem;
     final current = elem.style.getPropertyValue(name);
     if (value == null && current != null) {
-      elem.styleMap.delete(name);
+      elem.styleMap!.delete(name);
     } else if (value != null && current != value) {
       elem.style.setProperty(name, value);
     }
@@ -248,21 +247,21 @@ class BrowserDomContext implements DomContext<Element, Event> {
 
   @override
   void event(String name,
-      {DomEventFn<Event> fn, String key, bool tracked = true}) {
+      {DomEventFn<Event>? fn, String? key, bool tracked = true}) {
     final elem = element;
     _elemExpando[elem] ??= _ElemExtra();
-    final extra = _elemExpando[elem];
+    final extra = _elemExpando[elem]!;
     final ekey = '$name[$key]';
     extra.eventSubscriptions ??= <String, StreamSubscription>{};
-    final contains = extra.eventSubscriptions.containsKey(ekey);
+    final contains = extra.eventSubscriptions!.containsKey(ekey);
     if (fn == null && contains) {
-      extra.eventSubscriptions.remove(ekey).cancel();
+      extra.eventSubscriptions!.remove(ekey)!.cancel();
     } else if (fn != null && !contains) {
-      extra.eventSubscriptions[ekey] = elem.on[name].listen((e) {
+      extra.eventSubscriptions![ekey] = elem.on[name].listen((e) {
         if (tracked) {
-          _view.track(() => fn(_DomEvent(_view, e)));
+          _view!.track(() => fn(_DomEvent(_view, e)));
         } else {
-          _view.escape(() => fn(_DomEvent(_view, e)));
+          _view!.escape(() => fn(_DomEvent(_view, e)));
         }
       });
     }
@@ -283,22 +282,22 @@ class BrowserDomContext implements DomContext<Element, Event> {
   }
 
   @override
-  void close({String tag}) {
+  void close({String? tag}) {
     final pos = _positions.removeLast();
     if (tag != null && pos.elem.tagName.toLowerCase() != tag.toLowerCase()) {
       throw StateError(
           'Closing tag: $tag != Element tag: ${pos.elem.tagName.toLowerCase()}');
     }
-    if (pos._classesToRemove != null && pos._classesToRemove.isNotEmpty) {
-      pos.elem.classes.removeAll(pos._classesToRemove);
+    if (pos._classesToRemove != null && pos._classesToRemove!.isNotEmpty) {
+      pos.elem.classes.removeAll(pos._classesToRemove!);
     }
-    if (pos._stylesToRemove != null && pos._stylesToRemove.isNotEmpty) {
-      for (final style in pos._stylesToRemove) {
+    if (pos._stylesToRemove != null && pos._stylesToRemove!.isNotEmpty) {
+      for (final style in pos._stylesToRemove!) {
         pos.elem.style.removeProperty(style);
       }
     }
-    if (pos._attrsToRemove != null && pos._attrsToRemove.isNotEmpty) {
-      for (final attr in pos._attrsToRemove) {
+    if (pos._attrsToRemove != null && pos._attrsToRemove!.isNotEmpty) {
+      for (final attr in pos._attrsToRemove!) {
         pos.elem.removeAttribute(attr);
       }
     }
@@ -314,9 +313,9 @@ class BrowserDomContext implements DomContext<Element, Event> {
 
 class _ElemPos {
   final Element elem;
-  final Set<String> _classesToRemove;
-  final Set<String> _stylesToRemove;
-  final Set<String> _attrsToRemove;
+  final Set<String>? _classesToRemove;
+  final Set<String>? _stylesToRemove;
+  final Set<String>? _attrsToRemove;
   int index = 0;
 
   _ElemPos(this.elem)
@@ -329,7 +328,7 @@ class _ElemPos {
     _attrsToRemove?.remove('style');
   }
 
-  Node get currentNode {
+  Node? get currentNode {
     return index < elem.nodes.length ? elem.nodes[index] : null;
   }
 
@@ -343,11 +342,11 @@ class _ElemPos {
 }
 
 class _ElemExtra {
-  Map<String, StreamSubscription> eventSubscriptions;
+  Map<String, StreamSubscription>? eventSubscriptions;
   bool cascadeRemove = false;
-  String key;
-  LifecycleCallback<Element> onCreate;
-  LifecycleCallback<Element> onRemove;
+  String? key;
+  LifecycleCallback<Element>? onCreate;
+  LifecycleCallback<Element>? onRemove;
 }
 
 final _elemExpando = Expando<_ElemExtra>('extra');
@@ -360,7 +359,7 @@ class _LifecycleEventData {
 }
 
 class _LifecycleEvent extends LifecycleEvent<Element> {
-  final View _view;
+  final View? _view;
 
   @override
   final Element element;
@@ -369,12 +368,12 @@ class _LifecycleEvent extends LifecycleEvent<Element> {
 
   @override
   void triggerUpdate() {
-    _view.invalidate();
+    _view!.invalidate();
   }
 }
 
 class _DomEvent extends DomEvent<Event> {
-  final View _view;
+  final View? _view;
 
   @override
   final Event event;
@@ -383,6 +382,6 @@ class _DomEvent extends DomEvent<Event> {
 
   @override
   void triggerUpdate() {
-    _view.invalidate();
+    _view!.invalidate();
   }
 }

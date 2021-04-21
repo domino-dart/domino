@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:meta/meta.dart';
-
 typedef LifecycleCallback<L> = Function(LifecycleEvent<L> element);
 typedef DomEventFn<V> = Function(DomEvent<V> event);
 typedef SlotFn = void Function(DomContext $d);
@@ -10,7 +8,7 @@ class DomContextGlobals {
   final String locale;
 
   DomContextGlobals({
-    String locale,
+    String? locale,
   }) : locale = locale ?? '';
 }
 
@@ -22,9 +20,9 @@ abstract class DomContext<L, V> {
 
   void open(
     String tag, {
-    String key,
-    LifecycleCallback<L> onCreate,
-    LifecycleCallback<L> onRemove,
+    String? key,
+    LifecycleCallback<L>? onCreate,
+    LifecycleCallback<L>? onRemove,
   });
 
   void attr(String name, String value);
@@ -33,8 +31,8 @@ abstract class DomContext<L, V> {
 
   void event(
     String name, {
-    @required DomEventFn<V> fn,
-    String key,
+    required DomEventFn<V> fn,
+    String? key,
     bool tracked = true,
   });
 
@@ -44,7 +42,7 @@ abstract class DomContext<L, V> {
   void skipNode();
   void skipRemainingNodes();
 
-  void close({String tag});
+  void close({String? tag});
 }
 
 abstract class LifecycleEvent<L> {
@@ -66,8 +64,8 @@ class BindedVar<T> {
   final _controller = StreamController<T>.broadcast();
   Stream<T> get valueStream => _controller.stream;
 
-  T _lastVal;
-  void triggerUpdate([T val]) {
+  T? _lastVal;
+  void triggerUpdate([T? val]) {
     if (val != null) {
       _setValue(val);
     } else {
@@ -76,7 +74,7 @@ class BindedVar<T> {
     }
     if (val != _lastVal) {
       _lastVal = val;
-      _controller.add(val);
+      _controller.add(val!);
     }
   }
 
