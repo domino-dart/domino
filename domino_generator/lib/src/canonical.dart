@@ -24,7 +24,7 @@ ParsedSource parseToCanonical(String html, {String? defTemp}) {
   final templates = <XmlElement>[];
 
   final source = '<d:root xmlns:d="$dominoNs">\n$html\n</d:root>';
-  final doc = parse(source);
+  final doc = XmlDocument.parse(source);
   final root = doc.rootElement;
 
   // Simple definition to d-template transformation
@@ -36,8 +36,7 @@ ParsedSource parseToCanonical(String html, {String? defTemp}) {
     final template = XmlElement(XmlName('template', 'd'));
     element.replaceWith(template, moveChildren: true);
     template.setDominoAttr('name', methodName);
-    template.attributes
-        .addAll(element.attributes.map((a) => a.copy() as XmlAttribute));
+    template.attributes.addAll(element.attributes.map((a) => a.copy()));
   }
 
   templates.addAll(root.elements.where(
@@ -72,7 +71,7 @@ ParsedSource parseToCanonical(String html, {String? defTemp}) {
         library = parts.removeAt(0);
       }
       final type = parts.removeAt(0);
-      bool required = false;
+      var required = false;
       if (parts.contains('required')) {
         parts.remove('required');
         required = true;
@@ -119,9 +118,7 @@ Iterable<String> _collectSlots(XmlElement elem) {
 }
 
 void _pullAttr(XmlElement node, String tag, {Iterable<String>? alternatives}) {
-  final attrs = [tag, if (alternatives != null) ...alternatives]
-      .where((s) => s != null)
-      .toList();
+  final attrs = [tag, if (alternatives != null) ...alternatives];
   for (final attr in attrs) {
     final first = node.attributes.firstWhereOrNull(
       (a) => a.name.local == attr && a.name.namespaceUri == dominoNs,
@@ -139,7 +136,7 @@ void _pullAttr(XmlElement node, String tag, {Iterable<String>? alternatives}) {
 }
 
 void _rewriteAll(List<XmlNode> list) {
-  for (int i = 0; i < list.length; i++) {
+  for (var i = 0; i < list.length; i++) {
     XmlNode? old;
     while (old != list[i]) {
       old = list[i];
@@ -246,7 +243,7 @@ void _rewrite(XmlNode node) {
           ..setDominoAttr('name', 'events')
           ..setDominoAttr(
             'value',
-            '{${events.entries.map((e) => '\'${e.key}\': ${e.value}').join(',')}}',
+            '{${events.entries.map((e) => "'${e.key}': ${e.value}").join(',')}}',
           );
       }
     }
@@ -294,7 +291,7 @@ String dartName(String htmlName, {String prefix = ''}) {
 
   final parts =
       _caseRegExp.allMatches(htmlName).map((e) => e.group(0)).toList();
-  if (prefix != null && prefix.isNotEmpty && !parts.first!.startsWith(prefix)) {
+  if (prefix.isNotEmpty && !parts.first!.startsWith(prefix)) {
     parts.insert(0, prefix);
   }
   final cased = parts
@@ -315,7 +312,7 @@ extension XmlElementExt on XmlElement {
     final index = parent!.children.indexOf(this);
     parent!.children.replaceRange(index, index + 1, [other]);
     if (moveAttributes) {
-      other.attributes.addAll(attributes.map((a) => a.copy() as XmlAttribute));
+      other.attributes.addAll(attributes.map((a) => a.copy()));
     }
     if (moveChildren) {
       other.children.addAll(children.map((c) => c.copy()));
@@ -335,9 +332,6 @@ extension XmlElementExt on XmlElement {
 
   void append(XmlNode node) {
     children.add(node);
-    if (!node.hasParent) {
-      node.attachParent(this);
-    }
   }
 
   String? getDominoAttr(String name) {

@@ -16,8 +16,7 @@ class GeneratedSource {
     required this.sassFileContent,
   });
 
-  bool get hasSassFileContent =>
-      sassFileContent != null && sassFileContent.isNotEmpty;
+  bool get hasSassFileContent => sassFileContent.isNotEmpty;
 }
 
 GeneratedSource parseHtmlToSources(String htmlContent) {

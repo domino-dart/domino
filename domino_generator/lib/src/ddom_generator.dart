@@ -63,7 +63,7 @@ GeneratedSource generateSource(String htmlContent) {
               ..types.add(refer('DNode', _ddomDart)))
             ..body = Code.scope((allocator) {
               final items = _render(allocator, template.children);
-              return 'return _nodes ??= [${items.where((v) => v != null && v.isNotEmpty).join(',')}];';
+              return 'return _nodes ??= [${items.where((v) => v.isNotEmpty).join(',')}];';
             });
         }));
       }));

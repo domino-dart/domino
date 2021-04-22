@@ -115,7 +115,7 @@ class _ViewUpdater extends DVisitor {
       elem.removeAttribute('style');
     } else if (styles != null && styles.isNotEmpty) {
       final sm = elem.styleMap;
-      final remove = sm?.getProperties()?.toSet();
+      final remove = sm?.getProperties().toSet();
       for (final key in styles.keys) {
         final value = styles[key];
         remove?.remove(key);
@@ -169,7 +169,7 @@ class _ViewUpdater extends DVisitor {
       }
     }
 
-    final removeEvents = oldNodeExt?.boundEvents?.keys?.toSet();
+    final removeEvents = oldNodeExt?.boundEvents.keys.toSet();
     if (node.events != null) {
       initNodeExt();
 
@@ -189,7 +189,7 @@ class _ViewUpdater extends DVisitor {
 
         final eventListener = (html.Event e) {
           final DEvent de = _DEvent(_view, elem, e);
-          if (definition.escapeTracking ?? false) {
+          if (definition.escapeTracking) {
             _view.track(() => definition.callback(de));
           } else {
             _view.escape(() => definition.callback(de));

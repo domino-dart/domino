@@ -52,7 +52,6 @@ class VdomElement extends VdomNode implements ElementProxy {
 
   @override
   void addClass(String className) {
-    if (className == null) return;
     classes ??= [];
     if (!classes!.contains(className)) {
       classes!.add(className);
@@ -79,14 +78,12 @@ class VdomElement extends VdomNode implements ElementProxy {
 
   @override
   void setStyle(String name, String value) {
-    if (value == null) return;
     styles ??= {};
     styles![name] = value;
   }
 
   @override
   void setInnerHtml(String html) {
-    if (html == null) return;
     innerHtml = html;
   }
 
@@ -105,7 +102,6 @@ class VdomElement extends VdomNode implements ElementProxy {
 
   @override
   void addChangeHandler(ChangePhase type, ChangeHandler handler) {
-    if (handler == null) return;
     changes ??= {};
     final list = changes!.putIfAbsent(type, () => []);
     if (!list.contains(handler)) {

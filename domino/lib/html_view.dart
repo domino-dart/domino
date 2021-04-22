@@ -154,7 +154,6 @@ class _ViewUpdater {
   }
 
   bool _mayUpdate(html.Node dn, _VdomSource source, VdomNode vnode) {
-    if (vnode?.type == null) return false;
     switch (vnode.type) {
       case VdomNodeType.element:
         if (vnode is VdomElement &&
@@ -173,9 +172,6 @@ class _ViewUpdater {
   }
 
   html.Node _createDom(VdomNode vnode) {
-    if (vnode?.type == null) {
-      throw Exception('Unknown vnode: $vnode');
-    }
     switch (vnode.type) {
       case VdomNodeType.element:
         if (vnode is VdomElement) {
@@ -192,9 +188,6 @@ class _ViewUpdater {
   }
 
   void _updateNode(html.Node dn, _VdomSource? source, VdomNode vnode) {
-    if (vnode?.type == null) {
-      throw Exception('Unknown vnode: $vnode');
-    }
     switch (vnode.type) {
       case VdomNodeType.element:
         if (dn is html.Element && vnode is VdomElement) {
@@ -219,7 +212,7 @@ class _ViewUpdater {
   void _updateElement(html.Element dn, _VdomSource source, VdomElement vnode) {
     final boundKeyedRefs = vnode.nodeRefs?.bind(vnode.symbol, dn);
 
-    final attrsToRemove = source.attributes?.keys?.toSet();
+    final attrsToRemove = source.attributes?.keys.toSet();
     if (vnode.hasClasses) {
       attrsToRemove?.remove('class');
     }
@@ -346,11 +339,11 @@ class _ViewUpdater {
       }
     }
     oldEvents?.values
-        ?.where((dl) => newEvents == null || !newEvents.containsKey(dl.type))
-        ?.forEach((es) => dn.removeEventListener(es.type, es.listener));
+        .where((dl) => newEvents == null || !newEvents.containsKey(dl.type))
+        .forEach((es) => dn.removeEventListener(es.type, es.listener));
     newEvents?.values
-        ?.where((dl) => oldEvents == null || !oldEvents.containsKey(dl.type))
-        ?.forEach((es) => dn.addEventListener(es.type, es.listener));
+        .where((dl) => oldEvents == null || !oldEvents.containsKey(dl.type))
+        .forEach((es) => dn.addEventListener(es.type, es.listener));
 
     if (newEvents != null || oldEvents != null) {
       source.events = newEvents;

@@ -89,7 +89,7 @@ File _replaceExtension(File orig, String ext) {
 }
 
 Future<bool> _updateFile(File target, String content) async {
-  if (content == null || content.isEmpty) {
+  if (content.isEmpty) {
     if (await target.exists()) {
       await target.delete();
       return true;

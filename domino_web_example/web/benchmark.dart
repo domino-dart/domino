@@ -38,7 +38,7 @@ Future<void> _benchmark(
     if (count % 100000 == 0) {
       print('$count in ${sw.elapsed}');
     }
-    await fn();
+    fn();
     if (sw.elapsed.inSeconds > 9) break;
   }
   print('total: $count in ${sw.elapsed}');

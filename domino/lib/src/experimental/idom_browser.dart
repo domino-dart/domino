@@ -125,7 +125,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
     final currentElem = currentNode is Element ? currentNode : null;
     final currentExtra = currentElem == null ? null : _elemExpando[currentElem];
     final matchesCurrentElem =
-        currentElem?.tagName?.toLowerCase() == tag.toLowerCase() &&
+        currentElem?.tagName.toLowerCase() == tag.toLowerCase() &&
             currentExtra?.key == key;
     if (matchesCurrentElem) {
       _positions.add(_ElemPos(currentElem!));
@@ -182,7 +182,7 @@ class BrowserDomContext implements DomContext<Element, Event> {
   }
 
   @override
-  void attr(String name, String value) {
+  void attr(String name, String? value) {
     final pos = _positions.last;
     pos._attrsToRemove?.remove(name);
 
@@ -210,13 +210,13 @@ class BrowserDomContext implements DomContext<Element, Event> {
   }
 
   @override
-  void style(String name, String value) {
+  void style(String name, String? value) {
     final pos = _positions.last;
     pos._stylesToRemove?.remove(name);
 
     final elem = pos.elem;
     final current = elem.style.getPropertyValue(name);
-    if (value == null && current != null) {
+    if (value == null && current.isEmpty) {
       elem.styleMap!.delete(name);
     } else if (value != null && current != value) {
       elem.style.setProperty(name, value);
@@ -240,8 +240,9 @@ class BrowserDomContext implements DomContext<Element, Event> {
 
   @override
   void innerHtml(String value) {
-    final pos = _positions.last;
-    pos.elem.setInnerHtml(value);
+    final elem = _positions.last.elem;
+    elem.setInnerHtml(value,
+        validator: _nodeValidator, treeSanitizer: NodeTreeSanitizer.trusted);
     skipRemainingNodes();
   }
 
@@ -311,6 +312,20 @@ class BrowserDomContext implements DomContext<Element, Event> {
   }
 }
 
+final _nodeValidator = _NodeValidator();
+
+class _NodeValidator implements NodeValidator {
+  @override
+  bool allowsElement(Element element) {
+    return true;
+  }
+
+  @override
+  bool allowsAttribute(Element element, String attributeName, String value) {
+    return true;
+  }
+}
+
 class _ElemPos {
   final Element elem;
   final Set<String>? _classesToRemove;
@@ -321,7 +336,7 @@ class _ElemPos {
   _ElemPos(this.elem)
       : _classesToRemove =
             elem.hasAttribute('class') ? elem.classes.toSet() : null,
-        _stylesToRemove = elem.styleMap?.getProperties()?.toSet(),
+        _stylesToRemove = elem.styleMap?.getProperties().toSet(),
         _attrsToRemove =
             elem.attributes.isEmpty ? null : elem.attributes.keys.toSet() {
     _attrsToRemove?.remove('class');

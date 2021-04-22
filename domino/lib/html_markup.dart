@@ -50,7 +50,7 @@ class HtmlMarkupBuilder {
           break;
         case VdomNodeType.text:
           if (node is VdomText) {
-            sink.write(_textEscaper.convert(node.value ?? ''));
+            sink.write(_textEscaper.convert(node.value));
           }
           break;
       }

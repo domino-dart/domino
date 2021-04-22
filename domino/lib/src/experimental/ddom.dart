@@ -141,7 +141,7 @@ class DStringList {
       if (_ifs != null)
         ..._ifs!.entries.where((e) => e.value()).map((e) => e.key),
       if (_fns != null)
-        ..._fns!.map((fn) => fn()).where((v) => v != null && v.isNotEmpty),
+        ..._fns!.map((fn) => fn()).where((v) => v.isNotEmpty),
     ];
   }
 }
@@ -161,8 +161,8 @@ class DStringMap {
         ? null
         : _fns!.entries.map((e) {
             final v = e.value();
-            return v == null ? null : MapEntry(e.key, v);
-          }).where((e) => e != null).whereType<MapEntry<String, String>>();
+            return MapEntry(e.key, v);
+          }).whereType<MapEntry<String, String>>();
     return <String, String>{
       if (_values != null) ..._values!,
       if (_fns != null) ...Map.fromEntries(fnsv!),

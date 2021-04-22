@@ -27,8 +27,8 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
   _IdomElem? get element => _path.last;
   _IdomElem get _shadowElement => _shadowPath.last;
   @override
-  _IdomNode? get pointer => _indexes.last < _shadowElement.nodes!.length
-      ? _shadowElement.nodes![_indexes.last]
+  _IdomNode? get pointer => _indexes.last < _shadowElement.nodes.length
+      ? _shadowElement.nodes[_indexes.last]
       : null;
 
   /// Creates a ServerDomContext for rendering a context to a html file
@@ -53,7 +53,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
     final newElem = _IdomElem(tag, key: key);
 
     // Pull nodes list if matches an element from the list.
-    final match = _shadowElement.nodes!.indexWhere(
+    final match = _shadowElement.nodes.indexWhere(
         (node) =>
             (node is _IdomElem) &&
             (node.tag == tag) &&
@@ -62,15 +62,15 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
 
     if (match == -1) {
       // no match, insert new elem at the current index
-      _shadowElement.nodes!.insert(_indexes.last, newElem);
+      _shadowElement.nodes.insert(_indexes.last, newElem);
       _indexes.last = _indexes.last + 1;
       _path.add(newElem);
       _shadowPath.add(newElem);
       _indexes.add(0);
     } else {
       // match, remove everything between the index and the match, copy nodes
-      _shadowElement.nodes!.removeRange(_indexes.last, match);
-      newElem.nodes!.addAll((pointer as _IdomElem).nodes!);
+      _shadowElement.nodes.removeRange(_indexes.last, match);
+      newElem.nodes.addAll((pointer as _IdomElem).nodes);
       _path.add(pointer as _IdomElem?);
       _shadowPath.add(newElem);
       _indexes.add(0);
@@ -88,7 +88,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
     } else {
       // Insert text node
       final newText = _IdomText(value);
-      _shadowElement.nodes!.insert(_indexes.last, newText);
+      _shadowElement.nodes.insert(_indexes.last, newText);
       _indexes.last = _indexes.last + 1;
     }
   }
@@ -96,8 +96,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
   @override
   void close({String? tag}) {
     // Remove unwalked nodes
-    _shadowElement.nodes!
-        .removeRange(_indexes.last, _shadowElement.nodes!.length);
+    _shadowElement.nodes.removeRange(_indexes.last, _shadowElement.nodes.length);
 
     // Deep copy
     _path.last!.moveFrom(_shadowPath.last);
@@ -108,21 +107,21 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
 
   @override
   void attr(String name, String value) {
-    _shadowElement.attr![name] = value;
+    _shadowElement.attr[name] = value;
   }
 
   @override
   void clazz(String name, {bool present = true}) {
     if (present) {
-      _shadowElement.clazz!.add(name);
+      _shadowElement.clazz.add(name);
     } else {
-      _shadowElement.clazz!.remove(name);
+      _shadowElement.clazz.remove(name);
     }
   }
 
   @override
   void style(String name, String value) {
-    _shadowElement.style![name] = value;
+    _shadowElement.style[name] = value;
   }
 
   @override
@@ -133,14 +132,14 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
 
   @override
   void skipNode() {
-    if (_indexes.last < element!.nodes!.length) {
+    if (_indexes.last < element!.nodes.length) {
       _indexes.last = _indexes.last + 1;
     }
   }
 
   @override
   void skipRemainingNodes() {
-    _indexes.last = element!.nodes!.length;
+    _indexes.last = element!.nodes.length;
   }
 
   @override
@@ -182,23 +181,23 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
     if (elem.tag != null) {
       out!.write('$curInd<${elem.tag}');
       var simple = true;
-      if (elem.style!.isNotEmpty) {
+      if (elem.style.isNotEmpty) {
         out.write('${ml}style="${indentAttr ? mml : ''}');
-        out.write(elem.style!.entries
+        out.write(elem.style.entries
             .map((stl) => '${stl.key}: ${stl.value};')
             .join(mml));
         out.write('"');
         simple = false;
       }
-      if (elem.clazz!.isNotEmpty) {
+      if (elem.clazz.isNotEmpty) {
         out.write('${ml}class="${indentAttr ? mml : ''}');
         out.write(_attrEscaper.convert(elem.clazz.join(mml)));
         out.write('"');
         simple = false;
       }
-      if (elem.attr!.isNotEmpty) {
+      if (elem.attr.isNotEmpty) {
         out.write(ml);
-        out.write(elem.attr!.entries
+        out.write(elem.attr.entries
             .map((atr) => '${atr.key}="${_attrEscaper.convert(atr.value)}"')
             .join(ml));
         simple = false;
@@ -210,7 +209,7 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
     }
 
     // wrting nodes, each ends in a new line if indent is not null
-    for (final node in elem.nodes!) {
+    for (final node in elem.nodes) {
       if (node is _IdomElem) {
         // recursive element
         writeHTML(

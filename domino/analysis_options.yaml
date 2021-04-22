@@ -7,6 +7,7 @@ analyzer:
     unused_import: error
     unused_local_variable: error
     dead_code: error
+    unsafe_html: ignore
   strong-mode:
     implicit-casts: false
 

@@ -45,7 +45,7 @@ class HtmlBuilderVisitor extends DVisitor {
 
   @override
   void visitInnerHtml(DInnerHtml node) {
-    _sink.write(_textEscaper.convert(node.value ?? ''));
+    _sink.write(_textEscaper.convert(node.value));
   }
 
   @override
