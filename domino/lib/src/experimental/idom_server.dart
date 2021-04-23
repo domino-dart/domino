@@ -96,7 +96,8 @@ class ServerDomContext implements DomContext<_IdomElem?, Function> {
   @override
   void close({String? tag}) {
     // Remove unwalked nodes
-    _shadowElement.nodes.removeRange(_indexes.last, _shadowElement.nodes.length);
+    _shadowElement.nodes
+        .removeRange(_indexes.last, _shadowElement.nodes.length);
 
     // Deep copy
     _path.last!.moveFrom(_shadowPath.last);

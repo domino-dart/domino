@@ -77,7 +77,8 @@ class VdomElement extends VdomNode implements ElementProxy {
   }
 
   @override
-  void setStyle(String name, String value) {
+  void setStyle(String name, String? value) {
+    if (value == null) return;
     styles ??= {};
     styles![name] = value;
   }

@@ -120,7 +120,7 @@ class DElem extends DNode {
 }
 
 typedef DBoolFn = bool Function();
-typedef DStringFn = String Function();
+typedef DStringFn = String? Function();
 
 class DStringList {
   final List<String>? _values;
@@ -141,7 +141,10 @@ class DStringList {
       if (_ifs != null)
         ..._ifs!.entries.where((e) => e.value()).map((e) => e.key),
       if (_fns != null)
-        ..._fns!.map((fn) => fn()).where((v) => v.isNotEmpty),
+        ..._fns!
+            .map((fn) => fn())
+            .where((v) => v != null && v.isNotEmpty)
+            .map((v) => v!),
     ];
   }
 }
@@ -159,10 +162,13 @@ class DStringMap {
   Map<String, String> get values {
     final fnsv = _fns == null
         ? null
-        : _fns!.entries.map((e) {
-            final v = e.value();
-            return MapEntry(e.key, v);
-          }).whereType<MapEntry<String, String>>();
+        : _fns!.entries
+            .map((e) {
+              final v = e.value();
+              return MapEntry<String, String?>(e.key, v);
+            })
+            .where((e) => e.value != null)
+            .map((e) => MapEntry(e.key, e.value!));
     return <String, String>{
       if (_values != null) ..._values!,
       if (_fns != null) ...Map.fromEntries(fnsv!),

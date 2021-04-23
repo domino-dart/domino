@@ -92,7 +92,7 @@ abstract class ElementProxy {
   void setSymbol(Symbol symbol);
   void addClass(String className);
   void setAttribute(String name, String? value);
-  void setStyle(String name, String value);
+  void setStyle(String name, String? value);
   void setInnerHtml(String html);
   void addEventHandler(String type, Function? handler, bool tracked);
   void addChangeHandler(ChangePhase phase, ChangeHandler handler);
@@ -122,13 +122,13 @@ typedef ChangeHandler = void Function(Change lifecycle);
 ///
 /// Example:
 ///     div(style('color', 'blue'))
-Setter style(String name, String value) => StyleSetter(name, value);
+Setter style(String name, String? value) => StyleSetter(name, value);
 
 /// Adds an attribute to an [Element] with [name] and [value]
 ///
 /// Example:
 ///     div(attr('id', 'main'))
-Setter attr(String name, String value) => AttrSetter(name, value);
+Setter attr(String name, String? value) => AttrSetter(name, value);
 
 /// Adds an `id` attribute to an [Element] with [id] as value.
 ///

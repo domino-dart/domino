@@ -9,7 +9,7 @@ import '_unfold.dart';
 class StyleSetter implements Setter {
   final String _name;
 
-  final String _value;
+  final String? _value;
 
   const StyleSetter(this._name, this._value);
 
@@ -24,7 +24,7 @@ class StyleSetter implements Setter {
 class AttrSetter implements Setter {
   final String _name;
 
-  final String _value;
+  final String? _value;
 
   const AttrSetter(this._name, this._value);
 
