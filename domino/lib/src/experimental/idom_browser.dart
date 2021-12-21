@@ -136,7 +136,6 @@ class BrowserDomContext implements DomContext<Element, Event> {
       // match tag + key after the current position
       final matchedElem = pos.elem.children.skip(pos.index).firstWhereOrNull(
           (n) =>
-              n is Element &&
               n.tagName.toLowerCase() == tag.toLowerCase() &&
               _elemExpando[n]?.key == key);
       if (matchedElem != null) {
@@ -151,7 +150,6 @@ class BrowserDomContext implements DomContext<Element, Event> {
       // otherwise match tag of an element (without any key)
       final matchedElem = pos.elem.children.skip(pos.index).firstWhereOrNull(
           (n) =>
-              n is Element &&
               n.tagName.toLowerCase() == tag.toLowerCase() &&
               _elemExpando[n]?.key == null);
 

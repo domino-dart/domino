@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'package:domino/src/_unfold.dart';
+import 'package:domino/src/legacy/_unfold.dart';
 
 void main() {
   group('flat classes fn', () {

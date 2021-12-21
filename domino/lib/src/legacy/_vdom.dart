@@ -1,4 +1,4 @@
-import '../domino.dart';
+import '../../domino.dart';
 
 class EventHandlerReg {
   final Function handler;

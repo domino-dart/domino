@@ -5,8 +5,8 @@ import 'package:async_tracker/async_tracker.dart';
 
 import 'domino.dart';
 import 'package:collection/collection.dart' show IterableExtension;
-import 'src/_build_context.dart';
-import 'src/_vdom.dart';
+import 'src/legacy/_build_context.dart';
+import 'src/legacy/_vdom.dart';
 
 export 'domino.dart';
 

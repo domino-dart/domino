@@ -1,4 +1,4 @@
-import '../domino.dart';
+import '../../domino.dart';
 
 import '_unfold.dart';
 import '_vdom.dart';

@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'domino.dart';
-import 'src/_build_context.dart';
-import 'src/_vdom.dart';
+import 'src/legacy/_build_context.dart';
+import 'src/legacy/_vdom.dart';
 
 final _attrEscaper = HtmlEscape(HtmlEscapeMode.attribute);
 final _textEscaper = HtmlEscape(HtmlEscapeMode.element);

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'src/_setters.dart';
+import 'src/legacy/_setters.dart';
 
 /// The context of the current build.
 abstract class BuildContext {

@@ -1,4 +1,4 @@
-import 'package:domino/src/_unfold.dart';
+import 'package:domino/src/legacy/_unfold.dart';
 
 typedef DNodeListFn = Iterable<DNode> Function();
 typedef DEventCallback<L, V> = Function(DEvent<L, V> event);
