@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.8.0
+
+- (TBD) incremental DOM API.
+
 ## 0.7.0
 
 - Null-safety migration
