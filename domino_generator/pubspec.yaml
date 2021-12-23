@@ -26,4 +26,4 @@ executables:
 
 dependency_overrides:
   domino:
-    path: ../domino
+    path: domino

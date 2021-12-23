@@ -1,3 +1,4 @@
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:domino/src/experimental/idom.dart' as _i1;
 import 'ex1_model.dart' as _i2;
 

@@ -59,10 +59,10 @@ abstract class DomView {
   /// Schedule an [update] of the [DomView].
   ///
   /// Returns a Future that completes when the [DomView] was updated.
-  Future? invalidate();
+  Future<void>? invalidate();
 
   /// Dispose the [DomView] and free resources.
-  Future? dispose();
+  Future<void>? dispose();
 }
 
 /// Data for DOM lifecycle events.
