@@ -1,5 +1,6 @@
 import 'dart:io';
 
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:domino/src/experimental/idom_server.dart';
 import 'ex1.g.dart';
 import 'ex1_model.dart';

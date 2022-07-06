@@ -1,5 +1,5 @@
 name: domino
-description: An incremental DOM library, with additional support of virtual DOM and components.
+description: An incremental DOM library, with support for virtual DOM and components.
 version: 0.8.0
 homepage: https://github.com/domino-dart/domino/tree/master/domino
 

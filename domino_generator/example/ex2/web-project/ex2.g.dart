@@ -1,3 +1,4 @@
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:domino/src/experimental/idom.dart' as _i1;
 import 'components/named-div/button.g.dart' as _i2;
 import 'components/named-div/colorbox.g.dart' as _i3;
